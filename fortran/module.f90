@@ -20,7 +20,7 @@ module parameters
 
   real(kind(0d0)), allocatable :: rho(:,:),mu(:,:),lambda(:,:),cs(:,:),cp(:,:)
 
-  real(kind(0d0)), allocatable :: nx_vec(:), nz_vec(:), nt_vec(:) ! for visualisation
+  real(kind(0d0)), allocatable :: nx_vec(:), nz_vec(:), nt_vec(:), source(:) ! for visualisation
 
   
   

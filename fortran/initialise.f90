@@ -56,6 +56,7 @@ subroutine initialise1
   allocate(nx_vec(0:NX))
   allocate(nz_vec(0:NZ))
   allocate(nt_vec(0:NSTEP))
+  allocate(source(0:NSTEP))
 
   do i = 0, NX
      nx_vec(i) = dx*dble(i)
@@ -70,6 +71,25 @@ subroutine initialise1
   enddo
 
 
+  
+
+
+
+end subroutine initialise1
+
+
+subroutine defsrc(fmax,dt,src,ns,ns2)
+  
+  ! Guy Satty 2016, Institut de Physique du Globe de Paris
+  
+  implicit none
+
+  real(kind(0d0)) :: fc
+  real(kind(0d0)) :: fmax, dt
+  integer :: ns, ns2
+
+  
+  
   
 
   
