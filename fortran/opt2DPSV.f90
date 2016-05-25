@@ -80,8 +80,15 @@ program opt22
   isx = nx / 2 + 1
   isz = nz / 2 + 1
   
-
-
+  t=0.d0
+  do it=0,nt
+     call calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),tp,ts,lam,mu )
+    
+     write(13,*) t, lam(isx,isz),mu(isx,isz)
+     t=t+dt
+  enddo
+  !stop
+  
   
   t = 0.d0
   !write(6,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
