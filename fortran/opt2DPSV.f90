@@ -14,7 +14,34 @@ program opt22
   ! parameters for the gridding
   real*8 dt,dx,dz
   ! parameters for the wavefield
-  integer nt,nx,nz,it,ist,isx,isz  
+  integer nt,nx,nz,it,ist,isx,isz
+  real*8 ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
+  real*8 ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
+  real*8 uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
+  real*8  e1(maxnz+1,maxnz+1), e2(maxnz+1,maxnz+1)
+  real*8  e3(maxnz+1,maxnz+1), e4(maxnz+1,maxnz+1)
+  real*8  e5(maxnz+1,maxnz+1), e6(maxnz+1,maxnz+1)
+  real*8  e7(maxnz+1,maxnz+1), e8(maxnz+1,maxnz+1)
+  real*8 e13(maxnz+1,maxnz+1),e14(maxnz+1,maxnz+1)
+  real*8 e15(maxnz+1,maxnz+1),e16(maxnz+1,maxnz+1)
+  real*8 e17(maxnz+1,maxnz+1),e18(maxnz+1,maxnz+1)
+  real*8 e19(maxnz+1,maxnz+1),e20(maxnz+1,maxnz+1)
+  real*8  f1(maxnz+1,maxnz+1), f2(maxnz+1,maxnz+1)
+  real*8  f3(maxnz+1,maxnz+1), f4(maxnz+1,maxnz+1)
+  real*8  f5(maxnz+1,maxnz+1), f6(maxnz+1,maxnz+1)
+  real*8  f7(maxnz+1,maxnz+1), f8(maxnz+1,maxnz+1)
+  real*8 f13(maxnz+1,maxnz+1),f14(maxnz+1,maxnz+1)
+  real*8 f15(maxnz+1,maxnz+1),f16(maxnz+1,maxnz+1)
+  real*8 f17(maxnz+1,maxnz+1),f18(maxnz+1,maxnz+1)
+  real*8 f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
+  real*8 work(maxnz+1,32)
+  ! parameter for the structure
+  !real*8 rrho(6),llam(6),mmu(6)
+  character(80) :: vpfile, vsfile, rhofile
+  real*8 rho(maxnz+1,maxnz+1)
+  real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  real*8 vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
+  ! parameter for the source
   real*8 tp,ts
   ! parameter for the receiver
   integer nrx,nrz
@@ -724,11 +751,11 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   !       use the "convert" command from ImageMagick http://www.imagemagick.org
   if(field_number == 1) then
      write(file_name,"('image',i6.6,'_Ux.pnm')") it
-     write(system_command1, "('convert image',i6.6,'_Ux.pnm snapshots/image',i6.6,'_Ux.gif')") it,it
+     write(system_command1, "('convert image',i6.6,'_Ux.pnm snapshots/imageUx',i6.6,'.jpg')") it,it
      write(system_command2, "('rm image',i6.6,'_Ux.pnm')") it
   else if(field_number == 2) then
      write(file_name,"('image',i6.6,'_Uz.pnm')") it
-     write(system_command1,"('convert image',i6.6,'_Uz.pnm snapshots/image',i6.6,'_Uz.gif')") it,it
+     write(system_command1,"('convert image',i6.6,'_Uz.pnm snapshots/imageUz',i6.6,'.gif')") it,it
      write(system_command2,"('rm image',i6.6,'_Uz.pnm')") it
   endif
   
