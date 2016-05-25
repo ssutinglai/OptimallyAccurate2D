@@ -35,7 +35,8 @@ program opt22
   real*8 f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
   real*8 work(maxnz+1,32)
   ! parameter for the structure
-  real*8 rrho(6),llam(6),mmu(6)
+  !real*8 rrho(6),llam(6),mmu(6)
+  character(80) :: vpfile, vsfile, rhofile
   real*8 rho(maxnz+1,maxnz+1)
   real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
   ! parameter for the source
@@ -50,6 +51,7 @@ program opt22
   integer :: ix_rec(1),iz_rec(1)
   integer(2) head(1:120)
   character(80) :: routine
+  
   logical,parameter :: dummylog = .false.
   ! switch
   logical,parameter :: optimise = .true.
@@ -69,9 +71,9 @@ program opt22
   call datainit( maxnz,maxnz,mu )
   call datainit( maxnz,31,work )
   !computing the intermediate parameters
-  call calstruct( maxnz,rrho,dx,dz,nx,nz,rho )
-  call calstruct( maxnz,llam,dx,dz,nx,nz,lam )
-  call calstruct( maxnz,mmu,dx,dz,nx,nz,mu )
+  call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
+  call calstruct( maxnz,vpfile,dx,dz,nx,nz,lam )
+  call calstruct( maxnz,vsfile,dx,dz,nx,nz,mu )
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -141,7 +143,7 @@ program opt22
         
         !call create_color_image(ux(1:nx,1:nz),nx,nz,it,isx,isz,ix_rec,iz_rec,1,0, &
         !     dummylog,dummylog,dummylog,dummylog,1)
-        call create_color_image(uz(1:nx,1:nz),nx,nz,it,isx,isz,ix_rec,iz_rec,1,0, &
+        call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
              dummylog,dummylog,dummylog,dummylog,2)
         
         
@@ -158,10 +160,10 @@ program opt22
 end program opt22
 
 
-subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,rho,lam,mu,tp,ts,nrx,nrz )
+subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,tp,ts,nrx,nrz )
   
   integer maxnz,nt,nx,nz,nrx,nrz
-  real*8 dt,dx,dz,rho(*),lam(*),mu(*),tp,ts
+  real*8 dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
   character*80 tmpfile,dummy
   character*80 vpfile,vsfile,rhofile
   tmpfile='tmpfileforwork'
@@ -216,31 +218,18 @@ subroutine datainit( nx,nz,ux )
 end subroutine datainit
 
 
-subroutine calstruct( maxnz,rrho,dx,dz,nx,nz,rho )
+subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
 
   integer maxnz,nx,nz
-  real*8 rrho(4),dx,dz,rho(maxnz+1,*)
+  real*8 dx,dz,rho(maxnz+1,*)
   integer i,j,k,nox(6),noz(6)
   real*8 x,z,xmax,zmax,trho,coef1,coef2
-  
-  data nox / 0, 1, 0, 2, 1, 0 /
-  data noz / 0, 0, 1, 0, 1, 2 /
-  
-  xmax = dx * nx
-  zmax = dz * nz
-  do j=1,nz+1
-     z = dble(j-1) * dz
-     coef2 = z / zmax
-     do i=1,nx+1
-        x = dble(i-1) * dx
-        coef1 = x / xmax
-        trho = 0.d0
-        do k=1,6
-           trho = trho + rrho(k) * coef1**nox(k) * coef2**noz(k)
-        enddo
-        rho(i,j) = trho
-     enddo
-  enddo
+  character*80 file2d
+
+
+  open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)
+  read(1,rec=1) rho(1:nx+1,1:nz+1)
+  close(1)
   
   return
 end subroutine calstruct
@@ -398,6 +387,9 @@ subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
      fx(isx,isz) = 0.d0
      fz(isx,isz) = 0.d0
   endif
+
+  ! NF for point source
+  fz(isx,isx)=0.d0
   
   return
 end subroutine calf
