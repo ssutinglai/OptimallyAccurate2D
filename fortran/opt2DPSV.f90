@@ -7,6 +7,7 @@ program opt22
   !						1997.6  N.Takeuchi
   !                                               2016.5. N.Fuji
   !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  implicit none
   integer maxnz
   parameter ( maxnz = 1000 )
   !
@@ -56,9 +57,12 @@ program opt22
   logical,parameter :: dummylog = .false.
   ! switch
   logical,parameter :: optimise = .true.
+
+  real*8 f0,t0
+
   
   ! reading the parameter files
-  call pinput( maxnz,nt,nx,nz,dt,dx,dz,rrho,llam,mmu,tp,ts,nrx,nrz )
+  call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
 
   ! Initializing the data
   call datainit( maxnz,maxnz,ux )
@@ -72,9 +76,11 @@ program opt22
   call datainit( maxnz,maxnz,mu )
   call datainit( maxnz,31,work )
   !computing the intermediate parameters
+
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
+  call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -83,24 +89,31 @@ program opt22
   
   call datainit( maxnz,maxnz,lam )
   call datainit( maxnz,maxnz,mu )
-  ist = dnint( 2 * tp / dt )
-  isx = nx / 2 + 1
-  isz = nz / 2 + 1
+  !ist = dnint( 2 * tp / dt )
+  !isx = nx / 2 + 1
+  !isz = nz / 2 + 1
+
+  ist=nt/2
   
+  isx = 30
+  isz = 4
+  
+
+
   t=0.d0
   do it=0,nt
-     call calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),tp,ts,lam,mu )
-    
+     
+     call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
      write(13,*) t, lam(isx,isz),mu(isx,isz)
      t=t+dt
   enddo
-  !stop
+  
   
   
   t = 0.d0
-  !write(6,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+  write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
   do it=0,nt
-     call calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),tp,ts,lam,mu )
+     call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,ts,lam,mu )
      ! evaluating the next step
      call calstep( maxnz,nx,nz, &
           e1, e2, e3, e4, e5, e6, e7, e8, &
@@ -113,10 +126,10 @@ program opt22
           work(1,23),work(1,24),work(1,28),work(1,29), optimise)
      ! increment of t
      t = t + dt
-     !write(6,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+     write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      
      
-     write(*,*) it, ' of ', nt
+     !write(*,*) it, ' of ', nt
      if(mod(it,IT_DISPLAY) == 0)then
         !
         !head=0
@@ -161,8 +174,10 @@ program opt22
 end program opt22
 
 
-subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,tp,ts,nrx,nrz )
+subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
   
+  implicit none
+  real*8 f0,t0
   integer maxnz,nt,nx,nz,nrx,nrz
   real*8 dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
   character*80 tmpfile,dummy
@@ -178,7 +193,7 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,tp,ts,nrx,nrz )
 110 format(a80)
   if ( dummy(1:1).eq.'c' ) goto 100
   if ( dummy(1:3).eq.'end' ) goto 120
-  write(11,*) dummy
+  write(11,110) dummy
   goto 100
 120 continue
   ! temporary file close
@@ -191,10 +206,11 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,tp,ts,nrx,nrz )
   if ( nx.gt.maxnz ) pause 'nx is too large (pinput).'
   if ( nz.gt.maxnz ) pause 'nz is too large (pinput).'
   read(11,*) dt,dx,dz
-  read(11,*) vpfile
-  read(11,*) vsfile
-  read(11,*) rhofile
-  read(11,*) tp,ts
+111 format(a80)
+  read(11,111) vpfile
+  read(11,111) vsfile
+  read(11,111) rhofile
+  read(11,*) f0,t0
   read(11,*) nrx,nrz
   ! temporary file close
   close(11)
@@ -409,12 +425,46 @@ subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
   endif
 
   ! NF for point source
-  fz(isx,isx)=0.d0
+  !fx(isx,isx)=0.d0
   
   return
 end subroutine calf
 
+subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 
+  implicit none
+  real*8 pi
+  parameter ( pi=3.1415926535897932d0 )
+  integer maxnz,it,ist,isx,isz
+  real*8 t,dt,dx,dz,rho,f0,t0,fx(maxnz+1,*),fz(maxnz+1,*)
+  real*8 b,a,factor
+  
+  factor=1.d3
+  
+  if ( it.le.ist ) then
+
+     a = pi*pi*f0*f0*(t-t0)*(t-t0)
+     !print *,pi, t,t0,t-t0,a
+     !print *, f0,t0,a
+     ! Ricker source time function (second derivative of a Gaussian)
+     fx(isx,isz) = factor * (1.d0 - 2.d0*a)*exp(-a);
+
+     fx(isx,isz) = fx(isx,isz) * dt * dt / rho
+     fz(isx,isz) = fx(isx,isz)
+     if ( (it.eq.0).or.(it.eq.ist) ) then
+        fx(isx,isz) = fx(isx,isz) / 2.d0
+        fz(isx,isz) = fz(isx,isz) / 2.d0
+     endif
+  else
+     fx(isx,isz) = 0.d0
+     fz(isx,isz) = 0.d0
+  endif
+
+  !NF for point source
+  fx(isx,isx)=0.d0
+  
+  return
+end subroutine calf2
 
 
 subroutine calstep( maxnz,nx,nz, &
@@ -724,7 +774,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
         
         !       define data as vector component normalized to [-1:1] and rounded to nearest integer
         !       keeping in mind that amplitude can be negative
-        normalized_value = image_data_2D(ix,iy) / max_amplitude
+        normalized_value = image_data_2D(ix,iy) / max_amplitude /2.d0
         
         !       suppress values that are outside [-1:+1] to avoid small edge effects
         if(normalized_value < -1.d0) normalized_value = -1.d0

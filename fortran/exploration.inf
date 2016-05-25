@@ -3,12 +3,12 @@ c Gridding
    2000  399 199  nt,nx,nz
    2.e-3 2.d-2 2.d-2     dt,dx,dz
 c Structure
-2d_start.vp
-2d_start.vs
-2d_start.rho
+./2d_start.vp
+./2d_start.vs
+./2d_start.rho
 c Source
-  1.d0/6.5d0  5.d-3  tp,ts
+  6.5d0 2.d-1   f0,t0
 c Receiver
-  61   101   nrx,nrz
+   140 5    nrx,nrz
 c
 end
