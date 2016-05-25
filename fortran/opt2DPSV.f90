@@ -56,7 +56,7 @@ program opt22
   
   logical,parameter :: dummylog = .false.
   ! switch
-  logical,parameter :: optimise = .true.
+  logical,parameter :: optimise = .false.
 
   real*8 f0,t0
 
@@ -693,9 +693,10 @@ subroutine calstep( maxnz,nx,nz, &
                + f20(ix,iz) * work10(ix,1)
        enddo
     enddo
+     ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+     uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
  endif
- !ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
- !uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
+
  ! swapping u1 & u2
  do iz=2,nz
     do ix=2,nx
