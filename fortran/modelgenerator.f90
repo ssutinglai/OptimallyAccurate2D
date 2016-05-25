@@ -120,6 +120,7 @@ program generator
         fullro(i,j) = dval
      enddo
   enddo
+  write(3,rec=1) fullro(:,:)
 
  close (1,status='keep')
  close (2,status='keep')

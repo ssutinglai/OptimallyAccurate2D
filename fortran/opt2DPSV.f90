@@ -39,6 +39,7 @@ program opt22
   character(80) :: vpfile, vsfile, rhofile
   real*8 rho(maxnz+1,maxnz+1)
   real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  real*8 vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
   ! parameter for the source
   real*8 tp,ts
   ! parameter for the receiver
@@ -72,8 +73,8 @@ program opt22
   call datainit( maxnz,31,work )
   !computing the intermediate parameters
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
-  call calstruct( maxnz,vpfile,dx,dz,nx,nz,lam )
-  call calstruct( maxnz,vsfile,dx,dz,nx,nz,mu )
+  call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
+  call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -222,17 +223,35 @@ subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
 
   integer maxnz,nx,nz
   real*8 dx,dz,rho(maxnz+1,*)
+  real(kind(1.0)) rrho(maxnz+1,maxnz+1)
   integer i,j,k,nox(6),noz(6)
   real*8 x,z,xmax,zmax,trho,coef1,coef2
   character*80 file2d
 
 
   open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)
-  read(1,rec=1) rho(1:nx+1,1:nz+1)
+  read(1,rec=1) rrho(1:nx+1,1:nz+1)
   close(1)
+  rho(1:nx+1,1:nz+1)=1.d-3*rrho(1:nx+1,1:nz+1)
   
   return
 end subroutine calstruct
+
+subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
+  implicit none
+  
+  integer i,j,maxnz,nx,nz
+  real*8 rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
+  real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+
+  do i=1,nx+1
+     do j=1,nz+1
+        mu(i,j)=rho(i,j)*vs(i,j)*vs(i,j)
+        lam(i,j)=rho(i,j)*vp(i,j)*vp(i,j)-2*mu(i,j)
+     enddo
+  enddo
+end subroutine calstruct2
+  
 
 
 subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
