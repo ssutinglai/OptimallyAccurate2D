@@ -117,10 +117,10 @@ program generator
         elseif (pval > 2150) then
            dval = 1740.E0*(pval/1000.E0)**(0.25E0)
         endif
-        fullro(i,j) = dval
+        fullrho(i,j) = dval
      enddo
   enddo
-  write(3,rec=1) fullro(:,:)
+  write(3,rec=1) fullrho(:,:)
 
  close (1,status='keep')
  close (2,status='keep')

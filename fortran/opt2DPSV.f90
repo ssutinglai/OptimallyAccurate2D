@@ -220,14 +220,15 @@ end subroutine datainit
 
 
 subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
-
+  implicit none
   integer maxnz,nx,nz
   real*8 dx,dz,rho(maxnz+1,*)
   real(kind(1.0)) rrho(maxnz+1,maxnz+1)
   integer i,j,k,nox(6),noz(6)
   real*8 x,z,xmax,zmax,trho,coef1,coef2
+  integer recl_size
   character*80 file2d
-
+  recl_size=kind(1.0)*(nx+1)*(nz+1)
 
   open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)
   read(1,rec=1) rrho(1:nx+1,1:nz+1)
