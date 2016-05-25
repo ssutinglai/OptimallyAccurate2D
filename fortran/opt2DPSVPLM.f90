@@ -12,6 +12,8 @@ program opt22
   integer, parameter :: maxnz = 800 
   integer, parameter :: maxnt = 2000
   double precision, parameter :: pi=3.1415926535897932d0 
+  double precision, parameter :: ZERO = 0.d0
+    
   !
   ! parameters for the gridding
   double precision dt,dx,dz
@@ -145,9 +147,13 @@ program opt22
   
   ! PML definition ! NF should clean out z and y problems !!! 
   call definePML(NPOINTS_PML,dx,dz,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
-  call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,nx-1,nz-1,dx,dy,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+  call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,maxnz, &
+       nx-1,nz-1,dx,dz,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
+       d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
 
-  ! Courant number calculation
+
+  ! check the Courant stability condition for the explicit time scheme
+  ! R. Courant et K. O. Friedrichs et H. Lewy (1928)
   cp=maxval(vp)
   Courant_number = cp * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
   print *, 'Courant number is', Courant_number
@@ -164,6 +170,18 @@ program opt22
   !ist = dnint( 2 * tp / dt )
   !isx = nx / 2 + 1
   !isz = nz / 2 + 1
+
+
+  ! PML
+  memory_dvx_dx(:,:) = ZERO
+  memory_dvx_dy(:,:) = ZERO
+  memory_dvy_dx(:,:) = ZERO
+  memory_dvy_dy(:,:) = ZERO
+  memory_dsigmaxx_dx(:,:) = ZERO
+  memory_dsigmayy_dy(:,:) = ZERO
+  memory_dsigmaxy_dx(:,:) = ZERO
+  memory_dsigmaxy_dy(:,:) = ZERO
+
 
   ist=nt/2
   
@@ -235,11 +253,6 @@ program opt22
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
   
-        
-        
-        
-        
-        
      endif
   enddo
   
@@ -247,8 +260,7 @@ program opt22
 
   call system(commandline)
   
-  ! 
-  !./ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p wavefield.mp4
+
 
 
   !
@@ -940,7 +952,8 @@ end subroutine create_color_image
 
 subroutine definePML(NPOINTS_PML,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
   implicit none
-  integer NPOINTS_PML,NPOWER
+  integer NPOINTS_PML
+  double precision :: NPOWER
   double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,d0_x,d0_y,cp
 
   !--- define profile of absorption in PML region
@@ -962,12 +975,21 @@ subroutine definePML(NPOINTS_PML,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,R
 end subroutine definePML
 
 
-subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,NX,NYdx,dy,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML, &
+     maxnz,NX,NY,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
+     d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+
+  logical :: USE_PML_XMIN, USE_PML_XMAX, USE_PML_YMIN, USE_PML_YMAX
+  double precision :: ALPHA_MAX_PML
+  integer :: NX, NY
+  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginrigh
+
+  double precision, dimension(maxnz+1) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
+  double precision, dimension(maxnz+1) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
+  double precision, parameter :: ZERO = 0.d0
 
 
-
-
-    d_x(:) = ZERO
+  d_x(:) = ZERO
   K_x(:) = 1.d0
   alpha_x(:) = ZERO
   a_x(:) = ZERO
@@ -1061,3 +1083,6 @@ subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_
 ! this to avoid division by zero outside the PML
     if(abs(d_y(j)) > 1.d-6) a_y(j) = d_y(j) * (b_y(j) - 1.d0) / (K_y(j) * (d_y(j) + K_y(j) * alpha_y(j)))
   enddo
+
+
+end subroutine setPML
