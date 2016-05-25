@@ -36,7 +36,8 @@ program generator
 ! layer_thikness(6)=180;vp(6)=2800;vs(6)=1750;
 ! layer_thikness(7)=200;vp(7)=2900;vs(7)=1800;
 
- layer_thikness(1)=40;vp(1)=1500;vs(1)=0.e0;
+ !layer_thikness(1)=40;vp(1)=1500;vs(1)=0.e0;
+ layer_thikness(1)=40;vp(1)=2200;vs(1)=1400;
  layer_thikness(2)=90;vp(2)=2300;vs(2)=1450;
  layer_thikness(3)=140;vp(3)=2500;vs(3)=1550;
  layer_thikness(4)=180;vp(4)=2700;vs(4)=1700;
