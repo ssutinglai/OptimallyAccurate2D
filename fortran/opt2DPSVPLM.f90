@@ -8,8 +8,10 @@ program opt22
   !                                                     2016.5. N.Fuji
   
   implicit none
-  integer maxnz
-  parameter ( maxnz = 800 )
+  
+  integer, parameter :: maxnz = 800 
+  integer, parameter :: maxnt = 2000
+  double precision, parameter :: pi=3.1415926535897932d0 
   !
   ! parameters for the gridding
   double precision dt,dx,dz
@@ -41,6 +43,7 @@ program opt22
   double precision :: rho(maxnz+1,maxnz+1)
   double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
   double precision :: vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
+  double precision :: cp ! maxvalue of vp
   
   double precision Courant_number
   ! parameter for the receiver
@@ -72,13 +75,13 @@ program opt22
 
   ! for evolution of total energy in the medium
   double precision epsilon_xx,epsilon_yy,epsilon_xy
-  double precision, dimension(NSTEP) :: total_energy_kinetic,total_energy_potential
+  double precision, dimension(maxnt+1) :: total_energy_kinetic,total_energy_potential
   
   ! power to compute d0 profile
   double precision, parameter :: NPOWER = 2.d0
 
   double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
-  double precision, parameter :: ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
+  double precision :: ALPHA_MAX_PML
   
 
   ! could declare these arrays in PML only to save a lot of memory, but proof of concept only here
@@ -103,8 +106,9 @@ program opt22
       value_dsigmaxy_dy
 
   ! 1D arrays for the damping profiles
-  double precision, dimension(NX) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
-  double precision, dimension(NY) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
+
+  double precision, dimension(maxnz+1) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
+  double precision, dimension(maxnz+1) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
 
   double precision :: thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,yoriginbottom,yorigintop
   double precision :: Rcoef,d0_x,d0_y,xval,yval,abscissa_in_PML,abscissa_normalized
@@ -116,6 +120,8 @@ program opt22
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
 
+  ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
+  
   ! Initializing the data
   call datainit( maxnz,maxnz,ux )
   call datainit( maxnz,maxnz,uz )
@@ -127,16 +133,24 @@ program opt22
   call datainit( maxnz,maxnz,lam )
   call datainit( maxnz,maxnz,mu )
   call datainit( maxnz,31,work )
+
+  
   !computing the intermediate parameters
 
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
 
-  ! Courant number calculation
-  Courant_number = maxval(vp) * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
-  print *, 'Courant number is', Courant_number
+
   
+  ! PML definition ! NF should clean out z and y problems !!! 
+  call definePML(NPOINTS_PML,dx,dz,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
+  call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,nx-1,nz-1,dx,dy,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+
+  ! Courant number calculation
+  cp=maxval(vp)
+  Courant_number = cp * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
+  print *, 'Courant number is', Courant_number
 
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
@@ -924,3 +938,126 @@ call system(system_command1)
 call system(system_command2)
 end subroutine create_color_image
 
+subroutine definePML(NPOINTS_PML,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
+  implicit none
+  integer NPOINTS_PML,NPOWER
+  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,d0_x,d0_y,cp
+
+  !--- define profile of absorption in PML region
+
+  ! thickness of the PML layer in meters
+  thickness_PML_x = NPOINTS_PML * DELTAX
+  thickness_PML_y = NPOINTS_PML * DELTAY
+  
+  ! reflection coefficient (INRIA report section 6.1) http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
+  Rcoef = 0.001d0
+  
+  ! check that NPOWER is okay
+  if(NPOWER < 1) stop 'NPOWER must be greater than 1'
+  
+  ! compute d0 from INRIA report section 6.1 http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
+  d0_x = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_x)
+  d0_y = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_y)
+  
+end subroutine definePML
+
+
+subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,NX,NYdx,dy,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+
+
+
+
+    d_x(:) = ZERO
+  K_x(:) = 1.d0
+  alpha_x(:) = ZERO
+  a_x(:) = ZERO
+
+  d_y(:) = ZERO
+  K_y(:) = 1.d0
+  alpha_y(:) = ZERO
+  a_y(:) = ZERO
+
+! damping in the X direction
+
+! origin of the PML layer (position of right edge minus thickness, in meters)
+  xoriginleft = thickness_PML_x
+  xoriginright = (NX-1)*DELTAX - thickness_PML_x
+
+  do i = 1,NX
+
+! abscissa of current grid point along the damping profile
+    xval = DELTAX * dble(i-1)
+
+!---------- left edge
+    if(USE_PML_XMIN) then
+
+! define damping profile at the grid points
+      abscissa_in_PML = xoriginleft - xval
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_x
+        d_x(i) = d0_x * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+
+    endif
+
+!---------- right edge
+    if(USE_PML_XMAX) then
+
+! define damping profile at the grid points
+      abscissa_in_PML = xval - xoriginright
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_x
+        d_x(i) = d0_x * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+! just in case, for -5 at the end
+    if(alpha_x(i) < ZERO) alpha_x(i) = ZERO
+    b_x(i) = exp(- (d_x(i) / K_x(i) + alpha_x(i)) * DELTAT)
+! this to avoid division by zero outside the PML
+    if(abs(d_x(i)) > 1.d-6) a_x(i) = d_x(i) * (b_x(i) - 1.d0) / (K_x(i) * (d_x(i) + K_x(i) * alpha_x(i)))
+  enddo
+
+! damping in the Y direction
+
+! origin of the PML layer (position of right edge minus thickness, in meters)
+  yoriginbottom = thickness_PML_y
+  yorigintop = NY*DELTAY - thickness_PML_y
+
+  do j = 1,NY
+! abscissa of current grid point along the damping profile
+    yval = DELTAY * dble(j-1)
+!---------- bottom edge
+    if(USE_PML_YMIN) then
+! define damping profile at the grid points
+      abscissa_in_PML = yoriginbottom - yval
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_y
+        d_y(j) = d0_y * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+
+!---------- top edge
+    if(USE_PML_YMAX) then
+! define damping profile at the grid points
+      abscissa_in_PML = yval - yorigintop
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_y
+        d_y(j) = d0_y * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+    b_y(j) = exp(- (d_y(j) / K_y(j) + alpha_y(j)) * DELTAT)
+! this to avoid division by zero outside the PML
+    if(abs(d_y(j)) > 1.d-6) a_y(j) = d_y(j) * (b_y(j) - 1.d0) / (K_y(j) * (d_y(j) + K_y(j) * alpha_y(j)))
+  enddo
