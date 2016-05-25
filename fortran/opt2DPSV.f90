@@ -51,8 +51,12 @@ program opt22
   integer(2) head(1:120)
   character(80) :: routine
   logical,parameter :: dummylog = .false.
+  ! switch
+  logical,parameter :: optimise = .true.
+  
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,rrho,llam,mmu,tp,ts,nrx,nrz )
+
   ! Initializing the data
   call datainit( maxnz,maxnz,ux )
   call datainit( maxnz,maxnz,uz )
@@ -103,7 +107,7 @@ program opt22
           ux,uz,ux1,ux2,uz1,uz2,isx,isz,lam,mu, &
           work(1,1), work(1,5), work(1,9),work(1,13), &
           work(1,17),work(1,18),work(1,20),work(1,21), &
-          work(1,23),work(1,24),work(1,28),work(1,29) )
+          work(1,23),work(1,24),work(1,28),work(1,29), optimise)
      ! increment of t
      t = t + dt
      !write(6,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
@@ -112,31 +116,31 @@ program opt22
      write(*,*) it, ' of ', nt
      if(mod(it,IT_DISPLAY) == 0)then
         !
-        head=0
-        head(58) = nx
-        head(59) = dz * 1E3
-        snapux=0.e0
-        snapuz=0.e0
-        snapux(1:nx,1:nz) = ux(1:nx,1:nz)
-        snapuz(1:nx,1:nz) = uz(1:nx,1:nz)
-        write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUx.su'
-        open(21,file=routine,access='stream')
-        do j = 1,nx,1
-           write(21) head,(real(snapux(k,j)),k=1,nz)
-        enddo
-        close(21)
-        write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUz.su'
-        open(21,file=routine,access='stream')
-        do j = 1,nx,1
-           write(21) head,(real(snapuz(k,j)),k=1,nz)
-        enddo
-        close(21)
+        !head=0
+        !head(58) = nx
+        !head(59) = dz * 1E3
+        !snapux=0.e0
+        !snapuz=0.e0
+        !snapux(1:nx,1:nz) = ux(1:nx,1:nz)
+        !snapuz(1:nx,1:nz) = uz(1:nx,1:nz)
+        !write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUx.su'
+        !open(21,file=routine,access='stream')
+        !do j = 1,nx,1
+        !   write(21) head,(real(snapux(k,j)),k=1,nz)
+        !enddo
+        !close(21)
+        !write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUz.su'
+        !open(21,file=routine,access='stream')
+        !do j = 1,nx,1
+        !   write(21) head,(real(snapuz(k,j)),k=1,nz)
+        !enddo
+        !close(21)
         
         ix_rec(1)=nrx
         iz_rec(1)=nrz
         
-        call create_color_image(ux(1:nx,1:nz),nx,nz,it,isx,isz,ix_rec,iz_rec,1,0, &
-             dummylog,dummylog,dummylog,dummylog,1)
+        !call create_color_image(ux(1:nx,1:nz),nx,nz,it,isx,isz,ix_rec,iz_rec,1,0, &
+        !     dummylog,dummylog,dummylog,dummylog,1)
         call create_color_image(uz(1:nx,1:nz),nx,nz,it,isx,isz,ix_rec,iz_rec,1,0, &
              dummylog,dummylog,dummylog,dummylog,2)
         
@@ -146,6 +150,8 @@ program opt22
         
      endif
   enddo
+
+
   
 
   !
@@ -157,8 +163,9 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,rho,lam,mu,tp,ts,nrx,nrz )
   integer maxnz,nt,nx,nz,nrx,nrz
   real*8 dt,dx,dz,rho(*),lam(*),mu(*),tp,ts
   character*80 tmpfile,dummy
+  character*80 vpfile,vsfile,rhofile
+  tmpfile='tmpfileforwork'
   
-  data tmpfile / '/tmp/work' /
   
   ! temporary file open
   open( unit=11, file=tmpfile, status='unknown' )
@@ -168,7 +175,7 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,rho,lam,mu,tp,ts,nrx,nrz )
 110 format(a80)
   if ( dummy(1:1).eq.'c' ) goto 100
   if ( dummy(1:3).eq.'end' ) goto 120
-  !write(11,*) dummy
+  write(11,*) dummy
   goto 100
 120 continue
   ! temporary file close
@@ -181,9 +188,9 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,rho,lam,mu,tp,ts,nrx,nrz )
   if ( nx.gt.maxnz ) pause 'nx is too large (pinput).'
   if ( nz.gt.maxnz ) pause 'nz is too large (pinput).'
   read(11,*) dt,dx,dz
-  read(11,*) rho(1),rho(2),rho(3),rho(4),rho(5),rho(6)
-  read(11,*) lam(1),lam(2),lam(3),lam(4),lam(5),lam(6)
-  read(11,*) mu(1),mu(2),mu(3),mu(4),mu(5),mu(6)
+  read(11,*) vpfile
+  read(11,*) vsfile
+  read(11,*) rhofile
   read(11,*) tp,ts
   read(11,*) nrx,nrz
   ! temporary file close
@@ -406,7 +413,7 @@ subroutine calstep( maxnz,nx,nz, &
      ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
      work1,work2,work3,work4, &
      work5,work6,work7,work8, &
-     work9,work10,work11,work12 )
+     work9,work10,work11,work12,optimise )
 
   integer maxnz,nx,nz,isx,isz
   real*8 ux(maxnz+1,*),ux1(maxnz+1,*),ux2(maxnz+1,*)
@@ -422,17 +429,19 @@ subroutine calstep( maxnz,nx,nz, &
   real*8  f7(maxnz+1,*), f8(maxnz+1,*)
   real*8 f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
   real*8 f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-	real*8 f19(maxnz+1,*),f20(maxnz+1,*)
- real*8 fx(maxnz+1,*),fz(maxnz+1,*)
- real*8 work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
- real*8 work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
- real*8 work5(*),work6(maxnz+1,0:1)
- real*8 work7(*),work8(maxnz+1,0:1)
- real*8 work9(*),work10(maxnz+1,-2:1)
- real*8 work11(*),work12(maxnz+1,-1:2)
- integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
- 
- ! predicting the wavefield
+  real*8 f19(maxnz+1,*),f20(maxnz+1,*)
+  real*8 fx(maxnz+1,*),fz(maxnz+1,*)
+  real*8 work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
+  real*8 work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
+  real*8 work5(*),work6(maxnz+1,0:1)
+  real*8 work7(*),work8(maxnz+1,0:1)
+  real*8 work9(*),work10(maxnz+1,-2:1)
+  real*8 work11(*),work12(maxnz+1,-1:2)
+  integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
+  logical optimise
+
+
+  ! predicting the wavefield
  do iz=2,nz
     do ix=2,nx
        ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &
@@ -457,170 +466,174 @@ subroutine calstep( maxnz,nx,nz, &
  enddo
  ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
  uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
- ! correcting the wavefield
- !
- do ix=2,nx
-    iz1 = 2
-    iz2 = 3
-    work1(ix,-2) = 0.d0
-    work1(ix,-1) = 0.d0
-    work1(ix,0) = 0.d0
-    work1(ix,1) = ux(ix,iz1) - 2.d0 * ux1(ix,iz1) + ux2(ix,iz1)
-    work2(ix,-1) = 0.d0
-    work2(ix,0) = 0.d0
-    work2(ix,1) = uz(ix,iz1) - 2.d0 * uz1(ix,iz1) + uz2(ix,iz1)
-    work2(ix,2) = uz(ix,iz2) - 2.d0 * uz1(ix,iz2) + uz2(ix,iz2)
-    work3(ix,-2) = 0.d0
-    work3(ix,-1) = 0.d0
-    work3(ix,0) = 0.d0
-    work3(ix,1) = work1(ix,1) + 12.d0 * ux1(ix,iz1)
-    work4(ix,-1) = 0.d0
-    work4(ix,0) = 0.d0
-    work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
-    work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
- enddo
 
- do ix=1,nx+1
-    ix11 = max0( ix-1,1 )
-    ix12 = min0( ix+1,nx+1 )
-    ix21 = max0( ix-2,1 )
-    ix22 = min0( ix+2,nx+1 )
-    work6(ix,0) = 0.d0
-    work6(ix,1) = &
-         (           ( -work3(ix11,1) ) &
-         + 10.d0 * ( -work3(ix,  1) ) & 
-         +         ( -work3(ix12,1) ) &
-         )
-    work8(ix,0) = 0.d0
-    work8(ix,1) = &
-         (           ( -work4(ix11,1) ) &
-         + 10.d0 * ( -work4(  ix,1) ) &
-         +         ( -work4(ix12,1) ) &
-         )
-    work10(ix,-2) = 0.d0
-    work10(ix,-1) = 0.d0
-    work10(ix,0) = 0.d0
-    work10(ix,1)   = (          work3(ix21,1) - 9.d0 * work3(ix11,1) &
-         + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
-    work12(ix,-1) = 0.d0
-    work12(ix,0) = 0.d0
-    work12(ix,1) = ( - 5.d0 * work4(ix11,1) - 3.d0 * work4(  ix,1) &
-         + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
-    work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
-         + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
  
- enddo
- 
- do iz=2,nz
-    iz1 = iz + 1
-    iz2 = min0( iz+2, nz+1 )
+ if(optimise) then
+    ! correcting the wavefield
+    !
     do ix=2,nx
-       work1(ix,-2) = work1(ix,-1)
-       work1(ix,-1) = work1(ix,0)
-       work1(ix,0) = work1(ix,1)
+       iz1 = 2
+       iz2 = 3
+       work1(ix,-2) = 0.d0
+       work1(ix,-1) = 0.d0
+       work1(ix,0) = 0.d0
        work1(ix,1) = ux(ix,iz1) - 2.d0 * ux1(ix,iz1) + ux2(ix,iz1)
-       work2(ix,-1) = work2(ix,0)
-       work2(ix,0) = work2(ix,1)
-       work2(ix,1) = work2(ix,2)
+       work2(ix,-1) = 0.d0
+       work2(ix,0) = 0.d0
+       work2(ix,1) = uz(ix,iz1) - 2.d0 * uz1(ix,iz1) + uz2(ix,iz1)
        work2(ix,2) = uz(ix,iz2) - 2.d0 * uz1(ix,iz2) + uz2(ix,iz2)
-       work3(ix,-2) = work3(ix,-1)
-       work3(ix,-1) = work3(ix,0)
-       work3(ix,0) = work3(ix,1)
+       work3(ix,-2) = 0.d0
+       work3(ix,-1) = 0.d0
+       work3(ix,0) = 0.d0
        work3(ix,1) = work1(ix,1) + 12.d0 * ux1(ix,iz1)
-       work4(ix,-1) = work4(ix,0)
-       work4(ix,0) = work4(ix,1)
-       work4(ix,1) = work4(ix,2)
+       work4(ix,-1) = 0.d0
+       work4(ix,0) = 0.d0
+       work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
        work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
     enddo
+    
     do ix=1,nx+1
        ix11 = max0( ix-1,1 )
        ix12 = min0( ix+1,nx+1 )
        ix21 = max0( ix-2,1 )
        ix22 = min0( ix+2,nx+1 )
-       work5(ix) =   (           ( work3(ix11,-1)-work3(ix,-1) ) &
-            + 10.d0 * ( work3(ix11, 0)-work3(ix, 0) ) &
-            +         ( work3(ix11, 1)-work3(ix, 1) ) )
-       work6(ix,0) = work6(ix,1)
-       work6(ix,1) =  (  ( work3(ix11,0)-work3(ix11,1) ) &
-            + 10.d0 * ( work3(  ix,0)-work3(ix,  1) ) &
-            +         ( work3(ix12,0)-work3(ix12,1) ) )
-
-       work7(ix) =( ( work4(ix11,-1)-work4(ix,-1) ) &
-         + 10.d0 * ( work4(ix11, 0)-work4(ix, 0) ) &
-         +         ( work4(ix11, 1)-work4(ix, 1) ))
-       
-       work8(ix,0) = work8(ix,1)
-       work8(ix,1) =  (           ( work4(ix11,0)-work4(ix11,1) ) &
-            + 10.d0 * ( work4(  ix,0)-work4(  ix,1) ) &
-            +         ( work4(ix12,0)-work4(ix12,1) ))
-
-       work9(ix) = (          work3(ix,-2) - 9.d0 * work3(ix,-1) &
-            + 3.d0 * work3(ix,0)  + 5.d0 * work3(ix,1))
-
-       work10(ix,-2) = work10(ix,-1)
-       work10(ix,-1) = work10(ix,0)
-       work10(ix,0) = work10(ix,1)
-       work10(ix,1) = ( work3(ix21,1) - 9.d0 * work3(ix11,1) &
+       work6(ix,0) = 0.d0
+       work6(ix,1) = &
+            (           ( -work3(ix11,1) ) &
+            + 10.d0 * ( -work3(ix,  1) ) & 
+            +         ( -work3(ix12,1) ) &
+            )
+       work8(ix,0) = 0.d0
+       work8(ix,1) = &
+            (           ( -work4(ix11,1) ) &
+            + 10.d0 * ( -work4(  ix,1) ) &
+            +         ( -work4(ix12,1) ) &
+            )
+       work10(ix,-2) = 0.d0
+       work10(ix,-1) = 0.d0
+       work10(ix,0) = 0.d0
+       work10(ix,1)   = (          work3(ix21,1) - 9.d0 * work3(ix11,1) &
             + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
- 
-       work11(ix) = ( - 5.d0 * work4(ix,-1)  - 3.d0 * work4(ix,0) &
-            + 9.d0 * work4(ix, 1)  -        work4(ix,2) )
-
-       work12(ix,-1) = work12(ix,0)
-       work12(ix,0) = work12(ix,1)
-       work12(ix,1) = work12(ix,2)
+       work12(ix,-1) = 0.d0
+       work12(ix,0) = 0.d0
+       work12(ix,1) = ( - 5.d0 * work4(ix11,1) - 3.d0 * work4(  ix,1) &
+            + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
        work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
-            + 9.d0 * work4(ix12,2) -        work4(ix22,2))
-
+            + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
+       
     enddo
     
-    do ix=2,nx
-       ix21 = max0( ix-2,1 )
-       ix22 = min0( ix+2,nx+1 )
-       ux(ix,iz) = ux(ix,iz) &
-            + ( &
-            - (           (   work1(ix-1,-1) + work1(ix-1,1) &
-            + work1(ix+1,-1) + work1(ix+1,1) ) &
-            + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
-            + work1(  ix, 1) + work1(ix+1, 0) ) &
-            + 100.d0 * work1(ix,0) ) &
-            + e1(ix,iz) * work5(ix) &
-            - e2(ix,iz) * work5(ix+1) &
-            + e3(ix,iz) * work6(ix,0) &
-            - e4(ix,iz) * work6(ix,1) &
-            ) / 144.d0 &
-            + e13(ix,iz) * work11(ix-1) &
-            + e14(ix,iz) * work11(ix) &
-            + e15(ix,iz) * work11(ix+1) &
-            + e16(ix,iz) * work11(ix22) &
-            + e17(ix,iz) * work12(ix,-1) &
-            + e18(ix,iz) * work12(ix,0) &
-            + e19(ix,iz) * work12(ix,1) &
-            + e20(ix,iz) * work12(ix,2)
-       uz(ix,iz) = uz(ix,iz) &
-            + ( &
-            - (           (   work2(ix-1,-1) + work2(ix-1,1) &
-            + work2(ix+1,-1) + work2(ix+1,1) ) &
-            + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
-            + work2(  ix, 1) + work2(ix+1, 0) ) &
-            + 100.d0 * work2(ix,0) ) &
-            + f1(ix,iz) * work7(ix) &
-            - f2(ix,iz) * work7(ix+1) &
-            + f3(ix,iz) * work8(ix,0) &
-            - f4(ix,iz) * work8(ix,1) &
-            ) / 144.d0 &
-            + f13(ix,iz) * work9(ix21) &
-            + f14(ix,iz) * work9(ix-1) &
-            + f15(ix,iz) * work9(ix) &
-            + f16(ix,iz) * work9(ix+1) &
-            + f17(ix,iz) * work10(ix,-2) &
-            + f18(ix,iz) * work10(ix,-1) &
-            + f19(ix,iz) * work10(ix,0) &
-            + f20(ix,iz) * work10(ix,1)
+    do iz=2,nz
+       iz1 = iz + 1
+       iz2 = min0( iz+2, nz+1 )
+       do ix=2,nx
+          work1(ix,-2) = work1(ix,-1)
+          work1(ix,-1) = work1(ix,0)
+          work1(ix,0) = work1(ix,1)
+          work1(ix,1) = ux(ix,iz1) - 2.d0 * ux1(ix,iz1) + ux2(ix,iz1)
+          work2(ix,-1) = work2(ix,0)
+          work2(ix,0) = work2(ix,1)
+          work2(ix,1) = work2(ix,2)
+          work2(ix,2) = uz(ix,iz2) - 2.d0 * uz1(ix,iz2) + uz2(ix,iz2)
+          work3(ix,-2) = work3(ix,-1)
+          work3(ix,-1) = work3(ix,0)
+          work3(ix,0) = work3(ix,1)
+          work3(ix,1) = work1(ix,1) + 12.d0 * ux1(ix,iz1)
+          work4(ix,-1) = work4(ix,0)
+          work4(ix,0) = work4(ix,1)
+          work4(ix,1) = work4(ix,2)
+          work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
+       enddo
+       do ix=1,nx+1
+          ix11 = max0( ix-1,1 )
+          ix12 = min0( ix+1,nx+1 )
+          ix21 = max0( ix-2,1 )
+          ix22 = min0( ix+2,nx+1 )
+          work5(ix) =   (           ( work3(ix11,-1)-work3(ix,-1) ) &
+               + 10.d0 * ( work3(ix11, 0)-work3(ix, 0) ) &
+               +         ( work3(ix11, 1)-work3(ix, 1) ) )
+          work6(ix,0) = work6(ix,1)
+          work6(ix,1) =  (  ( work3(ix11,0)-work3(ix11,1) ) &
+               + 10.d0 * ( work3(  ix,0)-work3(ix,  1) ) &
+               +         ( work3(ix12,0)-work3(ix12,1) ) )
+          
+          work7(ix) =( ( work4(ix11,-1)-work4(ix,-1) ) &
+               + 10.d0 * ( work4(ix11, 0)-work4(ix, 0) ) &
+               +         ( work4(ix11, 1)-work4(ix, 1) ))
+          
+          work8(ix,0) = work8(ix,1)
+          work8(ix,1) =  (           ( work4(ix11,0)-work4(ix11,1) ) &
+               + 10.d0 * ( work4(  ix,0)-work4(  ix,1) ) &
+               +         ( work4(ix12,0)-work4(ix12,1) ))
+          
+          work9(ix) = (          work3(ix,-2) - 9.d0 * work3(ix,-1) &
+               + 3.d0 * work3(ix,0)  + 5.d0 * work3(ix,1))
+          
+          work10(ix,-2) = work10(ix,-1)
+          work10(ix,-1) = work10(ix,0)
+          work10(ix,0) = work10(ix,1)
+          work10(ix,1) = ( work3(ix21,1) - 9.d0 * work3(ix11,1) &
+               + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
+          
+          work11(ix) = ( - 5.d0 * work4(ix,-1)  - 3.d0 * work4(ix,0) &
+               + 9.d0 * work4(ix, 1)  -        work4(ix,2) )
+          
+          work12(ix,-1) = work12(ix,0)
+          work12(ix,0) = work12(ix,1)
+          work12(ix,1) = work12(ix,2)
+          work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
+               + 9.d0 * work4(ix12,2) -        work4(ix22,2))
+          
+       enddo
+       
+       do ix=2,nx
+          ix21 = max0( ix-2,1 )
+          ix22 = min0( ix+2,nx+1 )
+          ux(ix,iz) = ux(ix,iz) &
+               + ( &
+               - (           (   work1(ix-1,-1) + work1(ix-1,1) &
+               + work1(ix+1,-1) + work1(ix+1,1) ) &
+               + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
+               + work1(  ix, 1) + work1(ix+1, 0) ) &
+               + 100.d0 * work1(ix,0) ) &
+               + e1(ix,iz) * work5(ix) &
+               - e2(ix,iz) * work5(ix+1) &
+               + e3(ix,iz) * work6(ix,0) &
+               - e4(ix,iz) * work6(ix,1) &
+               ) / 144.d0 &
+               + e13(ix,iz) * work11(ix-1) &
+               + e14(ix,iz) * work11(ix) &
+               + e15(ix,iz) * work11(ix+1) &
+               + e16(ix,iz) * work11(ix22) &
+               + e17(ix,iz) * work12(ix,-1) &
+               + e18(ix,iz) * work12(ix,0) &
+               + e19(ix,iz) * work12(ix,1) &
+               + e20(ix,iz) * work12(ix,2)
+          uz(ix,iz) = uz(ix,iz) &
+               + ( &
+               - (           (   work2(ix-1,-1) + work2(ix-1,1) &
+               + work2(ix+1,-1) + work2(ix+1,1) ) &
+               + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
+               + work2(  ix, 1) + work2(ix+1, 0) ) &
+               + 100.d0 * work2(ix,0) ) &
+               + f1(ix,iz) * work7(ix) &
+               - f2(ix,iz) * work7(ix+1) &
+               + f3(ix,iz) * work8(ix,0) &
+               - f4(ix,iz) * work8(ix,1) &
+               ) / 144.d0 &
+               + f13(ix,iz) * work9(ix21) &
+               + f14(ix,iz) * work9(ix-1) &
+               + f15(ix,iz) * work9(ix) &
+               + f16(ix,iz) * work9(ix+1) &
+               + f17(ix,iz) * work10(ix,-2) &
+               + f18(ix,iz) * work10(ix,-1) &
+               + f19(ix,iz) * work10(ix,0) &
+               + f20(ix,iz) * work10(ix,1)
+       enddo
     enddo
- enddo
- ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
- uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
+ endif
+ !ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+ !uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
  ! swapping u1 & u2
  do iz=2,nz
     do ix=2,nx
@@ -675,11 +688,11 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   !       use the "convert" command from ImageMagick http://www.imagemagick.org
   if(field_number == 1) then
      write(file_name,"('image',i6.6,'_Ux.pnm')") it
-     write(system_command1, "('convert image',i6.6,'_Ux.pnm image',i6.6,'_Ux.gif')") it,it
+     write(system_command1, "('convert image',i6.6,'_Ux.pnm snapshots/image',i6.6,'_Ux.gif')") it,it
      write(system_command2, "('rm image',i6.6,'_Ux.pnm')") it
   else if(field_number == 2) then
      write(file_name,"('image',i6.6,'_Uz.pnm')") it
-     write(system_command1,"('convert image',i6.6,'_Uz.pnm image',i6.6,'_Uz.gif')") it,it
+     write(system_command1,"('convert image',i6.6,'_Uz.pnm snapshots/image',i6.6,'_Uz.gif')") it,it
      write(system_command2,"('rm image',i6.6,'_Uz.pnm')") it
   endif
   

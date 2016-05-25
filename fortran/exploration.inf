@@ -1,13 +1,12 @@
 c Parameters for stag1.f
 c Gridding
-   2000  200   200  nt,nx,nz
-   1.d-4 1.d-3 1.d-3     dt,dx,dz
+   2000  600 300  nt,nx,nz
+   2.e-3 2.d-2 2.d-2     dt,dx,dz
 c Structure
-    1.0,  0.0   0.0,   0.0   0.0   0.0   rho
-   25.0,  0.0   0.0,   0.0   0.0   0.0   lam
-   25.0,  0.0   0.0,   0.0   0.0   0.0   mu
+2d_start.vp
+2d_start.vs
 c Source
-  1.d0/200.d0  2.d-3  tp,ts
+  1.d0/6.5d0  5.d-3  tp,ts
 c Receiver
   61   101   nrx,nrz
 c
