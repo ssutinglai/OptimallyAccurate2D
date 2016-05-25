@@ -766,7 +766,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   !       use the "convert" command from ImageMagick http://www.imagemagick.org
   if(field_number == 1) then
      write(file_name,"('image',i6.6,'_Ux.pnm')") it
-     write(system_command1, "('convert image',i6.6,'_Ux.pnm snapshots/imageUx',i6.6,'.jpg')") it,it
+     write(system_command1, "('convert image',i6.6,'_Ux.pnm snapshots/imageUx',i6.6,'.gif')") it,it
      write(system_command2, "('rm image',i6.6,'_Ux.pnm')") it
   else if(field_number == 2) then
      write(file_name,"('image',i6.6,'_Uz.pnm')") it
