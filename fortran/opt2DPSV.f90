@@ -1,12 +1,12 @@
 program opt22
-  !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  
   ! Computation of the synthetic seismograms in the time domain
-  ! using the normal operators.
-  ! --- heterogeneous medium
+  ! using the optimally accurate operators.
+  ! 2D PSV heterogeneous medium
   !
-  !						1997.6  N.Takeuchi
-  !                                               2016.5. N.Fuji
-  !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  !					originally from 1997.6  N.Takeuchi
+  !                                                     2016.5. N.Fuji
+  
   implicit none
   integer maxnz
   parameter ( maxnz = 1000 )
@@ -41,8 +41,8 @@ program opt22
   real*8 rho(maxnz+1,maxnz+1)
   real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
   real*8 vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
-  ! parameter for the source
-  real*8 tp,ts
+  
+  real*8 Courant_number
   ! parameter for the receiver
   integer nrx,nrz
   ! parameter for the waveform
@@ -55,11 +55,19 @@ program opt22
   character(80) :: routine
   
   logical,parameter :: dummylog = .false.
-  ! switch
+  ! switch OPT / CONV
   logical,parameter :: optimise = .true.
+  ! switch C-PML 
+  logical, parameter :: USE_PML_XMIN = .false.
+  logical, parameter :: USE_PML_XMAX = .false.
+  logical, parameter :: USE_PML_YMIN = .false.
+  logical, parameter :: USE_PML_YMAX = .false.
+  ! thickness of the PML layer in grid points
+  integer, parameter :: NPOINTS_PML = 10
 
+  ! Ricker wavelets source
   real*8 f0,t0
-
+  real*8 tp,ts
   
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
@@ -80,6 +88,12 @@ program opt22
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
+
+  ! Courant number calculation
+  Courant_number = maxval(vp) * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
+  print *, 'Courant number is', Courant_number
+  
+
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
@@ -155,10 +169,11 @@ program opt22
         ix_rec(1)=nrx
         iz_rec(1)=nrz
         
-        !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
-        !     dummylog,dummylog,dummylog,dummylog,1)
+        !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
+        !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
-             dummylog,dummylog,dummylog,dummylog,2)
+             NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
+  
         
         
         
