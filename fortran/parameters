@@ -1,0 +1,11 @@
+
+
+	Model size: 400*200 (x*z:8 km*4 km)
+	tsteps: 1500 
+	
+	dt=0.002 (s)
+	dx=dz=20 (m)
+
+	Ricker wave: f0=6.5 Hz
+	(The source is added on Vz component)
+	
