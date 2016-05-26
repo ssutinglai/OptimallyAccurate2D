@@ -3,50 +3,56 @@ program opt22
   ! Computation of the synthetic seismograms in the time domain
   ! using the optimally accurate operators.
   ! 2D PSV heterogeneous medium
+  ! CPML or Cerjan boundary conditions
   !
   !					originally from 1997.6  N.Takeuchi
   !                                                     2016.5. N.Fuji
   
   implicit none
-  integer maxnz
-  parameter ( maxnz = 1000 )
+  
+  integer, parameter :: maxnz = 800 
+  integer, parameter :: maxnt = 2000
+  double precision, parameter :: pi=3.1415926535897932d0 
+  double precision, parameter :: ZERO = 0.d0
+    
   !
   ! parameters for the gridding
-  real*8 dt,dx,dz
+  double precision dt,dx,dz
   ! parameters for the wavefield
   integer nt,nx,nz,it,ist,isx,isz
-  real*8 ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
-  real*8 ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
-  real*8 uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
-  real*8  e1(maxnz+1,maxnz+1), e2(maxnz+1,maxnz+1)
-  real*8  e3(maxnz+1,maxnz+1), e4(maxnz+1,maxnz+1)
-  real*8  e5(maxnz+1,maxnz+1), e6(maxnz+1,maxnz+1)
-  real*8  e7(maxnz+1,maxnz+1), e8(maxnz+1,maxnz+1)
-  real*8 e13(maxnz+1,maxnz+1),e14(maxnz+1,maxnz+1)
-  real*8 e15(maxnz+1,maxnz+1),e16(maxnz+1,maxnz+1)
-  real*8 e17(maxnz+1,maxnz+1),e18(maxnz+1,maxnz+1)
-  real*8 e19(maxnz+1,maxnz+1),e20(maxnz+1,maxnz+1)
-  real*8  f1(maxnz+1,maxnz+1), f2(maxnz+1,maxnz+1)
-  real*8  f3(maxnz+1,maxnz+1), f4(maxnz+1,maxnz+1)
-  real*8  f5(maxnz+1,maxnz+1), f6(maxnz+1,maxnz+1)
-  real*8  f7(maxnz+1,maxnz+1), f8(maxnz+1,maxnz+1)
-  real*8 f13(maxnz+1,maxnz+1),f14(maxnz+1,maxnz+1)
-  real*8 f15(maxnz+1,maxnz+1),f16(maxnz+1,maxnz+1)
-  real*8 f17(maxnz+1,maxnz+1),f18(maxnz+1,maxnz+1)
-  real*8 f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
-  real*8 work(maxnz+1,32)
+  double precision ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
+  double precision ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
+  double precision uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
+  double precision  e1(maxnz+1,maxnz+1), e2(maxnz+1,maxnz+1)
+  double precision  e3(maxnz+1,maxnz+1), e4(maxnz+1,maxnz+1)
+  double precision  e5(maxnz+1,maxnz+1), e6(maxnz+1,maxnz+1)
+  double precision  e7(maxnz+1,maxnz+1), e8(maxnz+1,maxnz+1)
+  double precision e13(maxnz+1,maxnz+1),e14(maxnz+1,maxnz+1)
+  double precision e15(maxnz+1,maxnz+1),e16(maxnz+1,maxnz+1)
+  double precision e17(maxnz+1,maxnz+1),e18(maxnz+1,maxnz+1)
+  double precision e19(maxnz+1,maxnz+1),e20(maxnz+1,maxnz+1)
+  double precision  f1(maxnz+1,maxnz+1), f2(maxnz+1,maxnz+1)
+  double precision  f3(maxnz+1,maxnz+1), f4(maxnz+1,maxnz+1)
+  double precision  f5(maxnz+1,maxnz+1), f6(maxnz+1,maxnz+1)
+  double precision  f7(maxnz+1,maxnz+1), f8(maxnz+1,maxnz+1)
+  double precision f13(maxnz+1,maxnz+1),f14(maxnz+1,maxnz+1)
+  double precision f15(maxnz+1,maxnz+1),f16(maxnz+1,maxnz+1)
+  double precision f17(maxnz+1,maxnz+1),f18(maxnz+1,maxnz+1)
+  double precision f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
+  double precision work(maxnz+1,32)
   ! parameter for the structure
-  !real*8 rrho(6),llam(6),mmu(6)
+  !double precision rrho(6),llam(6),mmu(6)
   character(80) :: vpfile, vsfile, rhofile
-  real*8 rho(maxnz+1,maxnz+1)
-  real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
-  real*8 vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
+  double precision :: rho(maxnz+1,maxnz+1)
+  double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  double precision :: vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
+  double precision :: cp ! maxvalue of vp
   
-  real*8 Courant_number
+  double precision Courant_number
   ! parameter for the receiver
   integer nrx,nrz
   ! parameter for the waveform
-  real*8 t
+  double precision t
   !parameter for video
   real,dimension(maxnz+1,maxnz+1) :: snapux,snapuz
   integer, parameter :: IT_DISPLAY = 10
@@ -58,26 +64,71 @@ program opt22
   ! switch OPT / CONV
   logical,parameter :: optimise = .true.
   ! switch C-PML 
-  logical, parameter :: USE_PML_XMIN = .false.
-  logical, parameter :: USE_PML_XMAX = .false.
-  logical, parameter :: USE_PML_YMIN = .false.
-  logical, parameter :: USE_PML_YMAX = .false.
+  logical, parameter :: USE_PML_XMIN = .true.
+  logical, parameter :: USE_PML_XMAX = .true.
+  logical, parameter :: USE_PML_YMIN = .true.
+  logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 10
-
-  ! parameters for Cerjan (This software uses Cerjan absorbing boundary not PML)
-
-  double pre
+  integer, parameter :: NPOINTS_PML = 40
+  double precision, parameter :: CerjanRate = 0.015
+  ! Cerjan boundary condition
+  integer(2) :: lmargin,rmargin
+  
 
   ! Ricker wavelets source
-  real*8 f0,t0
-  !real*8 tp,ts
+  double precision f0,t0
+  !double precision tp,ts
+
+
+  ! for evolution of total energy in the medium
+  double precision epsilon_xx,epsilon_yy,epsilon_xy
+  double precision, dimension(maxnt+1) :: total_energy_kinetic,total_energy_potential
+  
+  ! power to compute d0 profile
+  double precision, parameter :: NPOWER = 2.d0
+
+  double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
+  double precision :: ALPHA_MAX_PML
+  
+
+  ! could declare these arrays in PML only to save a lot of memory, but proof of concept only here
+  double precision, dimension(1:maxnz+1,1:maxnz+1) :: &
+      memory_dvx_dx, &
+      memory_dvx_dy, &
+      memory_dvy_dx, &
+      memory_dvy_dy, &
+      memory_dsigmaxx_dx, &
+      memory_dsigmayy_dy, &
+      memory_dsigmaxy_dx, &
+      memory_dsigmaxy_dy
+
+  double precision :: &
+      value_dvx_dx, &
+      value_dvx_dy, &
+      value_dvy_dx, &
+      value_dvy_dy, &
+      value_dsigmaxx_dx, &
+      value_dsigmayy_dy, &
+      value_dsigmaxy_dx, &
+      value_dsigmaxy_dy
+
+  ! 1D arrays for the damping profiles
+
+  double precision, dimension(maxnz+1) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
+  double precision, dimension(maxnz+1) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
+
+  double precision :: thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright,yoriginbottom,yorigintop
+  double precision :: Rcoef,d0_x,d0_y,xval,yval,abscissa_in_PML,abscissa_normalized
+  
+
 
   character(120) :: commandline
   
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
 
+  ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
+  
   ! Initializing the data
   call datainit( maxnz,maxnz,ux )
   call datainit( maxnz,maxnz,uz )
@@ -89,18 +140,39 @@ program opt22
   call datainit( maxnz,maxnz,lam )
   call datainit( maxnz,maxnz,mu )
   call datainit( maxnz,31,work )
+
+  
   !computing the intermediate parameters
 
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
 
-  ! Courant number calculation
-  Courant_number = maxval(vp) * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
-  print *, 'Courant number is', Courant_number
+
   
+  ! PML definition ! NF should clean out z and y problems !!! 
+  call definePML(NPOINTS_PML,dx,dz,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
+  call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,maxnz, &
+       nx-1,nz-1,dx,dz,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
+       d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+
+
+  ! check the Courant stability condition for the explicit time scheme
+  ! R. Courant et K. O. Friedrichs et H. Lewy (1928)
+  cp=maxval(vp)
+  Courant_number = cp * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
+  print *, 'Courant number is', Courant_number
+
+
+  ! Cerjan boundary
+
+  lmargin(:)=NPOINTS_PML
+  rmargin(:)=NPOINTS_PML
 
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
+  
+  call calstructBC(maxnz,nx,nz,rho,lam,mu)
+
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -112,6 +184,18 @@ program opt22
   !ist = dnint( 2 * tp / dt )
   !isx = nx / 2 + 1
   !isz = nz / 2 + 1
+
+
+  ! PML
+  memory_dvx_dx(:,:) = ZERO
+  memory_dvx_dy(:,:) = ZERO
+  memory_dvy_dx(:,:) = ZERO
+  memory_dvy_dy(:,:) = ZERO
+  memory_dsigmaxx_dx(:,:) = ZERO
+  memory_dsigmayy_dy(:,:) = ZERO
+  memory_dsigmaxy_dx(:,:) = ZERO
+  memory_dsigmaxy_dy(:,:) = ZERO
+
 
   ist=nt/2
   
@@ -183,20 +267,19 @@ program opt22
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
   
-        
-        
-        
-        
-        
      endif
+
+
+     call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
+          uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
+     
   enddo
   
   commandline="./ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p wavefield.mp4"
 
   call system(commandline)
   
-  ! 
-  !./ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p wavefield.mp4
+
 
 
   !
@@ -206,9 +289,9 @@ end program opt22
 subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
   
   implicit none
-  real*8 f0,t0
+  double precision f0,t0
   integer maxnz,nt,nx,nz,nrx,nrz
-  real*8 dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
+  double precision dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
   character*80 tmpfile,dummy
   character*80 vpfile,vsfile,rhofile
   tmpfile='tmpfileforwork'
@@ -251,7 +334,7 @@ end subroutine pinput
 subroutine datainit( nx,nz,ux )
   
   integer nx,nz
-  real*8 ux(nx+1,*)
+  double precision ux(nx+1,*)
   integer i,j
   
   do j=1,nz+1
@@ -267,10 +350,10 @@ end subroutine datainit
 subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
   implicit none
   integer maxnz,nx,nz
-  real*8 dx,dz,rho(maxnz+1,*)
+  double precision dx,dz,rho(maxnz+1,*)
   real(kind(1.0)) rrho(maxnz+1,maxnz+1)
   integer i,j,k,nox(6),noz(6)
-  real*8 x,z,xmax,zmax,trho,coef1,coef2
+  double precision x,z,xmax,zmax,trho,coef1,coef2
   integer recl_size
   character*80 file2d
   recl_size=kind(1.0)*(nx+1)*(nz+1)
@@ -287,8 +370,8 @@ subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   implicit none
   
   integer i,j,maxnz,nx,nz
-  real*8 rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
-  real*8 lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  double precision rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
+  double precision lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
 
   do i=1,nx+1
      do j=1,nz+1
@@ -299,6 +382,69 @@ subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
 end subroutine calstruct2
   
 
+subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,rmargin,lmargin)
+  implicit none
+  integer :: i,j,maxnz,nx,nz,nnx,nnz
+  double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)
+  double precision :: llam(maxnz+1,maxnz+1),mmu(maxnz+1,maxnz+1),rrho(maxnz+1,maxnz+1)
+  
+  
+  llam=0.d0
+  mmu=0.d0
+  rrho=0.d0
+  
+  llam(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=lam(1:nx+1,1:nz+1)
+  mmu(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=mu(1:nx+1,1:nz+1)
+  rrho(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=rho(1:nx+1,1:nz+1)
+
+  ! 4 corners
+
+  llam(1:lmargin(1),1:lmargin(2))=lam(1,1)
+  
+
+  llam(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
+
+
+  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=lam(nx+1,1)
+  
+
+  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = lam(nx+1,1)
+
+
+  ! 4 rectangles
+
+  do i = 1,lmargin(1)
+     llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(1,1:nz+1)
+
+
+  enddo
+  
+  do i = 1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1)
+     llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(nx+1,1:nz+1)
+
+
+  enddo
+
+  do i = 1,lmargin(2)
+     llam(1+lmargin(1):nx+1+lmargin(2),i)=lam(1:nx+1,1)
+     
+
+  enddo
+
+  do i = 1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)
+     llam(1+lmargin(1):nx+1+lmargin(2),i) = lam(1:nx+1,nz+1)
+  
+
+  enddo
+end subroutine calstructBC
+
+
+ 
+
+
+
+
 
 subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -306,22 +452,22 @@ subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8
      f13,f14,f15,f16,f17,f18,f19,f20 )
   
   integer maxnz,nx,nz
-  real*8 rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
-  real*8 dt,dx,dz
-  real*8  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
-  real*8  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
-  real*8  e7(maxnz+1,*), e8(maxnz+1,*)
-  real*8 e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
-  real*8 e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
-  real*8 e19(maxnz+1,*),e20(maxnz+1,*)
-  real*8  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
-  real*8  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
-  real*8  f7(maxnz+1,*), f8(maxnz+1,*)
-  real*8 f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
-  real*8 f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-  real*8 f19(maxnz+1,*),f20(maxnz+1,*)
+  double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
+  double precision dt,dx,dz
+  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
+  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
+  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
+  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
+  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
+  double precision e19(maxnz+1,*),e20(maxnz+1,*)
+  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
+  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
+  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
+  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
+  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
+  double precision f19(maxnz+1,*),f20(maxnz+1,*)
   integer ix,iz
-  real*8 dt2,dx2,dz2,dxdz
+  double precision dt2,dx2,dz2,dxdz
   
   dt2 = dt * dt
   dx2 = dx * dx
@@ -431,11 +577,11 @@ end subroutine cales
 
 subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
 
-  real*8 pi
+  double precision pi
   parameter ( pi=3.1415926535897932d0 )
   integer maxnz,it,ist,isx,isz
-  real*8 t,dt,dx,dz,rho,tp,ts,fx(maxnz+1,*),fz(maxnz+1,*)
-  real*8 b
+  double precision t,dt,dx,dz,rho,tp,ts,fx(maxnz+1,*),fz(maxnz+1,*)
+  double precision b
   
   if ( it.le.ist ) then
      b = pi * ( t - ts ) / tp
@@ -462,11 +608,11 @@ end subroutine calf
 subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 
   implicit none
-  real*8 pi
+  double precision pi
   parameter ( pi=3.1415926535897932d0 )
   integer maxnz,it,ist,isx,isz
-  real*8 t,dt,dx,dz,rho,f0,t0,fx(maxnz+1,*),fz(maxnz+1,*)
-  real*8 b,a,factor
+  double precision t,dt,dx,dz,rho,f0,t0,fx(maxnz+1,*),fz(maxnz+1,*)
+  double precision b,a,factor
   
   factor=1.d3
   
@@ -507,27 +653,27 @@ subroutine calstep( maxnz,nx,nz, &
      work9,work10,work11,work12,optimise )
 
   integer maxnz,nx,nz,isx,isz
-  real*8 ux(maxnz+1,*),ux1(maxnz+1,*),ux2(maxnz+1,*)
-  real*8 uz(maxnz+1,*),uz1(maxnz+1,*),uz2(maxnz+1,*)
-  real*8  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
-  real*8  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
-  real*8  e7(maxnz+1,*), e8(maxnz+1,*)
-  real*8 e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
-  real*8 e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
-  real*8 e19(maxnz+1,*),e20(maxnz+1,*)
-  real*8  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
-  real*8  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
-  real*8  f7(maxnz+1,*), f8(maxnz+1,*)
-  real*8 f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
-  real*8 f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-  real*8 f19(maxnz+1,*),f20(maxnz+1,*)
-  real*8 fx(maxnz+1,*),fz(maxnz+1,*)
-  real*8 work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
-  real*8 work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
-  real*8 work5(*),work6(maxnz+1,0:1)
-  real*8 work7(*),work8(maxnz+1,0:1)
-  real*8 work9(*),work10(maxnz+1,-2:1)
-  real*8 work11(*),work12(maxnz+1,-1:2)
+  double precision ux(maxnz+1,*),ux1(maxnz+1,*),ux2(maxnz+1,*)
+  double precision uz(maxnz+1,*),uz1(maxnz+1,*),uz2(maxnz+1,*)
+  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
+  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
+  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
+  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
+  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
+  double precision e19(maxnz+1,*),e20(maxnz+1,*)
+  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
+  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
+  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
+  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
+  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
+  double precision f19(maxnz+1,*),f20(maxnz+1,*)
+  double precision fx(maxnz+1,*),fz(maxnz+1,*)
+  double precision work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
+  double precision work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
+  double precision work5(*),work6(maxnz+1,0:1)
+  double precision work7(*),work8(maxnz+1,0:1)
+  double precision work9(*),work10(maxnz+1,-2:1)
+  double precision work11(*),work12(maxnz+1,-1:2)
   integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
   logical optimise
 
@@ -886,15 +1032,151 @@ call system(system_command1)
 call system(system_command2)
 end subroutine create_color_image
 
+subroutine definePML(NPOINTS_PML,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
+  implicit none
+  integer NPOINTS_PML
+  double precision :: NPOWER
+  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,d0_x,d0_y,cp
+
+  !--- define profile of absorption in PML region
+
+  ! thickness of the PML layer in meters
+  thickness_PML_x = NPOINTS_PML * DELTAX
+  thickness_PML_y = NPOINTS_PML * DELTAY
+  
+  ! reflection coefficient (INRIA report section 6.1) http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
+  Rcoef = 0.001d0
+  
+  ! check that NPOWER is okay
+  if(NPOWER < 1) stop 'NPOWER must be greater than 1'
+  
+  ! compute d0 from INRIA report section 6.1 http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
+  d0_x = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_x)
+  d0_y = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_y)
+  
+end subroutine definePML
 
 
-subroutine  compNRBC2(u2, u1, u0, rrate, lmargin, rmargin,nnx,nnz)
+subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML, &
+     maxnz,NX,NY,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
+     d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+
+  logical :: USE_PML_XMIN, USE_PML_XMAX, USE_PML_YMIN, USE_PML_YMAX
+  double precision :: ALPHA_MAX_PML
+  integer :: NX, NY
+  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginrigh
+
+  double precision, dimension(maxnz+1) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
+  double precision, dimension(maxnz+1) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
+  double precision, parameter :: ZERO = 0.d0
+
+
+  d_x(:) = ZERO
+  K_x(:) = 1.d0
+  alpha_x(:) = ZERO
+  a_x(:) = ZERO
+
+  d_y(:) = ZERO
+  K_y(:) = 1.d0
+  alpha_y(:) = ZERO
+  a_y(:) = ZERO
+
+! damping in the X direction
+
+! origin of the PML layer (position of right edge minus thickness, in meters)
+  xoriginleft = thickness_PML_x
+  xoriginright = (NX-1)*DELTAX - thickness_PML_x
+
+  do i = 1,NX
+
+! abscissa of current grid point along the damping profile
+    xval = DELTAX * dble(i-1)
+
+!---------- left edge
+    if(USE_PML_XMIN) then
+
+! define damping profile at the grid points
+      abscissa_in_PML = xoriginleft - xval
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_x
+        d_x(i) = d0_x * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+
+    endif
+
+!---------- right edge
+    if(USE_PML_XMAX) then
+
+! define damping profile at the grid points
+      abscissa_in_PML = xval - xoriginright
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_x
+        d_x(i) = d0_x * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+! just in case, for -5 at the end
+    if(alpha_x(i) < ZERO) alpha_x(i) = ZERO
+    b_x(i) = exp(- (d_x(i) / K_x(i) + alpha_x(i)) * DELTAT)
+! this to avoid division by zero outside the PML
+    if(abs(d_x(i)) > 1.d-6) a_x(i) = d_x(i) * (b_x(i) - 1.d0) / (K_x(i) * (d_x(i) + K_x(i) * alpha_x(i)))
+  enddo
+
+! damping in the Y direction
+
+! origin of the PML layer (position of right edge minus thickness, in meters)
+  yoriginbottom = thickness_PML_y
+  yorigintop = NY*DELTAY - thickness_PML_y
+
+  do j = 1,NY
+! abscissa of current grid point along the damping profile
+    yval = DELTAY * dble(j-1)
+!---------- bottom edge
+    if(USE_PML_YMIN) then
+! define damping profile at the grid points
+      abscissa_in_PML = yoriginbottom - yval
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_y
+        d_y(j) = d0_y * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+
+!---------- top edge
+    if(USE_PML_YMAX) then
+! define damping profile at the grid points
+      abscissa_in_PML = yval - yorigintop
+      if(abscissa_in_PML >= ZERO) then
+        abscissa_normalized = abscissa_in_PML / thickness_PML_y
+        d_y(j) = d0_y * abscissa_normalized**NPOWER
+! this taken from Gedney page 8.2
+        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
+        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
+      endif
+    endif
+    b_y(j) = exp(- (d_y(j) / K_y(j) + alpha_y(j)) * DELTAT)
+! this to avoid division by zero outside the PML
+    if(abs(d_y(j)) > 1.d-6) a_y(j) = d_y(j) * (b_y(j) - 1.d0) / (K_y(j) * (d_y(j) + K_y(j) * alpha_y(j)))
+  enddo
+
+
+end subroutine setPML
+
+
+subroutine  compNRBC2(ux,ux1,ux2,uz,uz1,uz2, rrate, lmargin, rmargin,nnx,nnz)
 
   ! Cerjan boundary conditions (2D)
 
-  real*8, intent(inout) :: u2(3,nnx,nnz)
-  real*8, intent(inout) :: u1(3,nnx,nny,nnz)
-  real*8, intent(inout) :: u0(3,nnx,nny,nnz)
+  real*8, intent(inout) :: ux2(nnx,nnz),uz2(nnx,nnz)
+  real*8, intent(inout) :: ux1(nnx,nnz),uz1(nnx,nnz)
+  real*8, intent(inout) :: ux(nnx,nnz),uz(nnx,nnz)
   real*8, intent(in) :: rrate
   integer, dimension(3), intent(in) :: lmargin, rmargin
   integer ix, iy, iz
@@ -921,9 +1203,14 @@ subroutine  compNRBC2(u2, u1, u0, rrate, lmargin, rmargin,nnx,nnz)
         r = rrate * rrate * dble( i * i + j * j + k * k )
         r = exp( - r )
         
-        u2(:,ix,iz) = u2(:,ix,iz) * r
-        u1(:,ix,iz) = u1(:,ix,iz) * r
-        u0(:,ix,iz) = u0(:,ix,iz) * r
+
+        ux2(:) = ux2(:) * r
+        ux1(:) = ux1(:) * r
+        ux(:) = ux(:) * r
+
+        uz2(:) = uz2(:) * r
+        uz1(:) = uz1(:) * r
+        uz(:) = uz(:) * r
         
      enddo
      !enddo
