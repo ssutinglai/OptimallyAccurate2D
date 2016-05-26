@@ -469,7 +469,11 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
   mu=0.d0
 
   lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
+  rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
+  mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
   
+  
+ 
 end subroutine calstructBC
 
 
