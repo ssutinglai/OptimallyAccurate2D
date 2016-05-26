@@ -27,6 +27,7 @@ program opt1d
   double precision traveltime,coefamp
   ! parameter for the source
   double precision f0,t0,a
+  double precision Courant_number
   ! parameter for the receiver
   integer nr
   ! switch OPT / CONV
@@ -59,7 +60,8 @@ program opt1d
 
     
 
-  
+  Courant_number = sqrt(kappa(isz)/rho(isz)) * dt /dz
+  print *, 'Courant_number ', Courant_number
   do i=1,nz
      write(13,*) dz*dble(i),kappa(i),rho(i)
   enddo
