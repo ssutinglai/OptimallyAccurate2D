@@ -152,10 +152,10 @@ program opt22
 
   
   ! PML definition ! NF should clean out z and y problems !!! 
-  call definePML(NPOINTS_PML,dx,dz,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
-  call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,maxnz, &
-       nx-1,nz-1,dx,dz,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
-       d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
+  !call definePML(NPOINTS_PML,dx,dz,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
+  !call setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML,maxnz, &
+  !     nx-1,nz-1,dx,dz,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
+  !     d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
 
 
   ! check the Courant stability condition for the explicit time scheme
@@ -163,7 +163,7 @@ program opt22
   cp=maxval(vp)
   Courant_number = cp * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
   print *, 'Courant number is', Courant_number
-
+  
 
   ! Cerjan boundary
 
@@ -171,17 +171,18 @@ program opt22
   rmargin(1)=NPOINTS_PML
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
+  
 
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   
   call calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
-
+  
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
        f1, f2, f3, f4, f5, f6, f7, f8, &
        f13,f14,f15,f16,f17,f18,f19,f20 )
-  
+  stop
   call datainit( maxnz,maxnz,lam )
   call datainit( maxnz,maxnz,mu )
   !ist = dnint( 2 * tp / dt )
@@ -208,7 +209,7 @@ program opt22
 
   isx=isx+lmargin(1)
   isz=isz+lmargin(2)
-
+  
 
   t=0.d0
   do it=0,nt
@@ -220,7 +221,7 @@ program opt22
 
   weightBC=0.d0
 
-  call compNRBCpre(weightBC(nx+1,nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
+  call compNRBCpre(weightBC(nx+1,nz+1),CerjanRate, lmargin,rmargin,nx+1,nz+1)
   stop
   t = 0.d0
   write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
@@ -1281,7 +1282,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
            
         if (i == 0 .and. j == 0 .and. k == 0) cycle
         
-        r = rrate * rrate * dble( i * i + j * j + k * k )
+        rr = rrate * rrate * dble( i * i + j * j + k * k )
         r(ix,iz) = exp( - rr )
         
         !print *, ix,iy,r
@@ -1294,7 +1295,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         !uz(:,:) = uz(:,:) * r
         
      enddo
-     
+     print *, iz,r(3,iz)
      !enddo
   enddo
   
