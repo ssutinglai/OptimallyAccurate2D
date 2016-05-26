@@ -7,13 +7,12 @@ program opt1d
   !                                                     2016. 5  N.Fuji
   
   implicit none
-  integer maxnz
-  real*8 pi
-  integer, parameter :: maxnz = 10000 
+
+  integer, parameter :: maxnz = 5000
   double precision, parameter :: pi=3.1415926535897932d0 
   
   !  parameters for the gridding
-  integer nt,nz,it,ist,isz
+  integer nt,nz,it,ist,isz,i
   real*8 dt,dz
   ! parameter for the structure
   double precision rrho(4),kkappa(4)
@@ -24,33 +23,49 @@ program opt1d
   double precision e1(maxnz+1),e2(maxnz+1),e3(maxnz+1)
   double precision f1(maxnz+1),f2(maxnz+1),f3(maxnz+1)
   ! parameter for the source
-  double precision tp,ts
+  double precision f0,t0
   ! parameter for the receiver
   integer nr
   ! switch OPT / CONV
   logical,parameter :: optimise = .true.
   
-  
+  rho=0.d0
+  kappa=0.d0
   ! reading the parameter files
-  call pinput( maxnz,nt,nz,dt,dz,rho,kappa,tp,ts,nr )
+  call pinput( maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
   !Initializing the data
   call datainit( maxnz,u )
   call datainit( maxnz,u1 )
   call datainit( maxnz,u2 )
   call datainit( maxnz,f )
-  call datainit( maxnz,rho )
-  call datainit( maxnz,kappa )
+  !call datainit( maxnz,rho )
+  !call datainit( maxnz,kappa )
   ! computing the intermediate parameters
   !call calstruct( rrho,dz,nz,rho )
   !call calstruct( kkappa,dz,nz,kappa )
   call cales( nz,rho,kappa,dt,dz,e1,e2,e3,f1,f2,f3 )
-  ist = dnint( 2 * tp / dt )
+  ist = dnint( 2 * t0/dt )
   isz = nz / 2 + 1
   
+  print *, "im fine"
+   
+  
+  print *, f0,t0
+  do i=1,nz
+     write(13,*) dz*dble(i),kappa(i),rho(i)
+  enddo
+  t=0.d0
+  do it=0,nt
+     call calf2(it,t,ist,isz,dt,dz,rho(isz),f0,t0,f)
+     write(14,*) f(isz)
+  enddo
+  stop
+
+
   t = 0.d0
   write(6,*) real(t),real(u(nr))
   do it=0,nt
-     call calf( it,t,ist,isz,dt,dz,rho(isz),tp,ts,f )
+     call calf2( it,t,ist,isz,dt,dz,rho(isz),f0,t0,f )
      ! evaluating the next step
      call calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise)
      ! increment of t
@@ -63,14 +78,14 @@ end program opt1d
 
 
 
-subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,tp,ts,nr )
+subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
 
   implicit none
   double precision f0,t0
-  integer maxnz,nt,nx,nz,nrx,nrz
+  integer maxnz,nt,nx,nz,nrx,nrz,nr,nzz
   double precision dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
   double precision rho(maxnz+1),kappa(maxnz+1),vp(maxnz+1),tmpvector(maxnz+1)
-  double precision lam(maxnz+1),mu(maxnz+1)
+  double precision lam(maxnz+1),mu(maxnz+1),vs(maxnz+1)
   character*80 tmpfile,dummy
   character*80 vpfile,vsfile,rhofile
   tmpfile='tmpfileforwork'
@@ -110,25 +125,35 @@ subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,tp,ts,nr )
 
   call calstruct2D1D(maxnz,rhofile,dx,dz,nx,nz,rho)
   call calstruct2D1D(maxnz,vpfile,dx,dz,nx,nz,vp)
-  call calstruct2D1D(maxnz,vsfile,dx,dz,nx,nz,tmpvector)
+  call calstruct2D1D(maxnz,vsfile,dx,dz,nx,nz,vs)
   call calstruct2(maxnz,1,nz,rho,vp,vs,lam,mu)
   
+ 
+  print *, maxnz,nz,rho(30),vp(30),vs(30)
+  if(1.eq.0) then
+  nzz=nz*2
+
   ! mirroring
 
   tmpvector(1:nz)=rho(1:nz)
+  tmpvector(nz+1:nzz)=rho(nz)
   rho(:)=0.d0
-  rho(maxnz/2-nz+1:maxnz/2)=tmpvector(nz:1:-1)
-  rho(maxnz/2+1:maxnz/2+nz)=tmpvector(1:nz)
+  rho(maxnz/2-nzz+1:maxnz/2)=tmpvector(nzz:1:-1)
+  rho(maxnz/2+1:maxnz/2+nzz)=tmpvector(1:nzz)
   
   tmpvector(1:nz)=lam(1:nz)
+  tmpvector(nz+1:nzz)=lam(nz)
   lam(:)=0.d0
-  lam(maxnz/2-nz+1:maxnz/2)=tmpvector(nz:1:-1)
-  lam(maxnz/2+1:maxnz/2+nz)=tmpvector(1:nz)
+  lam(maxnz/2-nzz+1:maxnz/2)=tmpvector(nzz:1:-1)
+  lam(maxnz/2+1:maxnz/2+nzz)=tmpvector(1:nzz)
 
   tmpvector(1:nz)=mu(1:nz)
+  tmpvector(nz+1:nzz)=mu(nz)
   mu(:)=0.d0
-  mu(maxnz/2-nz+1:maxnz/2)=tmpvector(nz:1:-1)
-  mu(maxnz/2+1:maxnz/2+nz)=tmpvector(1:nz)
+  mu(maxnz/2-nzz+1:maxnz/2)=tmpvector(nzz:1:-1)
+  mu(maxnz/2+1:maxnz/2+nzz)=tmpvector(1:nzz)
+
+  nz=nzz
 
   tmpvector(1:2*nz)=rho(maxnz/2-nz+1:maxnz/2+nz)
   rho(:)=0.d0
@@ -145,7 +170,8 @@ subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,tp,ts,nr )
   kappa(1:2*nz)=2.d0*mu(1:2*nz)+lam(1:2*nz)
 
   nz=2*nz
-  
+  nr=3*nz/4
+  endif
   return
 end subroutine pinput
 
@@ -358,7 +384,8 @@ subroutine calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise )
   double precision u(*),u1(*),u2(*),f(*)
   integer iz
   double precision tmp1,tmp2,tmp3
-
+  logical optimise
+  
   ! evaluating the u using the unmodified operators
   u(1) = - u2(1) &
        + e2(1) * u1(1) &
