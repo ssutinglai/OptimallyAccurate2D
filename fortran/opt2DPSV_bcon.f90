@@ -72,7 +72,7 @@ program opt22
   integer, parameter :: NPOINTS_PML = 40
   double precision, parameter :: CerjanRate = 0.015
   ! Cerjan boundary condition
-  integer(2) :: lmargin,rmargin
+  integer :: lmargin(1:2),rmargin(1:2)
   
 
   ! Ricker wavelets source
@@ -166,12 +166,14 @@ program opt22
 
   ! Cerjan boundary
 
-  lmargin(:)=NPOINTS_PML
-  rmargin(:)=NPOINTS_PML
+  lmargin(1)=NPOINTS_PML
+  rmargin(1)=NPOINTS_PML
+  lmargin(2)=NPOINTS_PML
+  rmargin(2)=NPOINTS_PML
 
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   
-  call calstructBC(maxnz,nx,nz,rho,lam,mu)
+  call calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
 
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
@@ -382,12 +384,12 @@ subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
 end subroutine calstruct2
   
 
-subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,rmargin,lmargin)
+subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
   implicit none
   integer :: i,j,maxnz,nx,nz,nnx,nnz
   double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)
   double precision :: llam(maxnz+1,maxnz+1),mmu(maxnz+1,maxnz+1),rrho(maxnz+1,maxnz+1)
-  
+  integer :: rmargin(1:2), lmargin(1:2)
   
   llam=0.d0
   mmu=0.d0
@@ -400,43 +402,67 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,rmargin,lmargin)
   ! 4 corners
 
   llam(1:lmargin(1),1:lmargin(2))=lam(1,1)
-  
+  mmu(1:lmargin(1),1:lmargin(2))=mu(1,1)
+  rrho(1:lmargin(1),1:lmargin(2))=rho(1,1)
 
   llam(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
+  mmu(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=mu(1,nz+1)
+  rrho(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=rho(1,nz+1)
 
 
   llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=lam(nx+1,1)
-  
+  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=mu(nx+1,1)
+  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=rho(nx+1,1)
 
   llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
        = lam(nx+1,1)
-
+  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = mu(nx+1,1)
+  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = rho(nx+1,1)
 
   ! 4 rectangles
 
   do i = 1,lmargin(1)
      llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(1,1:nz+1)
-
+     mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(1,1:nz+1)
+     rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(1,1:nz+1)
 
   enddo
   
-  do i = 1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1)
+  do i = 1+nx+1+lmargin(1),rmargin(1)+nx+1+lmargin(1)
      llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(nx+1,1:nz+1)
-
+     mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(nx+1,1:nz+1)
+     rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(nx+1,1:nz+1)
 
   enddo
 
   do i = 1,lmargin(2)
      llam(1+lmargin(1):nx+1+lmargin(2),i)=lam(1:nx+1,1)
+     mmu(1+lmargin(1):nx+1+lmargin(2),i)=mu(1:nx+1,1)
+     rrho(1+lmargin(1):nx+1+lmargin(2),i)=rho(1:nx+1,1)
+
+  enddo
+
+  do i = 1+nz+1+lmargin(2),rmargin(2)+nz+1+lmargin(2)
+     llam(1+lmargin(1):nx+1+lmargin(2),i) = lam(1:nx+1,nz+1)
+     mmu(1+lmargin(1):nx+1+lmargin(2),i) = mu(1:nx+1,nz+1)
+     rrho(1+lmargin(1):nx+1+lmargin(2),i) = rho(1:nx+1,nz+1)
      
 
   enddo
 
-  do i = 1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)
-     llam(1+lmargin(1):nx+1+lmargin(2),i) = lam(1:nx+1,nz+1)
-  
+  nnx=rmargin(1)+nx+lmargin(1)
+  nnz=rmargin(2)+nz+lmargin(2)
 
-  enddo
+  nx=nnx
+  nz=nnz
+  lam=0.d0
+  rho=0.d0
+  mu=0.d0
+
+  lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
+  
 end subroutine calstructBC
 
 
@@ -1204,13 +1230,13 @@ subroutine  compNRBC2(ux,ux1,ux2,uz,uz1,uz2, rrate, lmargin, rmargin,nnx,nnz)
         r = exp( - r )
         
 
-        ux2(:) = ux2(:) * r
-        ux1(:) = ux1(:) * r
-        ux(:) = ux(:) * r
+        ux2(:,:) = ux2(:,:) * r
+        ux1(:,:) = ux1(:,:) * r
+        ux(:,:) = ux(:,:) * r
 
-        uz2(:) = uz2(:) * r
-        uz1(:) = uz1(:) * r
-        uz(:) = uz(:) * r
+        uz2(:,:) = uz2(:,:) * r
+        uz1(:,:) = uz1(:,:) * r
+        uz(:,:) = uz(:,:) * r
         
      enddo
      !enddo
