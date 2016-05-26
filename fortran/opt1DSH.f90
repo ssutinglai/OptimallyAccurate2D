@@ -33,45 +33,53 @@ program opt1d
   kappa=0.d0
   ! reading the parameter files
   call pinput( maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
+  
   !Initializing the data
-  call datainit( maxnz,u )
-  call datainit( maxnz,u1 )
-  call datainit( maxnz,u2 )
-  call datainit( maxnz,f )
+  u=0.d0
+  u1=0.d0
+  u2=0.d0
+  f=0.d0
+  !call datainit( maxnz,u )
+  !call datainit( maxnz,u1 )
+  !call datainit( maxnz,u2 )
+  !call datainit( maxnz,f )
   !call datainit( maxnz,rho )
   !call datainit( maxnz,kappa )
   ! computing the intermediate parameters
   !call calstruct( rrho,dz,nz,rho )
   !call calstruct( kkappa,dz,nz,kappa )
   call cales( nz,rho,kappa,dt,dz,e1,e2,e3,f1,f2,f3 )
-  ist = dnint( 2 * t0/dt )
-  isz = nz / 2 + 1
+  ist = nt/4
+  isz = nz*3 / 4 + 1
+
+    
+
   
-  print *, "im fine"
-   
-  
-  print *, f0,t0
   do i=1,nz
      write(13,*) dz*dble(i),kappa(i),rho(i)
   enddo
+  
   t=0.d0
   do it=0,nt
+
+     
      call calf2(it,t,ist,isz,dt,dz,rho(isz),f0,t0,f)
      write(14,*) f(isz)
+     t=t+dt
   enddo
-  stop
+  !stop
 
 
   t = 0.d0
-  write(6,*) real(t),real(u(nr))
+  write(15,*) real(t),real(u(nr))
   do it=0,nt
      call calf2( it,t,ist,isz,dt,dz,rho(isz),f0,t0,f )
      ! evaluating the next step
      call calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise)
      ! increment of t
      t = t + dt
-     if ( mod(it,10).eq.9 ) write(6,*) real(t),real(u(nr))
-     write(6,*) real(t),real(u(nr))
+     !if ( mod(it,10).eq.9 ) write(6,*) real(t),real(u(nr))
+     write(15,*) real(t),real(u(nr))
   enddo
   
 end program opt1d
@@ -121,16 +129,21 @@ subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
   ! temporary file close
   close(11)
   !
+ 
+  rho=0.d0
+  vp=0.d0
+  vs=0.d0
+  lam=0.d0
+  mu=0.d0
 
 
   call calstruct2D1D(maxnz,rhofile,dx,dz,nx,nz,rho)
   call calstruct2D1D(maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct2D1D(maxnz,vsfile,dx,dz,nx,nz,vs)
-  call calstruct2(maxnz,1,nz,rho,vp,vs,lam,mu)
+
+  call calstruct2(maxnz,nz,rho,vp,vs,lam,mu)
   
- 
-  print *, maxnz,nz,rho(30),vp(30),vs(30)
-  if(1.eq.0) then
+
   nzz=nz*2
 
   ! mirroring
@@ -169,27 +182,28 @@ subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
     
   kappa(1:2*nz)=2.d0*mu(1:2*nz)+lam(1:2*nz)
 
-  nz=2*nz
+  nz=2*nz-1
   nr=3*nz/4
-  endif
+
   return
 end subroutine pinput
 
 
-subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
+subroutine calstruct2(maxnz,nz,rho,vp,vs,lam,mu)
   implicit none
   
-  integer i,j,maxnz,nx,nz
-  double precision rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
-  double precision lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  integer i,j,maxnz,nz
+  double precision rho(maxnz+1),vp(maxnz+1),vs(maxnz+1)
+  double precision lam(maxnz+1),mu(maxnz+1)
 
-  do i=1,nx+1
-     do j=1,nz+1
-        mu(i,j)=rho(i,j)*vs(i,j)*vs(i,j)
-        lam(i,j)=rho(i,j)*vp(i,j)*vp(i,j)-2*mu(i,j)
-     enddo
+ 
+  do i=1,nz+1
+     mu(i)=rho(i)*vs(i)*vs(i)
+     lam(i)=rho(i)*vp(i)*vp(i)-2*mu(i)
   enddo
+
 end subroutine calstruct2
+
 
 subroutine calstruct2D1D( maxnz,file2d,dx,dz,nx,nz,rho )
   implicit none
@@ -349,6 +363,7 @@ end subroutine calf
 
 
 subroutine calf2( it,t,ist,isz,dt,dz,rho,f0,t0,f )
+  implicit none
   double precision pi
   parameter ( pi=3.1415926535897932d0 )
   integer it,ist,isz
@@ -363,7 +378,9 @@ subroutine calf2( it,t,ist,isz,dt,dz,rho,f0,t0,f )
      !print *,pi, t,t0,t-t0,a
      !print *, f0,t0,a
      ! Ricker source time function (second derivative of a Gaussian)
-     f(isz) = factor * (1.d0 - 2.d0*a)*exp(-a);
+     !print *,exp(-a)
+     f(isz)=factor*(1.d0-2.d0*a)*exp(-a)
+    ! f(isz) = factor * (1.d0 - 2.d0*a)*exp(-a);
 
      f(isz) = f(isz) * dt * dt / rho
     
@@ -374,6 +391,7 @@ subroutine calf2( it,t,ist,isz,dt,dz,rho,f0,t0,f )
   else
      f(isz) = 0.d0
   endif
+  
   
 end subroutine calf2
 
