@@ -70,7 +70,7 @@ program opt22
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 40
-  double precision, parameter :: CerjanRate = 0.015
+  double precision, parameter :: CerjanRate = 0.025
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -182,7 +182,7 @@ program opt22
        e13,e14,e15,e16,e17,e18,e19,e20, &
        f1, f2, f3, f4, f5, f6, f7, f8, &
        f13,f14,f15,f16,f17,f18,f19,f20 )
-  stop
+  
   call datainit( maxnz,maxnz,lam )
   call datainit( maxnz,maxnz,mu )
   !ist = dnint( 2 * tp / dt )
@@ -210,21 +210,24 @@ program opt22
   isx=isx+lmargin(1)
   isz=isz+lmargin(2)
   
+  nrx=nrx+lmargin(1)
+  nrz=nrz+lmargin(2)
+
 
   t=0.d0
   do it=0,nt
      
      call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
-     write(13,*) t, lam(isx,isz),mu(isx,isz)
+     !write(13,*) t, lam(isx,isz),mu(isx,isz)
      t=t+dt
   enddo
 
-  weightBC=0.d0
+  weightBC=1.d0
 
-  call compNRBCpre(weightBC(nx+1,nz+1),CerjanRate, lmargin,rmargin,nx+1,nz+1)
-  stop
+  call compNRBCpre(weightBC(nx+1,nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
+  
   t = 0.d0
-  write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+  !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
   do it=0,nt
      call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
      ! evaluating the next step
@@ -239,10 +242,10 @@ program opt22
           work(1,23),work(1,24),work(1,28),work(1,29), optimise)
      ! increment of t
      t = t + dt
-     write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+     !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      
      
-     write(*,*) it, ' of ', nt
+     !write(*,*) it, ' of ', nt
      if(mod(it,IT_DISPLAY) == 0)then
         !
         !head=0
@@ -278,6 +281,12 @@ program opt22
   
      endif
 
+     ux(1:nx+1,1:nz+1)=ux(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+     uz(1:nx+1,1:nz+1)=uz(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+     ux1(1:nx+1,1:nz+1)=ux1(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+     uz1(1:nx+1,1:nz+1)=uz1(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+     ux2(1:nx+1,1:nz+1)=ux2(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+     uz2(1:nx+1,1:nz+1)=uz2(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
 
      !call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
      !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
@@ -324,8 +333,14 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
   open( unit=11, file=tmpfile, status='unknown' )
   ! reading the parameter
   read(11,*) nt,nx,nz
-  if ( nx.gt.maxnz ) pause 'nx is too large (pinput).'
-  if ( nz.gt.maxnz ) pause 'nz is too large (pinput).'
+  if ( nx.gt.maxnz ) then
+     print *, 'nx is too large (pinput).'
+     stop
+  endif
+  if ( nz.gt.maxnz ) then
+     print *, 'nz is too large (pinput).'
+     stop
+  endif
   read(11,*) dt,dx,dz
 111 format(a80)
   read(11,111) vpfile
@@ -412,21 +427,21 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
   mmu(1:lmargin(1),1:lmargin(2))=mu(1,1)
   rrho(1:lmargin(1),1:lmargin(2))=rho(1,1)
 
-  llam(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
-  mmu(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=mu(1,nz+1)
-  rrho(1:lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=rho(1,nz+1)
-
+  llam(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
+  mmu(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=mu(1,nz+1)
+  rrho(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=rho(1,nz+1)
+  !print *, llam(1,nz+lmargin(2)+5),mu(1,nz+1),rho(1,nz+1)
 
   llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=lam(nx+1,1)
   mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=mu(nx+1,1)
   rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=rho(nx+1,1)
 
-  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = lam(nx+1,1)
-  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = mu(nx+1,1)
-  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nx+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = rho(nx+1,1)
+  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = lam(nx+1,nz+1)
+  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = mu(nx+1,nz+1)
+  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = rho(nx+1,nz+1)
 
   ! 4 rectangles
 
@@ -471,9 +486,12 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
   lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
   rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
   mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
-  
-  
- 
+  !print *, nx,nz
+  !write(12,*) rho(:,:)
+  !write(13,*) lam(:,:)
+  !write(14,*) mu(:,:)
+  !stop
+
 end subroutine calstructBC
 
 
@@ -1299,7 +1317,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         !uz(:,:) = uz(:,:) * r
         
      enddo
-     print *, iz,r(3,iz)
+     
      !enddo
   enddo
   
