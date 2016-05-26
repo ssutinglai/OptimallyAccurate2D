@@ -28,6 +28,8 @@ subroutine disconFinder(markers,xt_dis,yt_dis,nvec,xmn,ymn,nx,ny,nc,gr_x,gr_y,x_
  
   
 
+  integer :: topo_szx
+
 
  topo_szx=size(x_topo,2);
 fprintf('topo_szx = %.2f - number of topography points\n', topo_szx);

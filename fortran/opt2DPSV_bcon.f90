@@ -19,7 +19,7 @@ program opt22
   ! parameters for the gridding
   double precision dt,dx,dz
   ! parameters for the wavefield
-  integer nt,nx,nz,it,ist,isx,isz
+  integer nt,nx,nz,it,ist,isx,isz,ix,iz
   double precision ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
   double precision ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
   double precision uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
@@ -70,7 +70,7 @@ program opt22
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 40
-  double precision, parameter :: CerjanRate = 0.025
+  double precision, parameter :: CerjanRate = 0.015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -224,8 +224,8 @@ program opt22
 
   weightBC=1.d0
 
-  call compNRBCpre(weightBC(nx+1,nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
-  
+  call compNRBCpre(weightBC(1:nx+1,1:nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
+    
   t = 0.d0
   !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
   do it=0,nt
@@ -244,6 +244,23 @@ program opt22
      t = t + dt
      !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      
+     
+
+     
+     ! applying Cerjan boundary
+     
+     do iz=1,nz+1
+        do ix=1,nx+1
+           uz(ix,iz)=uz(ix,iz)*weightBC(ix,iz)
+           ux1(ix,iz)=ux1(ix,iz)*weightBC(ix,iz)
+           uz1(ix,iz)=uz1(ix,iz)*weightBC(ix,iz)
+           ux2(ix,iz)=ux2(ix,iz)*weightBC(ix,iz)
+           uz2(ix,iz)=uz2(ix,iz)*weightBC(ix,iz)
+        enddo
+     enddo
+     
+
+ 
      
      !write(*,*) it, ' of ', nt
      if(mod(it,IT_DISPLAY) == 0)then
@@ -281,12 +298,7 @@ program opt22
   
      endif
 
-     ux(1:nx+1,1:nz+1)=ux(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
-     uz(1:nx+1,1:nz+1)=uz(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
-     ux1(1:nx+1,1:nz+1)=ux1(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
-     uz1(1:nx+1,1:nz+1)=uz1(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
-     ux2(1:nx+1,1:nz+1)=ux2(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
-     uz2(1:nx+1,1:nz+1)=uz2(1:nx+1,1:nz+1)* weightBC(1:nx+1,1:nz+1)
+   
 
      !call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
      !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
@@ -927,7 +939,7 @@ subroutine calstep( maxnz,nx,nz, &
      uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
  endif
 
- ! swapping u1 & u2
+ ! swapping u1 & u2 
  do iz=2,nz
     do ix=2,nx
        ux2(ix,iz) = ux1(ix,iz)
@@ -936,6 +948,8 @@ subroutine calstep( maxnz,nx,nz, &
        uz1(ix,iz) =  uz(ix,iz)
     enddo
  enddo
+
+
  
  return
 end subroutine calstep
@@ -1298,7 +1312,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         !   if (iy < lmargin(2) + 1) j = lmargin(2) + 1 - iy
         if (iz < lmargin(2) + 1) k = lmargin(2) + 1 - iz
    
-     if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
+        if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
         !if (nny - rmargin(2) < iy) j = iy - nny + rmargin(2)
         if (nnz - rmargin(2) < iz) k = iz - nnz + rmargin(2)
            
@@ -1306,6 +1320,10 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         
         rr = rrate * rrate * dble( i * i + j * j + k * k )
         r(ix,iz) = exp( - rr )
+        
+        !if(r(ix,iz).ne.1.d0) then
+        !   print *, ix,iz,r(ix,iz)
+        !endif
         
         !print *, ix,iy,r
         !ux2(:,:) = ux2(:,:) * r
@@ -1317,6 +1335,8 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         !uz(:,:) = uz(:,:) * r
         
      enddo
+
+     
      
      !enddo
   enddo
