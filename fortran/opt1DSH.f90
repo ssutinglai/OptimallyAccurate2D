@@ -22,6 +22,7 @@ program opt1d
   double precision u(maxnz+1),u1(maxnz+1),u2(maxnz+1),f(maxnz+1)
   double precision e1(maxnz+1),e2(maxnz+1),e3(maxnz+1)
   double precision f1(maxnz+1),f2(maxnz+1),f3(maxnz+1)
+  real utotal(maxnz+1,0:2000)
   ! parameter for the source
   double precision f0,t0
   ! parameter for the receiver
@@ -36,6 +37,7 @@ program opt1d
   
   !Initializing the data
   u=0.d0
+  utotal=0.e0
   u1=0.d0
   u2=0.d0
   f=0.d0
@@ -77,10 +79,18 @@ program opt1d
      ! evaluating the next step
      call calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise)
      ! increment of t
+     utotal(:,it)=u(:)
      t = t + dt
      !if ( mod(it,10).eq.9 ) write(6,*) real(t),real(u(nr))
      write(15,*) real(t),real(u(nr))
   enddo
+
+  OPEN(1,FILE="1Dsynthetic.dat",ACCESS="DIRECT",FORM="UNFORMATTED",RECL=kind(0e0)*maxnz*2001, &
+       STATUS="REPLACE") ! gfortran defines RECL as bytes
+  write(1,rec=1) utotal
+
+  close(1)
+
   
 end program opt1d
 
