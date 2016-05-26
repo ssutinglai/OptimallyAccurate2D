@@ -10,7 +10,7 @@ program opt1d
 
   integer, parameter :: maxnz = 5000
   double precision, parameter :: pi=3.1415926535897932d0 
-  
+  integer :: ir, iir
   !  parameters for the gridding
   integer nt,nz,it,ist,isz,i
   real*8 dt,dz
@@ -22,9 +22,11 @@ program opt1d
   double precision u(maxnz+1),u1(maxnz+1),u2(maxnz+1),f(maxnz+1)
   double precision e1(maxnz+1),e2(maxnz+1),e3(maxnz+1)
   double precision f1(maxnz+1),f2(maxnz+1),f3(maxnz+1)
-  real utotal(maxnz+1,0:2000)
+  real utotal(0:50,0:2000)
+  double precision uanalytic(1:50,0:2000),source(0:2000),xrec(1:50)
+  double precision traveltime,coefamp
   ! parameter for the source
-  double precision f0,t0
+  double precision f0,t0,a
   ! parameter for the receiver
   integer nr
   ! switch OPT / CONV
@@ -41,6 +43,7 @@ program opt1d
   u1=0.d0
   u2=0.d0
   f=0.d0
+  uanalytic=0.d0
   !call datainit( maxnz,u )
   !call datainit( maxnz,u1 )
   !call datainit( maxnz,u2 )
@@ -67,10 +70,16 @@ program opt1d
      
      call calf2(it,t,ist,isz,dt,dz,rho(isz),f0,t0,f)
      write(14,*) f(isz)
+     source(it)=f(isz)
      t=t+dt
   enddo
   !stop
 
+ 
+  do ir=1,50
+     iir=nz/2+6*ir
+     xrec(ir)=dble(iir)*dz-dble(isz)*dz
+  enddo
 
   t = 0.d0
   write(15,*) real(t),real(u(nr))
@@ -79,17 +88,52 @@ program opt1d
      ! evaluating the next step
      call calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise)
      ! increment of t
-     utotal(:,it)=u(:)
+     !utotal(:,it)=u(:)
      t = t + dt
      !if ( mod(it,10).eq.9 ) write(6,*) real(t),real(u(nr))
-     write(15,*) real(t),real(u(nr))
+     utotal(0,it)=real(t)
+     do ir=1,50
+        iir=nz/2+6*ir
+        utotal(ir,it)=real(u(iir))
+     enddo
+     !write(15,*) real(t),real(u(nr))
+  enddo
+  
+  ! analytic solution
+  coefamp= 1.d0/2.d0*sqrt(kappa(isz)/rho(isz))*kappa(isz)
+  a=pi*pi*f0*f0
+  do ir=1,50
+     iir=nz/2+6*ir
+     traveltime=abs(xrec(ir))/(sqrt(kappa(isz)/rho(isz)))
+     do it=0,nt
+        if(dt*dble(it)>traveltime) then
+
+           t=dble(it)*dt-traveltime-t0
+           
+           uanalytic(ir,it)= t*exp(-a*t**2)
+           !print *,uanalytic(ir,it)
+        endif
+     enddo
   enddo
 
-  OPEN(1,FILE="1Dsynthetic.dat",ACCESS="DIRECT",FORM="UNFORMATTED",RECL=kind(0e0)*maxnz*2001, &
-       STATUS="REPLACE") ! gfortran defines RECL as bytes
-  write(1,rec=1) utotal
+  open(2,file="1Danalytical_homo.dat",form="formatted")
+  write(2,*) real(uanalytic(:,:))
+  close(2)
 
-  close(1)
+
+  !if(1.eq.0) then
+    ! OPEN(1,FILE="1Dsynthetic.dat",ACCESS="DIRECT",FORM="UNFORMATTED",RECL=kind(0e0)*51*2001, &
+    !      STATUS="REPLACE") ! gfortran defines RECL as bytes
+     open(1,file="1Dsynthetic.dat",form="formatted")
+    ! write(1,rec=nt) utotal(:,:)
+     write(1,*)utotal(:,:)
+     
+     close(1)
+  !endif
+
+
+  !call create_color_image2(utotal,51,2001)
+
 
   
 end program opt1d
@@ -194,6 +238,14 @@ subroutine pinput (maxnz,nt,nz,dt,dz,rho,kappa,f0,t0,nr )
 
   nz=2*nz-1
   nr=3*nz/4
+
+  ! homogeneous case
+
+  tmpvector(1:nz)=rho(1:nz)
+  rho(1:nz)=tmpvector(nz/2)
+  
+  tmpvector(1:nz)=kappa(1:nz)
+  kappa(1:nz)=tmpvector(nz/2)
 
   return
 end subroutine pinput
@@ -456,3 +508,103 @@ subroutine calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise )
   
   return
 end subroutine calstep
+
+
+
+subroutine create_color_image2(image_data_2D,NX,NY)
+	
+  implicit none
+  
+  !       non linear display to enhance small amplitudes for graphics
+  double precision, parameter :: POWER_DISPLAY = 0.30d0
+  
+  !       amplitude threshold above which we draw the color point
+  double precision, parameter :: cutvect = 0.01d0
+  
+  !       use black or white background for points that are below the threshold
+  logical, parameter :: WHITE_BACKGROUND = .true.
+  
+  !       size of cross and square in pixels drawn to represent the source and the receivers
+  integer, parameter :: width_cross=5,thickness_cross=1
+  integer, parameter :: size_square=3
+  
+  integer NX,NY,it,field_number,ISOURCE,JSOURCE,NPOINTS_PML
+  logical USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX
+  integer, parameter :: nrec=1
+  double precision, dimension(NX,NY) :: image_data_2D
+  
+  
+  integer, dimension(nrec) :: ix_rec,iy_rec
+  
+  integer :: ix,iy,irec,ii
+  
+  character(len=100) :: file_name,system_command1,system_command2,system_command3
+	
+  integer :: R, G, B
+  
+  double precision :: normalized_value,max_amplitude
+
+  it = 999
+  field_number = 1
+  !       open image file and create system command to convert image to more convenient format
+  !       use the "convert" command from ImageMagick http://www.imagemagick.org
+  if(field_number == 1) then
+     write(file_name,"('image',i6.6,'_Ux.pnm')") it
+     write(system_command1, "('convert image',i6.6,'_Ux.pnm synthe1D',i6.6,'.png')") it,it
+     write(system_command2, "('rm image',i6.6,'_Ux.pnm')") it
+  else if(field_number == 2) then
+  !   write(file_name,"('image',i6.6,'_Uz.pnm')") it
+  !   write(system_command1,"('convert image',i6.6,'_Uz.pnm snapshots/imageUz',i6.6,'.png')") it,it
+  !   write(system_command2,"('rm image',i6.6,'_Uz.pnm')") it
+  endif
+  
+  open(unit=27, file=file_name, status='unknown')
+  
+  write(27,"('P3')")	! write image in PNM P3 format
+  
+  write(27,*) NX*100,NY	! write image size
+  write(27,*) '255'	! maximum value of each pixel color
+	
+  !       compute maximum amplitude
+  max_amplitude = maxval(abs(image_data_2D))
+  
+  !       image starts in upper-left corner in PNM format
+  do iy=1,NY,1
+     do ix=1,NX
+        
+        !       define data as vector component normalized to [-1:1] and rounded to nearest integer
+        !       keeping in mind that amplitude can be negative
+        normalized_value = image_data_2D(ix,iy) / max_amplitude /2.d0
+        
+        !       suppress values that are outside [-1:+1] to avoid small edge effects
+        if(normalized_value < -1.d0) normalized_value = -1.d0
+        if(normalized_value > 1.d0) normalized_value = 1.d0
+        
+       
+           !       represent regular image points using red if value is positive, blue if negative
+        if(normalized_value >= 0.d0) then
+           R = nint(255.d0*normalized_value**POWER_DISPLAY)
+           G = 0
+           B = 0
+        else
+           R = 0
+           G = 0
+           B = nint(255.d0*abs(normalized_value)**POWER_DISPLAY)
+        endif
+        
+          
+     
+        !       write color pixel
+        do ii=1,100
+        write(27,"(i3,' ',i3,' ',i3)") R,G,B
+        enddo
+     enddo
+  enddo
+  
+  !       close file
+close(27)
+
+!       call the system to convert image to GIF (can be commented out if "call system" is missing in your compiler)
+call system(system_command1)
+call system(system_command2)
+end subroutine create_color_image2
