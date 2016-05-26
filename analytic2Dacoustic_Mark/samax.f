@@ -3,8 +3,6 @@ c
 c  function to return the absolute maximum of an array
 c
       function samax(n,x,inc)
-      implicit none
-      real*8 smx,samax
         
       dimension  x(n)
 c
