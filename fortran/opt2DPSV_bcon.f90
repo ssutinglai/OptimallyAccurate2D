@@ -10,7 +10,7 @@ program opt22
   
   implicit none
   
-  integer, parameter :: maxnz = 800 
+  integer, parameter :: maxnz = 600 
   integer, parameter :: maxnt = 2000
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
@@ -71,6 +71,7 @@ program opt22
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 40
   double precision, parameter :: CerjanRate = 0.015
+  double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
   
@@ -205,6 +206,9 @@ program opt22
   isz = 4
   
 
+  isx=isx+lmargin(1)
+  isz=isz+lmargin(2)
+
 
   t=0.d0
   do it=0,nt
@@ -213,9 +217,11 @@ program opt22
      write(13,*) t, lam(isx,isz),mu(isx,isz)
      t=t+dt
   enddo
-  
-  
-  
+
+  weightBC=0.d0
+
+  call compNRBCpre(weightBC(nx+1,nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
+  stop
   t = 0.d0
   write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
   do it=0,nt
@@ -235,7 +241,7 @@ program opt22
      write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      
      
-     !write(*,*) it, ' of ', nt
+     write(*,*) it, ' of ', nt
      if(mod(it,IT_DISPLAY) == 0)then
         !
         !head=0
@@ -272,8 +278,8 @@ program opt22
      endif
 
 
-     call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
-          uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
+     !call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
+     !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
      
   enddo
   
@@ -1243,3 +1249,50 @@ subroutine  compNRBC2(ux,ux1,ux2,uz,uz1,uz2, rrate, lmargin, rmargin,nnx,nnz)
   enddo
   
 end subroutine compNRBC2
+
+
+
+subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
+
+  ! Cerjan boundary conditions (2D)
+  double precision :: r(nnx,nnz)
+  real*8, intent(in) :: rrate
+  integer, dimension(3), intent(in) :: lmargin, rmargin
+  integer ix, iy, iz
+  integer i, j, k
+  
+  
+  do iz = 1, nnz
+     !do iy = 1, nny
+     do ix = 1, nnx
+        
+        i = 0
+        j = 0
+        k = 0
+           
+        if (ix < lmargin(1) + 1) i = lmargin(1) + 1 - ix
+        !   if (iy < lmargin(2) + 1) j = lmargin(2) + 1 - iy
+        if (iz < lmargin(2) + 1) k = lmargin(2) + 1 - iz
+        if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
+        !if (nny - rmargin(2) < iy) j = iy - nny + rmargin(2)
+        if (nnz - rmargin(2) < iz) k = iz - nnz + rmargin(2)
+           
+        if (i == 0 .and. j == 0 .and. k == 0) cycle
+        
+        r = rrate * rrate * dble( i * i + j * j + k * k )
+        r = exp( - r )
+        
+
+        !ux2(:,:) = ux2(:,:) * r
+        !ux1(:,:) = ux1(:,:) * r
+        !ux(:,:) = ux(:,:) * r
+
+        !uz2(:,:) = uz2(:,:) * r
+        !uz1(:,:) = uz1(:,:) * r
+        !uz(:,:) = uz(:,:) * r
+        
+     enddo
+     !enddo
+  enddo
+  
+end subroutine compNRBCpre
