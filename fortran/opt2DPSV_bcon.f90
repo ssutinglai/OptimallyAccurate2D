@@ -1260,6 +1260,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
   integer, dimension(3), intent(in) :: lmargin, rmargin
   integer ix, iy, iz
   integer i, j, k
+  double precision :: rr
   
   
   do iz = 1, nnz
@@ -1273,16 +1274,17 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         if (ix < lmargin(1) + 1) i = lmargin(1) + 1 - ix
         !   if (iy < lmargin(2) + 1) j = lmargin(2) + 1 - iy
         if (iz < lmargin(2) + 1) k = lmargin(2) + 1 - iz
-        if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
+   
+     if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
         !if (nny - rmargin(2) < iy) j = iy - nny + rmargin(2)
         if (nnz - rmargin(2) < iz) k = iz - nnz + rmargin(2)
            
         if (i == 0 .and. j == 0 .and. k == 0) cycle
         
         r = rrate * rrate * dble( i * i + j * j + k * k )
-        r = exp( - r )
+        r(ix,iz) = exp( - rr )
         
-
+        !print *, ix,iy,r
         !ux2(:,:) = ux2(:,:) * r
         !ux1(:,:) = ux1(:,:) * r
         !ux(:,:) = ux(:,:) * r
@@ -1292,6 +1294,7 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
         !uz(:,:) = uz(:,:) * r
         
      enddo
+     
      !enddo
   enddo
   
