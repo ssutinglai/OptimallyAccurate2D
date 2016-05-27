@@ -42,7 +42,7 @@ program opt22
   double precision work(maxnz+1,32)
   ! parameter for the structure
   !double precision rrho(6),llam(6),mmu(6)
-  character(80) :: vpfile, vsfile, rhofile
+  character(80) :: vpfile, vsfile, rhofile,modelname
   double precision :: rho(maxnz+1,maxnz+1)
   double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
   double precision :: vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
@@ -51,7 +51,7 @@ program opt22
   double precision Courant_number
   ! parameter for the receiver
   integer :: nReceiver ! number of receiver
-  integer, parameter :: maxReceiver = 150
+  integer, parameter :: maxReceiver = 200
   integer :: ir,j
   integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
   real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
@@ -133,7 +133,12 @@ program opt22
   character(120) :: commandline
   
   ! reading the parameter files
-  call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver)
+  call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver,modelname)
+
+  commandline="mkdir synthetics"
+  commandline="mkdir snapshots"
+  commandline="mkdir synthetics/"//trim(modelname)
+  call system(commandline)
 
   ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
   
@@ -313,8 +318,20 @@ program opt22
      !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
      
   enddo
-  
-  commandline="./ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p wavefield.mp4"
+ 
+  if(optimise) then
+       write(outfile,'(I5,".",I5,".",I5,".",I5,"opt",".mp4") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+  else
+      write(outfile,'(I5,".",I5,".",I5,".",I5,"con",".mp4") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+  endif
+  do j=1,24
+     if(outfile(j:j).eq.' ') outfile(j:j)='0'
+  enddo
+
+  outfile=trim(modelname)//'_'//outfile
+  commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
 
   call system(commandline)
   
@@ -332,7 +349,7 @@ program opt22
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
-     outfile = './synthetics/'//outfile
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
      open(1, file=outfile,status='unknown',form='formatted')
      do it=0,nt
         write (1,*) time(it),synx(it,ir)
@@ -351,7 +368,7 @@ program opt22
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
-     outfile = './synthetics/'//outfile
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
      open(1, file=outfile,status='unknown',form='formatted')
      do it=0,nt
         write (1,*) time(it), synz(it,ir)
@@ -364,7 +381,7 @@ program opt22
 end program opt22
 
 
-subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver )
+subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver,modelname)
   
   implicit none
   double precision :: f0,t0
@@ -373,10 +390,9 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,n
   integer :: nrx(1:maxReceiver), nrz(1:maxReceiver)
   double precision :: dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
   character*80 :: tmpfile,dummy
-  character*80 :: vpfile,vsfile,rhofile
+  character*80 :: vpfile,vsfile,rhofile,modelname
   integer :: i
   tmpfile='tmpfileforwork'
-  
   
   ! temporary file open
   open( unit=11, file=tmpfile, status='unknown' )
@@ -406,6 +422,7 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,n
   endif
   read(11,*) dt,dx,dz
 111 format(a80)
+  read(11,111) modelname
   read(11,111) vpfile
   read(11,111) vsfile
   read(11,111) rhofile

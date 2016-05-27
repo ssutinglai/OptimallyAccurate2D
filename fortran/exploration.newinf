@@ -2,6 +2,8 @@ c Parameters for stag1.f
 c Gridding
    2000  399 199  nt,nx,nz
    2.e-3 2.d-2 2.d-2     dt,dx,dz
+c modelname
+layered
 c Structure
 ./2d_start.vp
 ./2d_start.vs
