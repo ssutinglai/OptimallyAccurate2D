@@ -54,9 +54,9 @@ program opt22
   integer, parameter :: maxReceiver = 150
   integer :: ir,j
   integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
-  real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver)
+  real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
   character(120) :: outfile
-  integer :: ix_rec(1:maxReceiver),iz_rec(1:maxReceiver)
+ 
   
   ! parameter for the waveform
   double precision t
@@ -189,15 +189,15 @@ program opt22
        f1, f2, f3, f4, f5, f6, f7, f8, &
        f13,f14,f15,f16,f17,f18,f19,f20 )
   
-  lam=0.d0
-  mu=0.d0
+  call datainit( maxnz,maxnz,lam)
+  call datainit( maxnz,maxnz,mu)
 
   ! ist = dnint( 2 * tp / dt )
   ! isx = nx / 2 + 1
   ! isz = nz / 2 + 1
 
 
-  ! ist=nt/2
+  ist=nt/4
   
   ! isx = 30
   ! isz = 4
@@ -214,13 +214,16 @@ program opt22
   
 
   t=0.d0
-  !do it=0,nt
+  time(0)=t
+  do it=0,nt
      
-     !call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
-     !write(13,*) t, lam(isx,isz),mu(isx,isz)
-     !t=t+dt
-  !enddo
+     call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
+     t=t+dt
+     write(13,*) t, lam(isx,isz),mu(isx,isz)
 
+  enddo
+  !print *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0
+  !stop
   weightBC=1.d0
 
   call compNRBCpre(weightBC(1:nx+1,1:nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
@@ -245,6 +248,7 @@ program opt22
           work(1,23),work(1,24),work(1,28),work(1,29), optimise)
      ! increment of t
      t = t + dt
+     time(it)=t
      !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      do ir = 1,nReceiver
         synx(it,ir)=ux(nrx(ir),nrz(ir))
@@ -291,16 +295,14 @@ program opt22
         !enddo
         !close(21)
         
-        ix_rec(1:nReceiver)=nrx(1:nReceiver)
-        iz_rec(1:nReceiver)=nrz(1:nReceiver)
-        
+       
 
         !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
         !     dummylog,dummylog,dummylog,dummylog,1)
         !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
         !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
-             ix_rec(1:nReceiver),iz_rec(nReceiver),nReceiver, &
+             nrx(1:nReceiver),nrz(nReceiver),nReceiver, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
   
      endif
@@ -333,7 +335,7 @@ program opt22
      outfile = './synthetics/'//outfile
      open(1, file=outfile,status='unknown',form='formatted')
      do it=0,nt
-        write (1,*) synx(it,ir)
+        write (1,*) time(it),synx(it,ir)
      enddo
      close(1)
 
@@ -352,7 +354,7 @@ program opt22
      outfile = './synthetics/'//outfile
      open(1, file=outfile,status='unknown',form='formatted')
      do it=0,nt
-        write (1,*) synz(it,ir)
+        write (1,*) time(it), synz(it,ir)
      enddo
      close(1)
   enddo
@@ -743,7 +745,6 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
      !print *, f0,t0,a
      ! Ricker source time function (second derivative of a Gaussian)
      fx(isx,isz) = factor * (1.d0 - 2.d0*a)*exp(-a);
-
      fx(isx,isz) = fx(isx,isz) * dt * dt / rho
      fz(isx,isz) = fx(isx,isz)
      if ( (it.eq.0).or.(it.eq.ist) ) then

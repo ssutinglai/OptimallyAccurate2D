@@ -11,7 +11,11 @@ c Source position (in grids) : you don't have to worry about boundaries
 c Ricker wavelet source
   6.5d0 2.d-1   f0,t0
 c Receiver
-  1 nReceiver : then you can write receiver coordinates below (in grids)
-   140 1    nrx,nrz
+5 nReceiver : then you can write receiver coordinates below (in grids)
+ 50 1    nrx,nrz
+ 80 1
+ 110 1
+ 140 1
+ 170 1
 c
 end
