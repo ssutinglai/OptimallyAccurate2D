@@ -19,7 +19,7 @@ program opt22
   ! parameters for the gridding
   double precision dt,dx,dz
   ! parameters for the wavefield
-  integer nt,nx,nz,it,ist,isx,isz,ix,iz
+  integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size
   double precision ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
   double precision ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
   double precision uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
@@ -55,6 +55,7 @@ program opt22
   integer :: ir,j
   integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
   real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
+  real :: video(maxnz+1,maxnz+1)
   character(120) :: outfile
  
   
@@ -134,6 +135,9 @@ program opt22
   
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver,modelname)
+
+  ! for video (without boundary)
+  recl_size=(nx+1)*(nz+1)*kind(0e0)
 
   commandline="mkdir synthetics"
   commandline="mkdir snapshots"
@@ -309,6 +313,41 @@ program opt22
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
              nrx(1:nReceiver),nrz(nReceiver),nReceiver, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
+        
+
+        if(optimise) then
+           write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        else
+           write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
+             ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+        write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
+        close(1,status='keep')
+
+
+
+        if(optimise) then
+           write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        else
+           write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
+             ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+        write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
+        close(1,status='keep')
   
      endif
 
@@ -1035,7 +1074,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   implicit none
   
   !       non linear display to enhance small amplitudes for graphics
-  double precision, parameter :: POWER_DISPLAY = 0.30d0
+  double precision, parameter :: POWER_DISPLAY = 1.5d0
   
   !       amplitude threshold above which we draw the color point
   double precision, parameter :: cutvect = 0.01d0
