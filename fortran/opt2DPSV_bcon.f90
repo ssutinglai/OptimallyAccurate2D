@@ -315,7 +315,7 @@ program opt22
         !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
         !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
         call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
-             nrx(1:nReceiver),nrz(nReceiver),nReceiver, &
+             nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
         
 
