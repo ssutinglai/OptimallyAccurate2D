@@ -50,7 +50,11 @@ program opt22
   
   double precision Courant_number
   ! parameter for the receiver
-  integer nrx,nrz
+  integer :: nReceiver ! number of receiver
+  integer, parameter :: maxReceiver
+  integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
+  
+  
   ! parameter for the waveform
   double precision t
   !parameter for video
@@ -126,7 +130,7 @@ program opt22
   character(120) :: commandline
   
   ! reading the parameter files
-  call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
+  call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver)
 
   ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
   
@@ -201,10 +205,10 @@ program opt22
   memory_dsigmaxy_dy(:,:) = ZERO
 
 
-  ist=nt/2
+  !ist=nt/2
   
-  isx = 30
-  isz = 4
+  !isx = 30
+  !isz = 4
   
 
   isx=isx+lmargin(1)
@@ -245,7 +249,7 @@ program opt22
      !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
      
      
-
+     
      
      ! applying Cerjan boundary
      
@@ -310,20 +314,23 @@ program opt22
   call system(commandline)
   
 
-
+  
 
   !
 end program opt22
 
 
-subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
+subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver )
   
   implicit none
-  double precision f0,t0
-  integer maxnz,nt,nx,nz,nrx,nrz
-  double precision dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
-  character*80 tmpfile,dummy
-  character*80 vpfile,vsfile,rhofile
+  double precision :: f0,t0
+  integer :: maxnz,nt,nx,nz
+  integer :: maxReceiver, nReceiver
+  integer :: nrx(1:maxReceiver), nrz(1:maxReceiver)
+  double precision :: dt,dx,dz !rho(*),lam(*),mu(*),tp,ts
+  character*80 :: tmpfile,dummy
+  character*80 :: vpfile,vsfile,rhofile
+  integer :: i
   tmpfile='tmpfileforwork'
   
   
@@ -358,8 +365,12 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,nrx,nrz )
   read(11,111) vpfile
   read(11,111) vsfile
   read(11,111) rhofile
-  read(11,*) f0,t0
-  read(11,*) nrx,nrz
+  read(11,*) isx,isz
+  read(11,*) f0,t0  
+  read(11,*) nReceiver
+  do i = 1, nReceiver
+     read(11,*) nrx(i),nrz(i)
+  enddo
   ! temporary file close
   close(11)
   !

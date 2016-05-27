@@ -28,28 +28,31 @@ subroutine disconFinder(markers,xt_dis,yt_dis,nvec,xmn,ymn,nx,ny,nc,gr_x,gr_y,x_
   !fprintf('Started looking for markers, x,y-t_dis, nvec, xmn,ymn with\n');
   !fprintf('gridsize NX =%d, NY=%d\n', nx, ny);
  
+  integer :: topo_szx ! length of x_topo; number of topography points 
+  ! NF topo_szx should be known as a variable ! 
+  integer :: topo
+  integer :: tgrx, nct,nc
+  integer :: markers(nx+1,ny+1)
+  integer :: nx,ny,i,j,
   
 
-  integer :: topo_szx
+
+  tgrx=topo_szx/nx  ! points in one dx spacing
+  nct=tgrx/nc 
+  ! nc : fine division of dx to nc small samples
+  !nct size in points of small topography samples
+  
+  
+  
+  ! NF oublis : il faut les repredre ceux-ci
+  xt_dis=[]; %x of discretized topography
+  yt_dis=[]; %y of discretized topography
+  
+  markers = 0
+
+  do i=1,nx
 
 
-  topo_szx=size(x_topo,2);
-fprintf('topo_szx = %.2f - number of topography points\n', topo_szx);
-tgrx=topo_szx/nx;
-fprintf('tgrx = %.2f - points in one dx spacing |___|\n', tgrx);
-nct=round(tgrx/nc);
-fprintf('Nc=%d - fine division of dx to nc small samples\n nct = %d - size in points of small topography sample\n',nc, nct);
-
-xt_dis=[]; %x of discretized topography
-yt_dis=[]; %y of discretized topography
-
-% nu0x=[];
-% nu0y=[];
-% 
-% nu1x=[];
-% nu1y=[];
-
-markers=zeros(nx+1,ny+1);
 for i=1:nx
     x_trial=(1+(i-1)*tgrx):i*tgrx; %vector of curve x values
     for j=1:ny

@@ -1,0 +1,17 @@
+c Parameters for stag1.f
+c Gridding
+   2000  399 199  nt,nx,nz
+   2.e-3 2.d-2 2.d-2     dt,dx,dz
+c Structure
+./2d_start.vp
+./2d_start.vs
+./2d_start.rho
+c Source position (in grids) : you don't have to worry about boundaries
+30 4
+c Recker wavelet source
+  6.5d0 2.d-1   f0,t0
+c Receiver
+1 nReceiver : then you can write receiver coordinates below (in grids)
+140 5   
+c
+end
