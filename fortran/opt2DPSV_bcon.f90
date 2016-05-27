@@ -51,16 +51,19 @@ program opt22
   double precision Courant_number
   ! parameter for the receiver
   integer :: nReceiver ! number of receiver
-  integer, parameter :: maxReceiver
+  integer, parameter :: maxReceiver = 150
+  integer :: ir,j
   integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
-  
+  real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver)
+  character(120) :: outfile
+  integer :: ix_rec(1:maxReceiver),iz_rec(1:maxReceiver)
   
   ! parameter for the waveform
   double precision t
   !parameter for video
   real,dimension(maxnz+1,maxnz+1) :: snapux,snapuz
   integer, parameter :: IT_DISPLAY = 10
-  integer :: ix_rec(1),iz_rec(1)
+ 
   integer(2) head(1:120)
   character(80) :: routine
   
@@ -176,7 +179,6 @@ program opt22
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
   
-
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   
   call calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
@@ -187,44 +189,37 @@ program opt22
        f1, f2, f3, f4, f5, f6, f7, f8, &
        f13,f14,f15,f16,f17,f18,f19,f20 )
   
-  call datainit( maxnz,maxnz,lam )
-  call datainit( maxnz,maxnz,mu )
-  !ist = dnint( 2 * tp / dt )
-  !isx = nx / 2 + 1
-  !isz = nz / 2 + 1
+  lam=0.d0
+  mu=0.d0
+
+  ! ist = dnint( 2 * tp / dt )
+  ! isx = nx / 2 + 1
+  ! isz = nz / 2 + 1
 
 
-  ! PML
-  memory_dvx_dx(:,:) = ZERO
-  memory_dvx_dy(:,:) = ZERO
-  memory_dvy_dx(:,:) = ZERO
-  memory_dvy_dy(:,:) = ZERO
-  memory_dsigmaxx_dx(:,:) = ZERO
-  memory_dsigmayy_dy(:,:) = ZERO
-  memory_dsigmaxy_dx(:,:) = ZERO
-  memory_dsigmaxy_dy(:,:) = ZERO
-
-
-  !ist=nt/2
+  ! ist=nt/2
   
-  !isx = 30
-  !isz = 4
+  ! isx = 30
+  ! isz = 4
   
 
   isx=isx+lmargin(1)
   isz=isz+lmargin(2)
-  
-  nrx=nrx+lmargin(1)
-  nrz=nrz+lmargin(2)
 
+  do ir= 1, nReceiver
+     nrx(ir)=nrx(ir)+lmargin(1)
+     nrz(ir)=nrz(ir)+lmargin(2)
+  enddo
+
+  
 
   t=0.d0
-  do it=0,nt
+  !do it=0,nt
      
-     call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
+     !call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
      !write(13,*) t, lam(isx,isz),mu(isx,isz)
-     t=t+dt
-  enddo
+     !t=t+dt
+  !enddo
 
   weightBC=1.d0
 
@@ -232,6 +227,10 @@ program opt22
     
   t = 0.d0
   !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+  do ir = 1,nReceiver
+     synx(0,ir)=ux(nrx(ir),nrz(ir))
+     synz(0,ir)=uz(nrx(ir),nrz(ir))
+  enddo
   do it=0,nt
      call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
      ! evaluating the next step
@@ -247,7 +246,10 @@ program opt22
      ! increment of t
      t = t + dt
      !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
-     
+     do ir = 1,nReceiver
+        synx(it,ir)=ux(nrx(ir),nrz(ir))
+        synz(it,ir)=uz(nrx(ir),nrz(ir))
+     enddo
      
      
      
@@ -289,15 +291,16 @@ program opt22
         !enddo
         !close(21)
         
-        ix_rec(1)=nrx
-        iz_rec(1)=nrz
+        ix_rec(1:nReceiver)=nrx(1:nReceiver)
+        iz_rec(1:nReceiver)=nrz(1:nReceiver)
         
 
         !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
         !     dummylog,dummylog,dummylog,dummylog,1)
         !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
         !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
-        call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1, &
+        call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
+             ix_rec(1:nReceiver),iz_rec(nReceiver),nReceiver, &
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
   
      endif
@@ -313,7 +316,46 @@ program opt22
 
   call system(commandline)
   
+  
+  do ir = 1,nReceiver
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
 
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//outfile
+     open(1, file=outfile,status='unknown',form='formatted')
+     do it=0,nt
+        write (1,*) synx(it,ir)
+     enddo
+     close(1)
+
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
+
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//outfile
+     open(1, file=outfile,status='unknown',form='formatted')
+     do it=0,nt
+        write (1,*) synz(it,ir)
+     enddo
+     close(1)
+  enddo
   
 
   !
@@ -324,7 +366,7 @@ subroutine pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,n
   
   implicit none
   double precision :: f0,t0
-  integer :: maxnz,nt,nx,nz
+  integer :: maxnz,nt,nx,nz,isx,isz
   integer :: maxReceiver, nReceiver
   integer :: nrx(1:maxReceiver), nrz(1:maxReceiver)
   double precision :: dt,dx,dz !rho(*),lam(*),mu(*),tp,ts

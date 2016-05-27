@@ -7,11 +7,11 @@ c Structure
 ./2d_elipsoid.vs
 ./2d_start.rho
 c Source position (in grids) : you don't have to worry about boundaries
-30 4
+30 1 
 c Ricker wavelet source
   6.5d0 2.d-1   f0,t0
 c Receiver
   1 nReceiver : then you can write receiver coordinates below (in grids)
-   140 5    nrx,nrz
+   140 1    nrx,nrz
 c
 end
