@@ -1074,7 +1074,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   implicit none
   
   !       non linear display to enhance small amplitudes for graphics
-  double precision, parameter :: POWER_DISPLAY = 1.5d0
+  double precision, parameter :: POWER_DISPLAY = 1.d0
   
   !       amplitude threshold above which we draw the color point
   double precision, parameter :: cutvect = 0.01d0
@@ -1175,13 +1175,13 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
            
            !       represent regular image points using red if value is positive, blue if negative
         else if(normalized_value >= 0.d0) then
-           R = nint(255.d0*normalized_value**POWER_DISPLAY)
-           G = 0
-           B = 0
+           R = 255
+           G = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
+           B = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
         else
-           R = 0
-           G = 0
-           B = nint(255.d0*abs(normalized_value)**POWER_DISPLAY)
+           R = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
+           G = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
+           B = 255
         endif
         
         !       draw a green square to represent the receivers
