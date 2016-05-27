@@ -131,7 +131,7 @@ program opt22
   
 
 
-  character(120) :: commandline
+  character(140) :: commandline
   
   ! reading the parameter files
   call pinput( maxnz,nt,nx,nz,dt,dx,dz,vpfile,vsfile,rhofile,f0,t0,isx,isz,nrx,nrz,maxReceiver,nReceiver,modelname)
@@ -140,8 +140,14 @@ program opt22
   recl_size=(nx+1)*(nz+1)*kind(0e0)
 
   commandline="mkdir synthetics"
+  call system(commandline)
   commandline="mkdir snapshots"
+  call system(commandline)
+  commandline="mkdir videos"
+  call system(commandline)
   commandline="mkdir synthetics/"//trim(modelname)
+  call system(commandline)
+  commandline="mkdir videos/"//trim(modelname)
   call system(commandline)
 
   ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
@@ -219,8 +225,6 @@ program opt22
      nrx(ir)=nrx(ir)+lmargin(1)
      nrz(ir)=nrz(ir)+lmargin(2)
   enddo
-
-  
 
   t=0.d0
   time(0)=t
@@ -315,39 +319,39 @@ program opt22
              NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
         
 
-        if(optimise) then
-           write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-        endif
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
+        !if(optimise) then
+        !   write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        !else
+        !   write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        !endif
+        !do j=1,24
+        !   if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        !enddo
 
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
-             ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-        write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
-        close(1,status='keep')
+        !outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        !open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        !video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
+        !     ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+        !write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
+        !close(1,status='keep')
 
 
 
-        if(optimise) then
-           write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-        endif
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
+        !if(optimise) then
+        !   write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        !else
+        !   write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
+        !endif
+        !do j=1,24
+        !   if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        !enddo
 
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
-             ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-        write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
-        close(1,status='keep')
+        !outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        !open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        !video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
+        !     ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+        !write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
+        !close(1,status='keep')
   
      endif
 
@@ -357,20 +361,24 @@ program opt22
      !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
      
   enddo
- 
+
+
+
   if(optimise) then
-       write(outfile,'(I5,".",I5,".",I5,".",I5,"opt",".mp4") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-             isx-lmargin(1),isz-lmargin(2)
+     write(outfile,'("video",".",I5,".",I5,".OPT.mp4") ') isx-lmargin(1),isz-lmargin(2)
   else
-      write(outfile,'(I5,".",I5,".",I5,".",I5,"con",".mp4") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-             isx-lmargin(1),isz-lmargin(2)
+     write(outfile,'("video",".",I5,".",I5,".CON.mp4") ') isx-lmargin(1),isz-lmargin(2)
   endif
   do j=1,24
      if(outfile(j:j).eq.' ') outfile(j:j)='0'
   enddo
+  
+  outfile = './videos/'//trim(modelname)//'/'//outfile
 
-  outfile=trim(modelname)//'_'//outfile
+  
   commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
+  
+  
 
   call system(commandline)
   
