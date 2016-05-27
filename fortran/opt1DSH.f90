@@ -31,7 +31,7 @@ program opt1d
   ! parameter for the receiver
   integer nr
   ! switch OPT / CONV
-  logical,parameter :: optimise = .true.
+  logical,parameter :: optimise = .false.
   
   rho=0.d0
   kappa=0.d0
@@ -89,6 +89,9 @@ program opt1d
      call calf2( it,t,ist,isz,dt,dz,rho(isz),f0,t0,f )
      ! evaluating the next step
      call calstep( nz,e1,e2,e3,f1,f2,f3,u,u1,u2,f,optimise)
+     
+     
+
      ! increment of t
      !utotal(:,it)=u(:)
      t = t + dt
@@ -102,7 +105,7 @@ program opt1d
   enddo
   
   ! analytic solution
-  coefamp= 1.d0/2.d0*sqrt(kappa(isz)/rho(isz))*kappa(isz)
+  coefamp= 1.d0/2.d0*sqrt(kappa(isz)/rho(isz))*kappa(isz)*dz*1.d1 
   a=pi*pi*f0*f0
   do ir=1,50
      iir=nz/2+6*ir
@@ -112,7 +115,7 @@ program opt1d
 
            t=dble(it)*dt-traveltime-t0
            
-           uanalytic(ir,it)= t*exp(-a*t**2)
+           uanalytic(ir,it)= coefamp*t*exp(-a*t**2)
            !print *,uanalytic(ir,it)
         endif
      enddo
