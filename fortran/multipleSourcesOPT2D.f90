@@ -11,16 +11,18 @@ program multipleSourcesOPT2D
 
   implicit none
   character(120) :: filename
-  character(80), parameter :: modelname = 'homo'
-  character(80), parameter :: vpmodel = './2d_homo.vp'
-  character(80), parameter :: vsmodel = './2d_homo.vs'
-  character(80), parameter :: rhomodel = './2d_homo.rho'
+  !character(80), parameter :: modelname = 'homo'
+  !character(80), parameter :: vpmodel = './2d_homo.vp'
+  !character(80), parameter :: vsmodel = './2d_homo.vs'
+  !character(80), parameter :: rhomodel = './2d_homo.rho'
+  character(80) :: modelname,vpmodel,vsmodel,rhomodel
   !character(80), parameter :: modelname = 'layered'
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
   ! switch OPT / CONV
-  logical,parameter :: optimise = .false.
+  !logical,parameter :: optimise = .false.
+  logical :: optimise
 
   ! switch video
   logical, parameter :: videoornot = .true.
@@ -36,10 +38,11 @@ program multipleSourcesOPT2D
   integer, parameter :: nReceiver = 199
   integer :: nrx(1:nReceiver), nrz(1:nReceiver)
   
-  integer, parameter :: iSourceStart = 2
-  integer, parameter :: iSourceInterval=2
-  integer, parameter :: nSource = 1
-  integer :: iisx(1:nSource), iisz(1:nSource)
+  !integer, parameter :: iSourceStart = 2
+  !integer, parameter :: iSourceInterval=2
+  integer :: iSourceStart,iSourceInterval,nSource
+  integer, parameter :: maxnSource = 100
+  integer :: iisx(1:maxnSource), iisz(1:maxnSource)
   integer :: iSource, iReceiver
 
 
@@ -139,7 +142,18 @@ program multipleSourcesOPT2D
 
   
   character(140) :: commandline
-  
+
+
+
+  ! Reading Inf File
+110 format(a80)
+  read(5,110) modelname
+  read(5,110) vpmodel
+  read(5,110) vsmodel
+  read(5,110) rhomodel
+  read(5,'(L1)') optimise
+  read(5,*) iSourceStart,iSourceInterval,nSource
+ 
   call system('mkdir ./inffile')
    
   commandline="mkdir synthetics"
@@ -294,7 +308,7 @@ program multipleSourcesOPT2D
      
      ist=nt/4
      
-     ! isx = 30
+     ! isx = 30s
      ! isz = 4
      
      
@@ -847,7 +861,7 @@ subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
   endif
 
   ! NF for point source
-  !fx(isx,isx)=0.d0
+  fx(isx,isx)=0.d0
   
   return
 end subroutine calf
