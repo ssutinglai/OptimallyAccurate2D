@@ -20,7 +20,7 @@ program multipleSourcesOPT2D
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
   ! switch OPT / CONV
-  logical,parameter :: optimise = .false.
+  logical,parameter :: optimise = .true.
   
   !integer :: nt, nx, nz
   !real :: dt, dx, dz
@@ -102,7 +102,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMIN = .true.
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 40
+  integer, parameter :: NPOINTS_PML = 80
   double precision, parameter :: CerjanRate = 0.015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
@@ -126,7 +126,7 @@ program multipleSourcesOPT2D
 
   ! for waveform inversion
   
-  double precision :: straindiagonal(maxnz+1,maxnz+1)
+  real :: singleStrainDiagonal(maxnz+1,maxnz+1)
 
   
   character(140) :: commandline
@@ -312,6 +312,9 @@ program multipleSourcesOPT2D
         synx(0,ir)=ux(nrx(ir),nrz(ir))
         synz(0,ir)=uz(nrx(ir),nrz(ir))
      enddo
+
+     
+
      do it=0,nt
         call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,lam,mu )
         ! evaluating the next step
