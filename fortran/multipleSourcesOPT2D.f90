@@ -19,6 +19,9 @@ program multipleSourcesOPT2D
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
+  ! switch OPT / CONV
+  logical,parameter :: optimise = .false.
+  
   !integer :: nt, nx, nz
   !real :: dt, dx, dz
   ! integer :: isx, isz ! source position
@@ -92,8 +95,7 @@ program multipleSourcesOPT2D
   character(80) :: routine
   
   logical,parameter :: dummylog = .false.
-  ! switch OPT / CONV
-  logical,parameter :: optimise = .true.
+
   ! switch C-PML 
   logical, parameter :: USE_PML_XMIN = .true.
   logical, parameter :: USE_PML_XMAX = .true.
@@ -121,6 +123,10 @@ program multipleSourcesOPT2D
 
   double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
   double precision :: ALPHA_MAX_PML
+
+  ! for waveform inversion
+  
+  double precision :: straindiagonal(maxnz+1,maxnz+1)
 
   
   character(140) :: commandline
@@ -1085,7 +1091,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   implicit none
   
   !       non linear display to enhance small amplitudes for graphics
-  double precision, parameter :: POWER_DISPLAY = 2.d0
+  double precision, parameter :: POWER_DISPLAY = 0.8d0
   
   !       amplitude threshold above which we draw the color point
   double precision, parameter :: cutvect = 0.01d0
