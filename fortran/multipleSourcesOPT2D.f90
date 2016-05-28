@@ -24,6 +24,9 @@ program multipleSourcesOPT2D
 
   ! switch video
   logical, parameter :: videoornot = .true.
+
+  ! writing strains
+  logical, parameter :: writingStrain = .true.
   
   !integer :: nt, nx, nz
   !real :: dt, dx, dz
@@ -107,7 +110,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 40
-  double precision, parameter :: CerjanRate = 0.1
+  double precision, parameter :: CerjanRate = 0.015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -136,6 +139,21 @@ program multipleSourcesOPT2D
   character(140) :: commandline
   
   call system('mkdir ./inffile')
+   
+  commandline="mkdir synthetics"
+  call system(commandline)
+  commandline="mkdir snapshots"
+  call system(commandline)
+  commandline="mkdir videos"
+  call system(commandline)
+  commandline="mkdir synthetics/"//trim(modelname)
+  call system(commandline)
+  commandline="mkdir videos/"//trim(modelname)
+  call system(commandline)
+  commandline="mkdir strains"
+  call system(commandline)
+  commandline="mkdir strains/"//trim(modelname)
+  call system(commandline)
 
 
   vpfile=vpmodel
@@ -208,17 +226,7 @@ program multipleSourcesOPT2D
 
      ! for video (without boundary)
      recl_size=(nx+1)*(nz+1)*kind(0e0)
-     
-     commandline="mkdir synthetics"
-     call system(commandline)
-     commandline="mkdir snapshots"
-     call system(commandline)
-     commandline="mkdir videos"
-     call system(commandline)
-     commandline="mkdir synthetics/"//trim(modelname)
-     call system(commandline)
-     commandline="mkdir videos/"//trim(modelname)
-     call system(commandline)
+    
      
      ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
      
@@ -359,9 +367,25 @@ program multipleSourcesOPT2D
         
         ! calculating strains
         
-        singleStrainDiagonal=0.e0
-        call calStrainDiagonal(maxnz,nx,nz,ux,lmargin,rmargin,singleStrainDiagonal)
-        call calStrainDiagonal(maxnz,nx,nz,uz,lmargin,rmargin,singleStrainDiagonal)
+        
+        if(writingStrain) then
+           singleStrainDiagonal=0.e0
+           !call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
+           
+           if(optimise) then
+              write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           else
+              write(outfile,'("strain",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           endif
+           do j=1,24
+              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+           enddo
+           
+           outfile = './strains/'//trim(modelname)//'/'//outfile
+           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+           write(1,rec=1) singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+           close(1,status='keep')
+        endif
 
 
         
@@ -853,17 +877,20 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 end subroutine calf2
 
 
-subroutine calStrainDiagonal(maxnz,nx,nz,lmargin,rmargin,u,singleStrainDiagonal)
+subroutine calStrainDiagonal(maxnz,nx,nz,lmargin,rmargin,ux,uz,singleStrainDiagonal)
   implicit none
   integer :: maxnz,nx,nz,ix,iz
-  double precision :: u(maxnz,maxnz)
+  double precision :: ux(1:maxnz,1:maxnz),uz(1:maxnz,1:maxnz)
   integer :: lmargin(2), rmargin(2)
-  real(kind(0e0)) :: singleStrainDiagonal(1:maxnz,maxnz)
+  real(kind(0e0)) :: singleStrainDiagonal(1:maxnz,1:maxnz)
   double precision :: straintmp
+  double precision, parameter :: onetwelfth = 0.0833333333333333d0
   
   integer :: nxstart,nxend,nzstart,nzend
   ! we calculate only for the box of interest (without absorbing boundaries)
-  
+  ! and we suppose that we have lmargin != 0 and rmargin != 0
+  ! i.e., we use the four-point first derivative operators with one extra point to the left
+
   nxstart=lmargin(1)+1
   nxend=nx+1-rmargin(1)
 
@@ -871,8 +898,15 @@ subroutine calStrainDiagonal(maxnz,nx,nz,lmargin,rmargin,u,singleStrainDiagonal)
   nzend=nz+1-rmargin(2)
 
   
-  
+  do ix=nxstart,nxend
+     do iz=nzstart,nzend
+        straintmp=0.d0
+        straintmp=(5.d0*ux(ix+1,iz)+3.d0*ux(ix,iz)-9.d0*ux(ix-1,iz)+ux(ix-2,iz))*onetwelfth
+        straintmp=straintmp+(5.d0*uz(ix,iz+1)+3.d0*uz(ix,iz)-9.d0*uz(ix,iz-1)+uz(ix,iz-2))*onetwelfth
 
+     enddo
+  enddo
+     
 end subroutine calStrainDiagonal
 
 subroutine calstep( maxnz,nx,nz, &
