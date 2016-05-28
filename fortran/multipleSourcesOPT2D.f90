@@ -110,7 +110,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 100
-  double precision, parameter :: CerjanRate = 0.015
+  double precision, parameter :: CerjanRate = 0.0015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -370,8 +370,10 @@ program multipleSourcesOPT2D
         
         if(writingStrain) then
            singleStrainDiagonal=0.e0
-           !call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
-           
+           call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
+          
+
+
            if(optimise) then
               write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
            else
@@ -532,7 +534,7 @@ program multipleSourcesOPT2D
   enddo
 
 
-  !write(18,*) singleStrainDiagonal(:,:)
+  write(18,*) singleStrainDiagonal(:,:)
 
 end program multipleSourcesOPT2D
 
@@ -880,11 +882,11 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 end subroutine calf2
 
 
-subroutine calStrainDiagonal(maxnz,nx,nz,lmargin,rmargin,ux,uz,singleStrainDiagonal)
+subroutine calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
   implicit none
   integer :: maxnz,nx,nz,ix,iz
   double precision :: ux(1:maxnz,1:maxnz),uz(1:maxnz,1:maxnz)
-  integer :: lmargin(2), rmargin(2)
+  integer :: lmargin(1:2), rmargin(1:2)
   real(kind(0e0)) :: singleStrainDiagonal(1:maxnz,1:maxnz)
   double precision :: straintmp
   double precision, parameter :: onetwelfth = 0.0833333333333333d0
