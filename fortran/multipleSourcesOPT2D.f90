@@ -109,7 +109,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMIN = .true.
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 40
+  integer, parameter :: NPOINTS_PML = 100
   double precision, parameter :: CerjanRate = 0.015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
@@ -530,6 +530,9 @@ program multipleSourcesOPT2D
      enddo
      
   enddo
+
+
+  !write(18,*) singleStrainDiagonal(:,:)
 
 end program multipleSourcesOPT2D
 
