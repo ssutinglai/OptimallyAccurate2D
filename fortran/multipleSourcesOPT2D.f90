@@ -102,8 +102,8 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMIN = .true.
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 80
-  double precision, parameter :: CerjanRate = 0.015
+  integer, parameter :: NPOINTS_PML = 40
+  double precision, parameter :: CerjanRate = 0.50
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -177,8 +177,6 @@ program multipleSourcesOPT2D
      write(1,'(a)') trim(vsmodel)
      write(1,'(a)') trim(rhomodel)
 
-
-
      write(1,'(a)') 'c source position (in grids) '
      write(1,*) iisx(iSource),iisz(iSource)
      write(1,'(a)') 'c source time function (Ricker wavelet)'
@@ -200,7 +198,10 @@ program multipleSourcesOPT2D
   do iSource = 1, nSource
      iisx(iSource)=2*iSource
      iisz(iSource)=1
-     
+     isx=iisx(iSource)
+     isz=iisz(iSource)
+
+
      ! for video (without boundary)
      recl_size=(nx+1)*(nz+1)*kind(0e0)
      
@@ -352,6 +353,13 @@ program multipleSourcesOPT2D
         
         
         
+        ! calculating strains
+        
+        singleStrainDiagonal=0.e0
+        call calStrainDiagonal(maxnz,nx,nz,ux,singleStrainDiagonal)
+        call calStrainDiagonal(maxnz,nx,nz,uz,singleStrainDiagonal)
+
+
         
         !write(*,*) it, ' of ', nt
         if(mod(it,IT_DISPLAY) == 0)then
@@ -838,6 +846,9 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
   return
 end subroutine calf2
 
+
+subroutine calStrainDiagonal(maxnz,nx,nz,ux,singleStrainDiagonal)
+end subroutine calStrainDiagonal
 
 subroutine calstep( maxnz,nx,nz, &
      e1, e2, e3, e4, e5, e6, e7, e8, &
