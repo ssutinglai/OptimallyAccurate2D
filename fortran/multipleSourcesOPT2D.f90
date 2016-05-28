@@ -36,6 +36,8 @@ program multipleSourcesOPT2D
   integer, parameter :: nReceiver = 199
   integer :: nrx(1:nReceiver), nrz(1:nReceiver)
   
+  integer, parameter :: iSourceStart = 2
+  integer, parameter :: iSourceInterval=2
   integer, parameter :: nSource = 1
   integer :: iisx(1:nSource), iisz(1:nSource)
   integer :: iSource, iReceiver
@@ -179,7 +181,7 @@ program multipleSourcesOPT2D
   enddo
   
   do iSource = 1, nSource
-     iisx(iSource)=2*iSource
+     iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
      iisz(iSource)=1
      write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
      do j=1, 12
@@ -470,6 +472,9 @@ program multipleSourcesOPT2D
         
      enddo
 
+     write(18,*) singleStrainDiagonal(:,:)
+
+
      if(videoornot) then
         
         if(optimise) then
@@ -535,7 +540,7 @@ program multipleSourcesOPT2D
   enddo
 
 
-  write(18,*) singleStrainDiagonal(:,:)
+
 
 end program multipleSourcesOPT2D
 
@@ -912,6 +917,7 @@ subroutine calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiago
         singleStrainDiagonal(ix,iz)=straintmp
      enddo
   enddo
+ 
      
 end subroutine calStrainDiagonal
 
