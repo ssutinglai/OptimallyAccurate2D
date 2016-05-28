@@ -48,7 +48,7 @@ program multipleSourcesOPT2D
 
 
   integer, parameter :: maxnz = 600 
-  integer, parameter :: maxnt = 2000
+  integer, parameter :: maxnt = 1500
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
     
@@ -177,7 +177,7 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=2000
+  nt=1500
   nx=399
   nz=199
   dt=4.d-3
