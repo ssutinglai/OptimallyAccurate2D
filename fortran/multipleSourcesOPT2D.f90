@@ -529,11 +529,15 @@ program multipleSourcesOPT2D
         enddo
         
         outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        open(1, file=outfile,status='unknown',form='formatted')
-        do it=0,nt
-           write (1,*) time(it),synx(it,ir)
-        enddo
-        close(1)
+        !open(1, file=outfile,status='unknown',form='formatted')
+        !do it=0,nt
+        !   write (1,*) time(it),synx(it,ir)
+        !enddo
+        !close(1)
+        open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+        write(1,rec=1) synx(0:nt,ir)
+        close(1,status='keep')
+
         
         if(optimise) then
            write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
