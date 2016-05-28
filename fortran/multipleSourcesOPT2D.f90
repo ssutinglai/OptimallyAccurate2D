@@ -7,7 +7,7 @@ program multipleSourcesOPT2D
   !
   !					originally from 1997.6  N.Takeuchi
   !                                                     2016.5. N.Fuji
-  
+  !                  colorbars : K. Okubo (2016.5.)
 
   implicit none
   character(120) :: filename
@@ -41,7 +41,7 @@ program multipleSourcesOPT2D
   !integer, parameter :: iSourceStart = 2
   !integer, parameter :: iSourceInterval=2
   integer :: iSourceStart,iSourceInterval,nSource
-  integer, parameter :: maxnSource = 50
+  integer, parameter :: maxnSource = 1
   integer :: iisx(1:maxnSource), iisz(1:maxnSource)
   integer :: iSource, iReceiver
 
@@ -1223,12 +1223,13 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   double precision, dimension(NX,NY) :: image_data_2D
   
   integer, dimension(nrec) :: ix_rec,iy_rec
-  
+  logical, parameter :: kurama =.true.
   integer :: ix,iy,irec
   
   character(len=100) :: file_name,system_command1,system_command2,system_command3
 	
   integer :: R, G, B
+  double precision :: R1, G1, B1
   
   double precision :: normalized_value,max_amplitude
   
@@ -1305,14 +1306,22 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
            endif
            
            !       represent regular image points using red if value is positive, blue if negative
-        else if(normalized_value >= 0.d0) then
-           R = 255
-           G = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
-           B = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
+        elseif(kurama) then
+           
+           call plotcolor(normalized_value,R1,G1,B1)
+           R = nint(R1)
+           G = nint(G1)
+           B = nint(B1)
         else
-           R = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
-           G = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
-           B = 255
+           if(normalized_value >= 0.d0) then
+              R = 255
+              G = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
+              B = nint(255.d0-255.d0*normalized_value**POWER_DISPLAY)
+           else
+              R = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
+              G = nint(255.d0-255.d0*abs(normalized_value)**POWER_DISPLAY)
+              B = 255
+           endif
         endif
         
         !       draw a green square to represent the receivers
@@ -1584,3 +1593,224 @@ subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
   
 end subroutine compNRBCpre
 
+
+
+
+
+
+subroutine plotcolor(v,r1,g1,b1)
+!======================================================================
+! Interpolate r1 g1 b1
+!======================================================================
+
+  real(8) v,v1,nl
+  double precision r1, g1, b1
+  real(8),allocatable,dimension(:) :: x,r,g,b
+
+  integer n,i
+
+  !read colormap data
+  open (17, file='./colormap/colormap.dat', status='old')
+  read (17, *) nl
+
+  n = int(nl)
+  allocate( x(n) )
+  allocate( r(n) )
+  allocate( g(n) )
+  allocate( b(n) )
+
+  do i = 1, int(nl)
+      read (17, *) x(i), r(i), g(i), b(i)
+  end do
+  close(17)
+    !rescale normalized value from [-1 1] to [0 1]
+    !Depending on colormap.dat
+
+    !when colormap domain is [0 1]
+    !v1 = (1.0d0+v)/2.0d0
+
+    !when colormap domain is [-1 1]
+    v1 = v
+
+    call colormap(v1,n,x,r,g,b,r1,g1,b1)
+
+end subroutine plotcolor
+
+subroutine colormap(v,n,x,r,g,b,r1,g1,b1)
+!======================================================================
+  !v: normalized value [-1 1]
+  !n: number of the data in colormap
+  !x: ampritude in dataset
+  !r: dataset of R
+  !g: dataset of G
+  !b: dataset of B
+  !r1: interpolated R
+  !g1 interpolated G
+  !b1: interpolated B
+!----------------------------------------------------------------------
+
+  implicit none
+  integer i,n
+  real(8) v,x(n),r(n),g(n),b(n)
+  double precision ispline, r1, g1, b1
+  real(8) b_spline(n),c_spline(n),d_spline(n)
+
+  !for R
+  call spline (x, r, b_spline, c_spline, d_spline,n)
+  r1 = ispline(v, x, r, b_spline, c_spline, d_spline, n)
+
+  !for G
+  call spline (x, g, b_spline, c_spline, d_spline,n)
+  g1 = ispline(v, x, g, b_spline, c_spline, d_spline, n)
+
+  !for B
+  call spline (x, b, b_spline, c_spline, d_spline,n)
+  b1 = ispline(v, x, b, b_spline, c_spline, d_spline, n)
+
+
+end subroutine colormap
+
+!======================================================================
+!======================================================================
+!======================================================================
+
+
+subroutine spline (x, y, b, c, d, n)
+!======================================================================
+!  Calculate the coefficients b(i), c(i), and d(i), i=1,2,...,n
+!  for cubic spline interpolation
+!  s(x) = y(i) + b(i)*(x-x(i)) + c(i)*(x-x(i))**2 + d(i)*(x-x(i))**3
+!  for  x(i) <= x <= x(i+1)
+!  Alex G: January 2010
+!----------------------------------------------------------------------
+!  input..
+!  x = the arrays of data abscissas (in strictly increasing order)
+!  y = the arrays of data ordinates
+!  n = size of the arrays xi() and yi() (n>=2)
+!  output..
+!  b, c, d  = arrays of spline coefficients
+!  comments ...
+!  spline.f90 program is based on fortran version of program spline.f
+!  the accompanying function fspline can be used for interpolation
+!======================================================================
+implicit none
+integer n
+double precision x(n), y(n), b(n), c(n), d(n)
+integer i, j, gap
+double precision h
+
+gap = n-1
+! check input
+if ( n < 2 ) return
+if ( n < 3 ) then
+  b(1) = (y(2)-y(1))/(x(2)-x(1))   ! linear interpolation
+  c(1) = 0.
+  d(1) = 0.
+  b(2) = b(1)
+  c(2) = 0.
+  d(2) = 0.
+  return
+end if
+!
+! step 1: preparation
+!
+d(1) = x(2) - x(1)
+c(2) = (y(2) - y(1))/d(1)
+do i = 2, gap
+  d(i) = x(i+1) - x(i)
+  b(i) = 2.0*(d(i-1) + d(i))
+  c(i+1) = (y(i+1) - y(i))/d(i)
+  c(i) = c(i+1) - c(i)
+end do
+!
+! step 2: end conditions
+!
+b(1) = -d(1)
+b(n) = -d(n-1)
+c(1) = 0.0
+c(n) = 0.0
+if(n /= 3) then
+  c(1) = c(3)/(x(4)-x(2)) - c(2)/(x(3)-x(1))
+  c(n) = c(n-1)/(x(n)-x(n-2)) - c(n-2)/(x(n-1)-x(n-3))
+  c(1) = c(1)*d(1)**2/(x(4)-x(1))
+  c(n) = -c(n)*d(n-1)**2/(x(n)-x(n-3))
+end if
+!
+! step 3: forward elimination
+!
+do i = 2, n
+  h = d(i-1)/b(i-1)
+  b(i) = b(i) - h*d(i-1)
+  c(i) = c(i) - h*c(i-1)
+end do
+!
+! step 4: back substitution
+!
+c(n) = c(n)/b(n)
+do j = 1, gap
+  i = n-j
+  c(i) = (c(i) - d(i)*c(i+1))/b(i)
+end do
+!
+! step 5: compute spline coefficients
+!
+b(n) = (y(n) - y(gap))/d(gap) + d(gap)*(c(gap) + 2.0*c(n))
+do i = 1, gap
+  b(i) = (y(i+1) - y(i))/d(i) - d(i)*(c(i+1) + 2.0*c(i))
+  d(i) = (c(i+1) - c(i))/d(i)
+  c(i) = 3.*c(i)
+end do
+c(n) = 3.0*c(n)
+d(n) = d(n-1)
+end subroutine spline
+
+function ispline(u, x, y, b, c, d, n)
+!======================================================================
+! function ispline evaluates the cubic spline interpolation at point z
+! ispline = y(i)+b(i)*(u-x(i))+c(i)*(u-x(i))**2+d(i)*(u-x(i))**3
+! where  x(i) <= u <= x(i+1)
+!----------------------------------------------------------------------
+! input..
+! u       = the abscissa at which the spline is to be evaluated
+! x, y    = the arrays of given data points
+! b, c, d = arrays of spline coefficients computed by spline
+! n       = the number of data points
+! output:
+! ispline = interpolated value at point u
+!=======================================================================
+implicit none
+double precision ispline
+integer n
+double precision  u, x(n), y(n), b(n), c(n), d(n)
+integer i, j, k
+double precision dx
+
+! if u is ouside the x() interval take a boundary value (left or right)
+if(u <= x(1)) then
+  ispline = y(1)
+  return
+end if
+if(u >= x(n)) then
+  ispline = y(n)
+  return
+end if
+
+!*
+!  binary search for for i, such that x(i) <= u <= x(i+1)
+!*
+i = 1
+j = n+1
+do while (j > i+1)
+  k = (i+j)/2
+  if(u < x(k)) then
+    j=k
+    else
+    i=k
+   end if
+end do
+!*
+!  evaluate spline interpolation
+!*
+dx = u - x(i)
+ispline = y(i) + dx*(b(i) + dx*(c(i) + dx*d(i)))
+end function ispline
