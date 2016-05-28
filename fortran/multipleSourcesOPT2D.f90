@@ -20,7 +20,7 @@ program multipleSourcesOPT2D
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
   ! switch OPT / CONV
-  logical,parameter :: optimise = .true.
+  logical,parameter :: optimise = .false.
 
   ! switch video
   logical, parameter :: videoornot = .true.
@@ -160,7 +160,7 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=2000
+  nt=1500
   nx=399
   nz=199
   dt=2.d-3
@@ -424,6 +424,7 @@ program multipleSourcesOPT2D
               call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
                    nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
                    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
+              
            endif
            
            !if(optimise) then
@@ -908,7 +909,7 @@ subroutine calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiago
         straintmp=0.d0
         straintmp=(5.d0*ux(ix+1,iz)+3.d0*ux(ix,iz)-9.d0*ux(ix-1,iz)+ux(ix-2,iz))*onetwelfth
         straintmp=straintmp+(5.d0*uz(ix,iz+1)+3.d0*uz(ix,iz)-9.d0*uz(ix,iz-1)+uz(ix,iz-2))*onetwelfth
-
+        singleStrainDiagonal(ix,iz)=straintmp
      enddo
   enddo
      
