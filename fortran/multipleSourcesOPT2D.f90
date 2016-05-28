@@ -11,14 +11,14 @@ program multipleSourcesOPT2D
 
   implicit none
   character(120) :: filename
-  character(80), parameter :: modelname = 'elips'
-  character(80), parameter :: vpmodel = './2d_elipsoid.vp'
-  character(80), parameter :: vsmodel = './2d_elipsoid.vs'
+  character(80), parameter :: modelname = 'homo'
+  character(80), parameter :: vpmodel = './2d_homo.vp'
+  character(80), parameter :: vsmodel = './2d_homo.vs'
+  character(80), parameter :: rhomodel = './2d_homo.rho'
   !character(80), parameter :: modelname = 'layered'
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
-  character(80), parameter :: rhomodel = './2d_start.rho'
   !integer :: nt, nx, nz
   !real :: dt, dx, dz
   ! integer :: isx, isz ! source position
@@ -1085,7 +1085,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   implicit none
   
   !       non linear display to enhance small amplitudes for graphics
-  double precision, parameter :: POWER_DISPLAY = 1.d0
+  double precision, parameter :: POWER_DISPLAY = 2.d0
   
   !       amplitude threshold above which we draw the color point
   double precision, parameter :: cutvect = 0.01d0

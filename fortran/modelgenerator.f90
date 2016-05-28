@@ -27,51 +27,19 @@ program generator
  NX_TOTAL = 400
  NZ_TOTAL = 200
 
-!*** Thikness, Vp, Vs *******************************************					
-! layer_thikness(1)=20;vp(1)=2100;vs(1)=1500;
-! layer_thikness(2)=40;vp(2)=2200;vs(2)=1550;
-! layer_thikness(3)=90;vp(3)=2300;vs(3)=1600;
-! layer_thikness(4)=140;vp(4)=2500;vs(4)=1650;
-! layer_thikness(5)=160;vp(5)=2700;vs(5)=1700;
-! layer_thikness(6)=180;vp(6)=2800;vs(6)=1750;
-! layer_thikness(7)=200;vp(7)=2900;vs(7)=1800;
+!*** Thikness, Vp, Vs *******************************************		
 
- !layer_thikness(1)=40;vp(1)=1500;vs(1)=0.e0;
  layer_thikness(1)=40;vp(1)=2200;vs(1)=1400;
  layer_thikness(2)=90;vp(2)=2300;vs(2)=1450;
  layer_thikness(3)=140;vp(3)=2500;vs(3)=1550;
  layer_thikness(4)=180;vp(4)=2700;vs(4)=1700;
  layer_thikness(5)=200;vp(5)=3000;vs(5)=1900;
 
-
-! layer_thikness(1)=20;vp(1)=1500;vs(1)=1300;
-! layer_thikness(2)=40;vp(2)=2100;vs(2)=1400;
-! layer_thikness(3)=90;vp(3)=2300;vs(3)=1450;
-! layer_thikness(4)=140;vp(4)=2300;vs(4)=1450;
-! layer_thikness(5)=180;vp(5)=2300;vs(5)=1450;
-! layer_thikness(6)=201;vp(6)=2300;vs(6)=1450;
-
-! layer_thikness(1)=40;  vp(1)=2700; vs(1)=1700;
-! layer_thikness(2)=90;  vp(2)=2700; vs(2)=1700;
-! layer_thikness(3)=140;  vp(3)=2700; vs(3)=1700;
-! layer_thikness(4)=180; vp(4)=2700; vs(4)=1700;
-! layer_thikness(5)=200; vp(5)=2700; vs(5)=1700;
-
-! layer_thikness(1)=20;vp(1)=1500;vs(1)=1300;
-! layer_thikness(2)=25;vp(2)=1550;vs(2)=1320;
-! layer_thikness(3)=30;vp(3)=1600;vs(3)=1350;
-! layer_thikness(4)=35;vp(4)=1700;vs(4)=1370;
-! layer_thikness(5)=40;vp(5)=2100;vs(5)=1400;
-! layer_thikness(6)=90;vp(6)=2300;vs(6)=1450;
-! layer_thikness(7)=140;vp(7)=2500;vs(7)=1550;
-! layer_thikness(8)=150;vp(8)=2600;vs(8)=1580;
-! layer_thikness(9)=160;vp(9)=2650;vs(9)=1650;
-! layer_thikness(10)=170;vp(10)=2670;vs(10)=1670;
-! layer_thikness(11)=180;vp(11)=2700;vs(11)=1700;
-! layer_thikness(12)=201;vp(12)=3000;vs(12)=1900;
-
-
-
+! layer_thikness(1)=40;vp(1)=2200;vs(1)=1400;
+! layer_thikness(2)=90;vp(2)=2200;vs(2)=1400;
+! layer_thikness(3)=140;vp(3)=2200;vs(3)=1400;
+! layer_thikness(4)=180;vp(4)=2200;vs(4)=1400;
+! layer_thikness(5)=200;vp(5)=2200;vs(5)=1400;
  
 
 
@@ -83,9 +51,9 @@ program generator
 
 !****************************************************************	   
  
- open (1,file='./2d_start.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_start.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_start.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_homo.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_homo.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_homo.rho',form='unformatted',access='direct',recl=recl_size)
 
  tmp=1
  do j=1, NZ_TOTAL
