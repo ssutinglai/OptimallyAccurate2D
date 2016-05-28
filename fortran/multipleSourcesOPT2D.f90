@@ -180,7 +180,7 @@ program multipleSourcesOPT2D
   nt=2000
   nx=399
   nz=199
-  dt=3.d-3
+  dt=4.d-3
   dx=2.d-2
   dz=2.d-2
   
