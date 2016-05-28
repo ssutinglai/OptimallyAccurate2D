@@ -274,7 +274,7 @@ program multipleSourcesOPT2D
   
 
   do iSource = 1, nSource
-     iisx(iSource)=2*iSource
+     iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
      iisz(iSource)=1
      isx=iisx(iSource)
      isz=iisz(iSource)
