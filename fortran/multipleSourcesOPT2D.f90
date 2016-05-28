@@ -41,7 +41,7 @@ program multipleSourcesOPT2D
   !integer, parameter :: iSourceStart = 2
   !integer, parameter :: iSourceInterval=2
   integer :: iSourceStart,iSourceInterval,nSource
-  integer, parameter :: maxnSource = 100
+  integer, parameter :: maxnSource = 50
   integer :: iisx(1:maxnSource), iisz(1:maxnSource)
   integer :: iSource, iReceiver
 
@@ -548,11 +548,18 @@ program multipleSourcesOPT2D
         enddo
         
         outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        open(1, file=outfile,status='unknown',form='formatted')
-        do it=0,nt
-           write (1,*) time(it), synz(it,ir)
-        enddo
-        close(1)
+        !open(1, file=outfile,status='unknown',form='formatted')
+        !do it=0,nt
+        !   write (1,*) time(it), synz(it,ir)
+        !enddo
+        !close(1)
+
+        open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+        write(1,rec=1) synz(0:nt,ir)
+        close(1,status='keep')
+
+
+        
      enddo
      
   enddo
