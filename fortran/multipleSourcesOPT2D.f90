@@ -21,6 +21,9 @@ program multipleSourcesOPT2D
 
   ! switch OPT / CONV
   logical,parameter :: optimise = .true.
+
+  ! switch video
+  logical, parameter :: videoornot = .true.
   
   !integer :: nt, nx, nz
   !real :: dt, dx, dz
@@ -46,6 +49,7 @@ program multipleSourcesOPT2D
   double precision dt,dx,dz
   ! parameters for the wavefield
   integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size
+  ! Attention ! nx and nz are modified with absorbing boundaries
   double precision ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
   double precision ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
   double precision uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
@@ -103,7 +107,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
   integer, parameter :: NPOINTS_PML = 40
-  double precision, parameter :: CerjanRate = 0.50
+  double precision, parameter :: CerjanRate = 0.1
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
   integer :: lmargin(1:2),rmargin(1:2)
@@ -126,7 +130,7 @@ program multipleSourcesOPT2D
 
   ! for waveform inversion
   
-  real :: singleStrainDiagonal(maxnz+1,maxnz+1)
+  real(kind(0e0)) :: singleStrainDiagonal(maxnz+1,maxnz+1)
 
   
   character(140) :: commandline
@@ -356,8 +360,8 @@ program multipleSourcesOPT2D
         ! calculating strains
         
         singleStrainDiagonal=0.e0
-        call calStrainDiagonal(maxnz,nx,nz,ux,singleStrainDiagonal)
-        call calStrainDiagonal(maxnz,nx,nz,uz,singleStrainDiagonal)
+        call calStrainDiagonal(maxnz,nx,nz,ux,lmargin,rmargin,singleStrainDiagonal)
+        call calStrainDiagonal(maxnz,nx,nz,uz,lmargin,rmargin,singleStrainDiagonal)
 
 
         
@@ -390,10 +394,11 @@ program multipleSourcesOPT2D
            !     dummylog,dummylog,dummylog,dummylog,1)
            !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
            !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
-           call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
-                nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
-                NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
-           
+           if(videoornot) then
+              call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
+                   nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
+                   NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
+           endif
            
            !if(optimise) then
            !   write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
@@ -438,22 +443,23 @@ program multipleSourcesOPT2D
         
      enddo
 
+     if(videoornot) then
+        
+        if(optimise) then
+           write(outfile,'("video",".",I5,".",I5,".OPT.mp4") ') isx-lmargin(1),isz-lmargin(2)
+        else
+           write(outfile,'("video",".",I5,".",I5,".CON.mp4") ') isx-lmargin(1),isz-lmargin(2)
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './videos/'//trim(modelname)//'/'//outfile
+        
+        
+        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
      
-
-     if(optimise) then
-        write(outfile,'("video",".",I5,".",I5,".OPT.mp4") ') isx-lmargin(1),isz-lmargin(2)
-     else
-        write(outfile,'("video",".",I5,".",I5,".CON.mp4") ') isx-lmargin(1),isz-lmargin(2)
      endif
-     do j=1,24
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './videos/'//trim(modelname)//'/'//outfile
-     
-     
-     commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
-     
      
      
      call system(commandline)
@@ -847,7 +853,26 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 end subroutine calf2
 
 
-subroutine calStrainDiagonal(maxnz,nx,nz,ux,singleStrainDiagonal)
+subroutine calStrainDiagonal(maxnz,nx,nz,lmargin,rmargin,u,singleStrainDiagonal)
+  implicit none
+  integer :: maxnz,nx,nz,ix,iz
+  double precision :: u(maxnz,maxnz)
+  integer :: lmargin(2), rmargin(2)
+  real(kind(0e0)) :: singleStrainDiagonal(1:maxnz,maxnz)
+  double precision :: straintmp
+  
+  integer :: nxstart,nxend,nzstart,nzend
+  ! we calculate only for the box of interest (without absorbing boundaries)
+  
+  nxstart=lmargin(1)+1
+  nxend=nx+1-rmargin(1)
+
+  nzstart=lmargin(2)+1
+  nzend=nz+1-rmargin(2)
+
+  
+  
+
 end subroutine calStrainDiagonal
 
 subroutine calstep( maxnz,nx,nz, &
