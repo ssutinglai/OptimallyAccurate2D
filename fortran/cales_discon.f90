@@ -28,7 +28,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   
   ! interface markers
 
-  integer :: ik,jk,ctr
+  integer :: ik(1:9),jk(1:9),ctr
   integer :: markers(maxnz+1,maxnz+1)
   double precision :: pt0x,pt0z,pt1x,pt1z
 
@@ -56,6 +56,21 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   
   eps=1.d-8
 
+  ik = 0
+  jk = 0
+
+  ctr = 0
+ 
+  do ix = 1,-1,-1
+     do iz = 1,-1,-1
+        ctr = ctr + 1
+        ik(ctr) = ix
+        jk(ctr) = iz
+     enddo
+  enddo
+  
+
+
   ! modified operators for discontinuities
   
   do iz=2,nz
@@ -73,6 +88,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ctr = 1
            distan2 = dDiagonal2
            
+           
            pt1x = pt0x + dx
            pt1z = pt0z + dz
 
@@ -81,6 +97,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+
            endif
            
            
@@ -359,7 +376,8 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
   double precision :: s12, s23
   double precision :: dxds, dzds
 
-  
+  normal=0.d0
+
   if(iInterSection(1).eq.1) then
      
      xi = dscr(1,2,iInterSection(2))
@@ -390,7 +408,12 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
   s23 = sqrt((xi-xk)*(xi-xk)+(xi-xk)*(xi-xk))
   
   dxds = (s23*s23*(xi-xj)+s12*s12*(xk-xi))/(s12*s23*(s12+s23))
-  dzds = 
+  dzds = (s23*s23*(zi-zj)+s12*s12*(zk-zi))/(s12*s23*(s12+s23))
+
+  normal(1)=-dzds
+  normal(2)=dxds
+
+end subroutine NormalFinder
   
   
   
