@@ -3,7 +3,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ! isotropic modified operators for discontinuities
 
   implicit none 
-  double precision :: coef(1:4),eta(0:1,1:2),normal(1:2)
+  double precision :: coef(1:6,1:2),eta(0:1,1:2),normal(1:2)
   double precision :: rho0,rho1,lam0,lam1,mu0,mu1,dx,dz
   integer :: ik,jk
   double precision :: nvx,nvy,nvx2,nvy2,nvxnvy
@@ -25,7 +25,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   double precision :: xe6ux_dxxb,xe6uy_dxyb,xe6ux_dyyb,ye6ux_dxyb,ye6uy_dxxb,ye6uy_dyyb 
  
   ! Matrices
-  double precision, dimension(1:12,1:12) :: A0,B0,A1,B1
+  double precision, dimension(1:12,1:12) :: A0,B0,A1,B1,M0,Mm0,M1,M2
   double precision :: r, s
   
   nvx=normal(1)
@@ -38,8 +38,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   eta1x =-dble(ik)*eta(1,1)
 
   eta0y = dble(jk)*eta(0,2)
-  eta1y =-dble(jk)*eta(1,2)
-  
+  eta1y =-dble(jk)*eta(1,2)  
 
   C0 = 0.d0
   C1 = 0.d0
@@ -341,12 +340,23 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   
 
+  ! temporary matrices
+
+  M0=matmal(B0,A0)
   
+  call inverse(12,M0,12,Mm0)
+
+  M1=matmal(B1,A1)
+
   
+  ! coefs 
 
+  coef = 0.d0
+  
+  M2=matmal(Mm0,M1)
 
-
-
+  coef(1:6,1)=M2(1,1:6)
+  coef(1:6,2)=M2(7,7:12)
 
 
 end subroutine MizutaniIso
