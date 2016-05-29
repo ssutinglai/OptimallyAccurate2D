@@ -29,19 +29,31 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   ! interface markers
 
   integer :: ik,jk
-  integer :: ctr
   integer :: markers(maxnz+1,maxnz+1)
   double precision :: pt0x,pt0z,pt1x,pt1z
 
   integer :: nDiscon,lengthDiscon ! number of discontinuities
   double precision :: dscr(1:2,1:lengthDiscon,1:nDiscon)
-  
+
+  double precision :: dDiagonal,dDiagonal2 ! sqrt(dx^2+dz^2)
+  double precision :: eps ! zero tolerance
+
+  double precision :: xi,zi,distan ! intersecion coordinates
+  integer :: iLengthDiscon,iDiscon,nInterSection
+
+
+  ! Verify that all the coordinates are already with lmargins
+
 
   dt2 = dt * dt
   dx2 = dx * dx
   dz2 = dz * dz
   dxdz = dx * dz
   
+  dDiagonal2= dx2+dz2
+  dDiagonal = sqrt(dDiagonal2)
+  
+  eps=dDiagonal*1.d-5
 
   ! modified operators for discontinuities
   
@@ -52,15 +64,66 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt0x=dble(ix-1)*dx
            pt0z=dble(iz-1)*dz
 
-           ctr=0
+           ! ctr = 0 right-top ix+1,iz+1
+
+           distan = dDiagonal
+           
+           ! ctr = 1 right-centre ix+1,iz
+           
+           distan = dx
+           
+           ! ctr = 2 right-bottom ix+1,iz-1
+
+            distan = dDiagonal
+
+
+
+
+
+
+
+
+           ! ctr = 3 centre-top ix,iz+1
+
+            distan = dz
+
+           ! ctr = 5 centre-bottom ix,iz-1
+
+
+           
+
+
+           ! ctr = 6 left-top ix-1,iz+1
+            distan = dDiagonal
+            
+
+            
+           ! ctr = 7 left-centre ix-1,iz
+           
+
+            
+           ! ctr = 8 left-bottom ix-1,iz-1
+            distan = dDiagonal
+
+           
+
+
            
            do ik=1,-1,-1
               do jk=1,-1,-1
-           
+                 
+                 ! We are not interested in the same point
+                 
+                 if((ik.eq.0).and.(jk.eq.0)) cycle
+                 
                  pt1x=dble(ix+ik-1)*dx
                  pt1z=dble(iz+jk-1)*dz
                  
-                 ctr=ctr+1
+                 ! Finding xi,zi (intersection)
+
+
+
+                 
                  
                  
 

@@ -145,7 +145,7 @@ program multipleSourcesOPT2D
   integer :: nDiscon ! number of discontinuities
   integer :: lengthDiscon ! with x,z coordinates
   double precision, allocatable :: dscr(:,:,:) ! discontinuity coordinates
-
+  double precision :: tmpvaluex,tmpvaluez
 
 
   ! for waveform inversion
@@ -280,6 +280,7 @@ program multipleSourcesOPT2D
   
   call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   
+
   ! Smoothed version of CONV/OPT operators
 
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
@@ -291,7 +292,23 @@ program multipleSourcesOPT2D
   ! discontinuities
   
   if(nDiscon.ne.0) then
+ 
+     ! changing dscr by putting lmargin(1) and (2)
+     tmpvaluex=dble(lmargin(1))*dx
+     tmpvaluez=dble(lmargin(2))*dz
+     do ix=1,nDiscon
+        do iz=1,lengthDiscon
+           dscr(1,iz,ix)=dscr(1,iz,ix)+tmpvaluex
+           dscr(2,iz,ix)=dscr(2,iz,ix)+tmpvaluez
+        enddo
+     enddo
+          
+     
+
+     ! NF will finish this !
      !call cales_discon ( ...
+
+     
   endif
 
 
