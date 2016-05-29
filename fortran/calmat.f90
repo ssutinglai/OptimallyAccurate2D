@@ -21,6 +21,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   double precision :: ye5ux_dxxb,ye5ux_dxyb,ye5uy_dxxb,ye5uy_dxyb,ye5ux_dyyb,ye5uy_dyyb 
   double precision :: xe6ux_dxxa,xe6uy_dxya,xe6ux_dyya,ye6ux_dxya,ye6uy_dxxa,ye6uy_dyya
   double precision :: xe6ux_dxxb,xe6uy_dxyb,xe6ux_dyyb,ye6ux_dxyb,ye6uy_dxxb,ye6uy_dyyb 
+ 
+  ! Matrices
+  double precision, dimension(1:12,1:12) :: A0,B0,A1,B1
   
   
   nvx=normal(1)
@@ -38,6 +41,11 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   C0 = 0.d0
   C1 = 0.d0
+
+  A0 = 0.d0
+  A1 = 0.d0
+  B0 = 0.d0
+  B1 = 0.d0
   
   
   ! isotropic, PSV
@@ -152,10 +160,26 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ye6uy_dyyb = C0(3)/rho0
     
     
-%Full matrices for left and right points
-    B0 = [xe1ux 0 0 0 0 0 0 0 0 0 0 0; ...
-        0 xe2ux_dx xe2ux_dy 0 0 0 0 0 0 0 0 0; ...
-        0 0 0 xe3ux_dxx xe3ux_dyy xe3ux_dxy 0 0 0 0 0 0; ...
+  ! Full matrices for left and right points
+  
+  B0 = 0.d0
+  
+  B0(1,1) = xe1ux
+
+  B0(2,2) = xe2ux_dx
+  B0(2,3) = xe2ux_dy
+ 
+  B0(3,4) = xe3ux_dxx
+  B0(3,5) = xe3ux_dyy
+  B0(3,6) = xe3ux_dxy
+  
+  B0(
+
+
+       
+
+
+
         0 xe4ux_dxb xe4ux_dyb 0 0 0 0 xe4uy_dxb xe4uy_dyb 0 0 0; ...
         0 0 0 xe5ux_dxxb xe5ux_dyyb xe5ux_dxyb 0 0 0 xe5uy_dxxb xe5uy_dyyb xe5uy_dxyb; ...
         0 0 0 xe6ux_dxxb xe6ux_dyyb 0 0 0 0 0 0 xe6uy_dxyb; ...
