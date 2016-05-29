@@ -164,29 +164,50 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
   B0 = 0.d0
   
-  B0(1,1) = xe1ux
+  B0( 1, 1) = xe1ux
 
-  B0(2,2) = xe2ux_dx
-  B0(2,3) = xe2ux_dy
+  B0( 2, 2) = xe2ux_dx
+  B0( 2, 3) = xe2ux_dy
  
-  B0(3,4) = xe3ux_dxx
-  B0(3,5) = xe3ux_dyy
-  B0(3,6) = xe3ux_dxy
+  B0( 3, 4) = xe3ux_dxx
+  B0( 3, 5) = xe3ux_dyy
+  B0( 3, 6) = xe3ux_dxy
   
-  B0(
+  B0( 4, 2) = xe4ux_dxb
+  B0( 4, 3) = xe4ux_dyb 
+  B0( 4, 8) = xe4uy_dxb
+  B0( 4, 9) = xe4uy_dyb
+
+  B0( 5, 4) = xe5ux_dxxb
+  B0( 5, 5) = xe5ux_dyyb
+  B0( 5, 6) = xe5ux_dxyb
+  B0( 5,10) = xe5uy_dxxb
+  B0( 5,11) = xe5uy_dyyb
+  B0( 5,12) = xe5uy_dxyb
+  
+  B0( 6, 4) = xe6ux_dxxb
+  B0( 6, 5) = xe6ux_dyyb
+  B0( 6,12) = xe6uy_dxyb
+  
+  B0( 7, 7) = ye1uy
+
+  B0( 8, 8) = ye2uy_dx
+  B0( 8, 9) = ye2uy_dy
+
+  B0( 9,10) = ye3uy_dxx
+  B0( 9,11) = ye3uy_dyy
+  B0( 9,12) = ye3uy_dxy
+
+  B0(10, 2) = ye4ux_dxb
+  B0(10, 3) = ye4ux_dyb
+  B0(10, 8) = ye4uy_dxb
+  B0(10, 9) = ye4uy_dyb
 
 
-       
+
+     
 
 
-
-        0 xe4ux_dxb xe4ux_dyb 0 0 0 0 xe4uy_dxb xe4uy_dyb 0 0 0; ...
-        0 0 0 xe5ux_dxxb xe5ux_dyyb xe5ux_dxyb 0 0 0 xe5uy_dxxb xe5uy_dyyb xe5uy_dxyb; ...
-        0 0 0 xe6ux_dxxb xe6ux_dyyb 0 0 0 0 0 0 xe6uy_dxyb; ...
-        0 0 0 0 0 0 ye1uy 0 0 0 0 0; ...
-        0 0 0 0 0 0 0 ye2uy_dx ye2uy_dy 0 0 0; ...
-        0 0 0 0 0 0 0 0 0 ye3uy_dxx ye3uy_dyy ye3uy_dxy; ...
-        0 ye4ux_dxb ye4ux_dyb 0 0 0 0 ye4uy_dxb ye4uy_dyb 0 0 0; ...
         0 0 0 ye5ux_dxxb ye5ux_dyyb ye5ux_dxyb 0 0 0 ye5uy_dxxb ye5uy_dyyb ye5uy_dxyb; ...
         0 0 0 0 0 ye6ux_dxyb 0 0 0 ye6uy_dxxb ye6uy_dyyb 0];    
     if SHOWALL
