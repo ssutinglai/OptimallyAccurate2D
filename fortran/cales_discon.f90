@@ -38,8 +38,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision :: dDiagonal,dDiagonal2 ! sqrt(dx^2+dz^2)
   double precision :: eps ! zero tolerance
 
-  double precision :: xi,zi,distan ! intersecion coordinates
-  integer :: iLengthDiscon,iDiscon,nInterSection
+  double precision :: xi,zi,distan2 ! intersecion coordinates
+  integer :: iLengthDiscon,iDiscon,iInterSection,err
 
 
   ! Verify that all the coordinates are already with lmargins
@@ -53,7 +53,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   dDiagonal2= dx2+dz2
   dDiagonal = sqrt(dDiagonal2)
   
-  eps=dDiagonal*1.d-5
+  eps=1.d-8
 
   ! modified operators for discontinuities
   
@@ -64,18 +64,22 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt0x=dble(ix-1)*dx
            pt0z=dble(iz-1)*dz
 
+
            ! ctr = 1 right-top ix+1,iz+1
            ctr = 1
-           distan = dDiagonal
+           distan2 = dDiagonal2
            
            pt1x = pt0x + dx
            pt1z = pt0z + dz
-           
 
+           err = 0
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           
+           
 
            ! ctr = 2 right-centre ix+1,iz
            ctr = 2
-           distan = dx
+           distan2 = dx2
 
            pt1x = pt0x + dx
            pt1z = pt0z
@@ -83,7 +87,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            ! ctr = 3 right-bottom ix+1,iz-1
            ctr = 3
-           distan = dDiagonal
+           distan2 = dDiagonal2
            
            pt1x = pt0x + dx
            pt1z = pt0z - dz
@@ -97,7 +101,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            ! ctr = 4 centre-top ix,iz+1
            ctr = 4
-           distan = dz
+           distan2 = dz2
 
            pt1x = pt0x 
            pt1z = pt0z + dz
@@ -105,7 +109,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            ! ctr = 5 centre ix,iz
            ctr = 5
-           distan = 0.d0
+           distan2 = 0.d0
 
            pt1x = pt0x 
            pt1z = pt0z 
@@ -113,7 +117,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            ! ctr = 6 centre-bottom ix,iz-1
            ctr = 6
-           distan = dz
+           distan2 = dz2
            
            pt1x = pt0x 
            pt1z = pt0z - dz
@@ -129,7 +133,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            ! ctr = 7 left-top ix-1,iz+1
            ctr = 7
-           distan = dDiagonal
+           distan2 = dDiagonal2
             
            pt1x = pt0x - dx
            pt1z = pt0z + dz
@@ -138,7 +142,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
             
            ! ctr = 8 left-centre ix-1,iz
            ctr = 8
-           distan = dx
+           distan2 = dx2
            
            pt1x = pt0x - dx
            pt1z = pt0z 
@@ -147,7 +151,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
             
            ! ctr = 9 left-bottom ix-1,iz-1
            ctr = 9
-           distan = dDiagonal
+           distan2 = dDiagonal2
 
            pt1x = pt0x - dx
            pt1z = pt0z - dz
@@ -259,3 +263,28 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
   return
 end subroutine cales_discon
+
+
+
+
+
+
+subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+  implicit none
+  double precision :: x1,z1,x2,z2,distan2
+  double precision :: xi, zi
+  
+  integer :: nDiscon,lengthDiscon ! number of discontinuities
+  double precision :: dscr(1:2,1:lengthDiscon,1:nDiscon)
+
+  integer :: iLengthDiscon,iDiscon,iInterSection,err
+
+  err=0
+  xi=0.d0
+  zi=0.d0
+
+  
+  
+  
+
+  
