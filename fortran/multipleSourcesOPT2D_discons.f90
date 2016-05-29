@@ -5,9 +5,11 @@ program multipleSourcesOPT2D
   ! 2D PSV heterogeneous medium
   ! CPML or Cerjan boundary conditions
   !
-  !					originally from 1997.6  N.Takeuchi
-  !                                                     2016.5. N.Fuji
-  !                  colorbars : K. Okubo (2016.5.)
+  !					originally from 1997.6  N. Takeuchi
+  !                                                     2016.5. N. Fuji
+  !                                  discon operators : 2016.5. O. Ovcharenko
+  !                                         colorbars : 2016.5. K. Okubo
+  !  
 
   implicit none
   character(120) :: filename
@@ -137,12 +139,23 @@ program multipleSourcesOPT2D
   double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
   double precision :: ALPHA_MAX_PML
 
+  ! for discontinuities
+
+  integer :: markers(maxnz+1,maxnz+1)
+  integer :: nDiscon ! number of discontinuities
+  integer :: lengthDiscon ! with x,z coordinates
+  double precision, allocatable :: dscr(:,:,:) ! discontinuity coordinates
+
+
+
   ! for waveform inversion
   
   real(kind(0e0)) :: singleStrainDiagonal(maxnz+1,maxnz+1)
 
   
   character(140) :: commandline
+
+
 
 
 
@@ -187,11 +200,23 @@ program multipleSourcesOPT2D
   f0=6.5d0
   t0=2.d-1
 
+
+
+  ! Discontinuity configuration
+
+  nDiscon = 1
+  lengthDiscon = 40*nx+1
+  allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+  markers(1:maxnz,1:maxnz) = 0
+  markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
+
+
+
   ! Receiver position
 
 
   do iReceiver = 1, nReceiver
-     nrx(iReceiver)=2*iReceiver
+     nrx(iReceiver)=4*iReceiver
      nrz(iReceiver)=1
   enddo
   
@@ -253,13 +278,25 @@ program multipleSourcesOPT2D
   
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   
-  call calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
+  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   
+  ! Smoothed version of CONV/OPT operators
+
   call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
        f1, f2, f3, f4, f5, f6, f7, f8, &
        f13,f14,f15,f16,f17,f18,f19,f20 )
+
+  ! discontinuities
+  
+  if(nDiscon.ne.0) then
+     !call cales_discon ( ...
+  endif
+
+
+
+  ! for Cerjan absorbing boundary
 
 
   weightBC=1.d0
@@ -627,20 +664,29 @@ subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
 end subroutine calstruct2
   
 
-subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
+subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   implicit none
   integer :: i,j,maxnz,nx,nz,nnx,nnz
   double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)
   double precision :: llam(maxnz+1,maxnz+1),mmu(maxnz+1,maxnz+1),rrho(maxnz+1,maxnz+1)
   integer :: rmargin(1:2), lmargin(1:2)
+  integer :: markers(maxnz+1,maxnz+1),mmarkers(maxnz+1,maxnz+1) ! discontinuities
+
   
+
   llam=0.d0
   mmu=0.d0
   rrho=0.d0
+  mmarkers=0
   
+  
+
+
   llam(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=lam(1:nx+1,1:nz+1)
   mmu(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=mu(1:nx+1,1:nz+1)
   rrho(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=rho(1:nx+1,1:nz+1)
+
+  mmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=markers(1:nx+1,1:nz+1)
 
   ! 4 corners
 
@@ -707,6 +753,7 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,lmargin,rmargin)
   lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
   rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
   mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
+  markers(1:nx+1,1:nz+1)=mmarkers(1:nx+1,1:nz+1)
   !print *, nx,nz
   !write(12,*) rho(:,:)
   !write(13,*) lam(:,:)
@@ -744,6 +791,10 @@ subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8
   double precision f19(maxnz+1,*),f20(maxnz+1,*)
   integer ix,iz
   double precision dt2,dx2,dz2,dxdz
+
+  ! for smoothed part of the model :
+  !  we use Zahradnik operators and optimally accurate operators
+
   
   dt2 = dt * dt
   dx2 = dx * dx
