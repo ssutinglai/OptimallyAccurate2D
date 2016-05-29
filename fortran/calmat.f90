@@ -203,19 +203,24 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   B0(10, 8) = ye4uy_dxb
   B0(10, 9) = ye4uy_dyb
 
+  B0(11, 4) = ye5ux_dxxb 
+  B0(11, 5) = ye5ux_dyyb
+  B0(11, 6) = ye5ux_dxyb
+  B0(11,10) = ye5uy_dxxb
+  B0(11,11) = ye5uy_dyyb
+  B0(11,12) = ye5uy_dxyb
+  
+  B0(12, 6) = ye6ux_dxyb
+  B0(12,10) = ye6uy_dxxb
+  B0(12,11) = ye6uy_dyyb
+  
 
 
-     
+  
 
 
-        0 0 0 ye5ux_dxxb ye5ux_dyyb ye5ux_dxyb 0 0 0 ye5uy_dxxb ye5uy_dyyb ye5uy_dxyb; ...
-        0 0 0 0 0 ye6ux_dxyb 0 0 0 ye6uy_dxxb ye6uy_dyyb 0];    
-    if SHOWALL
-        subplot(233);
-        pcolor(flipud(B0));
-        colorbar();
-        title(['B0 iib=' num2str(iib) ' jjb=' num2str(jjb)]);
-    end
+
+
 
     r = eta0x;
     s = eta0y;
