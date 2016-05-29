@@ -143,13 +143,13 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ye6uy_dyya = C1(3)/rho1
 
   ! Below C0
-    xe6ux_dxxb = C(i+iib,j+jjb,1)/rho(i+iib,j+jjb);
-    xe6uy_dxyb = (C(i+iib,j+jjb,2)+C(i+iib,j+jjb,4))/rho(i+iib,j+jjb);
-    xe6ux_dyyb = C(i+iib,j+jjb,4)/rho(i+iib,j+jjb);
-
-    ye6ux_dxyb = (C(i+iib,j+jjb,4)+C(i+iib,j+jjb,2))/rho(i+iib,j+jjb);
-    ye6uy_dxxb = C(i+iib,j+jjb,4)/rho(i+iib,j+jjb);
-    ye6uy_dyyb = C(i+iib,j+jjb,3)/rho(i+iib,j+jjb);
+  xe6ux_dxxb = C0(1)/rho0
+  xe6uy_dxyb = (C0(2)+C0(4))/rho0
+  xe6ux_dyyb = C0(4)/rho0
+  
+  ye6ux_dxyb = (C0(4)+C0(2))/rho0
+  ye6uy_dxxb = C0(4)/rho0
+  ye6uy_dyyb = C0(3)/rho0
     
     
 %Full matrices for left and right points
