@@ -39,8 +39,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision :: eps ! zero tolerance
 
   double precision :: xi,zi,distan2 ! intersecion coordinates
-  integer :: iLengthDiscon,iDiscon,iInterSection(2),err
-
+  integer :: iLengthDiscon,iDiscon,iInterSection(1:2),err
+  double precision :: eta(0:1,1:2)
+  double precision :: normal(1:2) ! normal vector
 
   ! Verify that all the coordinates are already with lmargins
 
@@ -64,6 +65,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt0x=dble(ix-1)*dx
            pt0z=dble(iz-1)*dz
 
+      
+           
+
 
            ! ctr = 1 right-top ix+1,iz+1
            ctr = 1
@@ -72,8 +76,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z + dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
 
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+           endif
            
            
 
@@ -84,8 +92,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
            
            ! ctr = 3 right-bottom ix+1,iz-1
            ctr = 3
@@ -94,8 +102,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z - dz
            
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
            
            
 
@@ -109,8 +117,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x 
            pt1z = pt0z + dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
            
            
            ! ctr = 5 centre ix,iz
@@ -128,8 +136,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x 
            pt1z = pt0z - dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
 
 
 
@@ -145,8 +153,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z + dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
             
            ! ctr = 8 left-centre ix-1,iz
            ctr = 8
@@ -155,8 +163,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z 
            
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
            
             
            ! ctr = 9 left-bottom ix-1,iz-1
@@ -166,8 +174,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z - dz
            
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
-
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
 
 
 
@@ -315,13 +323,68 @@ subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,eta,lengthDiscon,nDiscon,i
   else
      xi = dscr(1,iInterSection(1),iInterSection(2))
      zi = dscr(2,iInterSection(1),iInterSection(2))
-     eta(
      
   endif
 end subroutine findNearestPoint
      
         
         
+  
+
+  
+subroutine xiziEta(xi,zi,x,z,dx,dz,eta)
+  implicit none
+  double precision :: xi,zi,x,z,dx,dz,eta(0:1,1:2)
+  
+  eta=0.d0
+ 
+
+  eta(0,1) = abs(xi-x)/dx
+  eta(1,1) = 1.d0-eta(0,1)
+
+  eta(0,2) = abs(zi-z)/dz
+  eta(1,2) - 1.d0-eta(0,2)
+end subroutine xiziEta
+
+
+
+
+subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+  implicit none
+  double precision :: normal(1:2)  
+  integer :: nDiscon,lengthDiscon ! number of discontinuities
+  double precision :: dscr(1:2,1:lengthDiscon,1:nDiscon)
+  integer :: iInterSection(1:2)
+  double precision :: xi, zi, xj, zj, 
+
+  
+  if(iInterSection(1).eq.1) then
+     
+     xi = dscr(1,2,iInterSection(2))
+     zi = dscr(2,2,iInterSection(2))
+     xj = dscr(1,1,iInterSection(2))
+     zj = dscr(2,1,iInterSection(2))
+     xk = dscr(1,3,iInterSection(2))
+     zk = dscr(2,3,iInterSection(2))
+     
+  elseif(iInterSection(1).eq.lengthDiscon) then
+     xi = dscr(1,iInterSection(1)-1,iInterSection(2))
+     zi = dscr(2,iInterSection(1)-1,iInterSection(2))
+     xj = dscr(1,iInterSection(1)-2,iInterSection(2))
+     zj = dscr(2,iInterSection(1)-2,iInterSection(2))
+     xk = dscr(1,iInterSection(1),iInterSection(2))
+     zk = dscr(2,iInterSection(1),iInterSection(2))
+     
+  else
+     xi = dscr(1,iInterSection(1),iInterSection(2))
+     zi = dscr(2,iInterSection(1),iInterSection(2))
+     xj = dscr(1,iInterSection(1)-1,iInterSection(2))
+     zj = dscr(2,iInterSection(1)-1,iInterSection(2))
+     xk = dscr(1,iInterSection(1)+1,iInterSection(2))
+     zk = dscr(2,iInterSection(1)+1,iInterSection(2))
+  endif
+
+  
   
 
   
