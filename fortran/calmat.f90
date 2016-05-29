@@ -245,54 +245,106 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
   A0(7:12,7:12) = A0(1:6,1:6)
 
-                 
-    if SHOWALL
-        subplot(232);
-        pcolor(flipud(A0));
-        colorbar();
-        title(['A0 r=' num2str(r) ' s=' num2str(s)]);
-    end
-    
-    B1 = [xe1ux 0 0 0 0 0 0 0 0 0 0 0; ...
-        0 xe2ux_dx xe2ux_dy 0 0 0 0 0 0 0 0 0; ...
-        0 0 0 xe3ux_dxx xe3ux_dyy xe3ux_dxy 0 0 0 0 0 0; ...
-        0 xe4ux_dxa xe4ux_dya 0 0 0 0 xe4uy_dxa xe4uy_dya 0 0 0; ...
-        0 0 0 xe5ux_dxxa xe5ux_dyya xe5ux_dxya 0 0 0 xe5uy_dxxa xe5uy_dyya xe5uy_dxya; ...
-        0 0 0 xe6ux_dxxa xe6ux_dyya 0 0 0 0 0 0 xe6uy_dxya; ...
-        0 0 0 0 0 0 ye1uy 0 0 0 0 0; ...
-        0 0 0 0 0 0 0 ye2uy_dx ye2uy_dy 0 0 0; ...
-        0 0 0 0 0 0 0 0 0 ye3uy_dxx ye3uy_dyy ye3uy_dxy; ...
-        0 ye4ux_dxa ye4ux_dya 0 0 0 0 ye4uy_dxa ye4uy_dya 0 0 0; ...
-        0 0 0 ye5ux_dxxa ye5ux_dyya ye5ux_dxya 0 0 0 ye5uy_dxxa ye5uy_dyya ye5uy_dxya; ...
-        0 0 0 0 0 ye6ux_dxya 0 0 0 ye6uy_dxxa ye6uy_dyya 0];    
-    if SHOWALL
-        subplot(236);
-        pcolor(flipud(B1));
-        colorbar();
-        title(['B1 iia=' num2str(iia) ' jja=' num2str(jja)]);
-    end
+         
 
-    r = eta1x;
-    s = eta1y;
-    
-        A1=[1.d0 r*dx s*dz (r*dx)^2.d0/2.d0 (s*dz)^2.d0/2.d0 r*s*dx*dz 0 0 0 0 0 0; ...
-            0 1.d0 0 r*dx 0 s*dz 0 0 0 0 0 0; ...
-            0 0 1.d0 0 s*dz r*dx 0 0 0 0 0 0; ...
-            0 0 0 1.d0 0 0 0 0 0 0 0 0; ...
-            0 0 0 0 1.d0 0 0 0 0 0 0 0; ...
-            0 0 0 0 0 1.d0 0 0 0 0 0 0; ...
-            0 0 0 0 0 0 1.d0 r*dx s*dz (r*dx)^2.d0/2.d0 (s*dz)^2.d0/2.d0 r*s*dx*dz; ...
-            0 0 0 0 0 0 0 1.d0 0 r*dx 0 s*dz; ...
-            0 0 0 0 0 0 0 0 1.d0 0 s*dz r*dx; ...
-            0 0 0 0 0 0 0 0 0 1.d0 0 0; ...
-            0 0 0 0 0 0 0 0 0 0 1.d0 0; ...
-            0 0 0 0 0 0 0 0 0 0 0 1.d0];
-    if SHOWALL
-        subplot(235);
-        pcolor(flipud(A1));
-        colorbar();
-        title(['A1 r=' num2str(r) ' s=' num2str(s)]);
-    end
+  ! B1
+
+  B1 = 0.d0
+  
+  B1( 1, 1) = xe1ux
+
+  B1( 2, 2) = xe2ux_dx
+  B1( 2, 3) = xe2ux_dy
+ 
+  B1( 3, 4) = xe3ux_dxx
+  B1( 3, 5) = xe3ux_dyy
+  B1( 3, 6) = xe3ux_dxy
+  
+  B1( 4, 2) = xe4ux_dxa
+  B1( 4, 3) = xe4ux_dya 
+  B1( 4, 8) = xe4uy_dxa
+  B1( 4, 9) = xe4uy_dya
+
+  B1( 5, 4) = xe5ux_dxxa
+  B1( 5, 5) = xe5ux_dyya
+  B1( 5, 6) = xe5ux_dxya
+  B1( 5,10) = xe5uy_dxxa
+  B1( 5,11) = xe5uy_dyya
+  B1( 5,12) = xe5uy_dxya
+  
+  B1( 6, 4) = xe6ux_dxxa
+  B1( 6, 5) = xe6ux_dyya
+  B1( 6,12) = xe6uy_dxya
+  
+  B1( 7, 7) = ye1uy
+
+  B1( 8, 8) = ye2uy_dx
+  B1( 8, 9) = ye2uy_dy
+
+  B1( 9,10) = ye3uy_dxx
+  B1( 9,11) = ye3uy_dyy
+  B1( 9,12) = ye3uy_dxy
+
+  B1(10, 2) = ye4ux_dxa
+  B1(10, 3) = ye4ux_dya
+  B1(10, 8) = ye4uy_dxa
+  B1(10, 9) = ye4uy_dya
+
+  B1(11, 4) = ye5ux_dxxa 
+  B1(11, 5) = ye5ux_dyya
+  B1(11, 6) = ye5ux_dxya
+  B1(11,10) = ye5uy_dxxa
+  B1(11,11) = ye5uy_dyya
+  B1(11,12) = ye5uy_dxya
+  
+  B1(12, 6) = ye6ux_dxya
+  B1(12,10) = ye6uy_dxxa
+  B1(12,11) = ye6uy_dyya
 
 
-    
+      
+
+
+  ! A1
+
+
+  r = eta1x;
+  s = eta1y;
+  
+
+
+  A1 = 0.d0
+  
+  A1( 1, 1) = 1.d0
+  A1( 1, 2) = r*dx
+  A1( 1, 3) = s*dz
+  A1( 1, 4) = (r*dx)*(r*dx)*5.d-1
+  A1( 1, 5) = (s*dz)*(s*dz)*5.d-1
+  A1( 1, 6) = r*s*dx*dz
+  
+  A1( 2, 2) = 1.d0
+  A1( 2, 4) = r*dx
+  A1( 2, 6) = s*dz
+  
+  A1( 3, 3) = 1.d0
+  A1( 3, 5) = s*dz
+  A1( 3, 6) = r*dx
+  
+  A1( 4, 4) = 1.d0
+  A1( 5, 5) = 1.d0
+  A1( 6, 6) = 1.d0
+  
+  A1(7:12,7:12) = A1(1:6,1:6)
+  
+
+
+
+
+  
+
+
+
+
+
+
+end subroutine MizutaniIso
