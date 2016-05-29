@@ -355,7 +355,9 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
   integer :: nDiscon,lengthDiscon ! number of discontinuities
   double precision :: dscr(1:2,1:lengthDiscon,1:nDiscon)
   integer :: iInterSection(1:2)
-  double precision :: xi, zi, xj, zj, 
+  double precision :: xi, zi, xj, zj, xk, zk
+  double precision :: s12, s23
+  double precision :: dxds, dzds
 
   
   if(iInterSection(1).eq.1) then
@@ -384,6 +386,13 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
      zk = dscr(2,iInterSection(1)+1,iInterSection(2))
   endif
 
+  s12 = sqrt((xi-xj)*(xi-xj)+(zi-zj)*(zi-zj))
+  s23 = sqrt((xi-xk)*(xi-xk)+(xi-xk)*(xi-xk))
+  
+  dxds = (s23*s23*(xi-xj)+s12*s12*(xk-xi))/(s12*s23*(s12+s23))
+  dzds = 
+  
+  
   
   
 
