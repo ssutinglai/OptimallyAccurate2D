@@ -56,48 +56,49 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
   
   ! BC eq.1
-  xe1ux = 1.d0;
-  ye1uy = 1.d0;
+  xe1ux = 1.d0
+  ye1uy = 1.d0
   
   ! BC eq.2
-  xe2ux_dx = nvy;
-  xe2ux_dy = -nvx;
-  ye2uy_dx = nvy;
-  ye2uy_dy = -nvx;
+  xe2ux_dx = nvy
+  xe2ux_dy = -nvx
+  ye2uy_dx = nvy
+  ye2uy_dy = -nvx
   
   ! BC eq.3
-  xe3ux_dxx = nvy2;
-  xe3ux_dyy = nvx2;
-  xe3ux_dxy = -2.d0*nvxnvy;
-  ye3uy_dxx = nvy2;
-  ye3uy_dyy = nvx2;
-  ye3uy_dxy = -2.d0*nvxnvy;
+  xe3ux_dxx = nvy2
+  xe3ux_dyy = nvx2
+  xe3ux_dxy = -2.d0*nvxnvy
+  ye3uy_dxx = nvy2
+  ye3uy_dyy = nvx2
+  ye3uy_dxy = -2.d0*nvxnvy
 
   ! BC eq.4
 
   ! Above
-    xe4ux_dxa = nvx*C(i+iia,j+jja,1);
-    xe4ux_dya = nvy*C(i+iia,j+jja,4);
-    xe4uy_dxa = nvy*C(i+iia,j+jja,4);
-    xe4uy_dya = nvx*C(i+iia,j+jja,2);
-    
-    ye4ux_dxa = nvy*C(i+iia,j+jja,2);
-    ye4ux_dya = nvx*C(i+iia,j+jja,4);
-    ye4uy_dxa = nvx*C(i+iia,j+jja,4);
-    ye4uy_dya = nvy*C(i+iia,j+jja,3);
+  xe4ux_dxa = nvx*C1(1)
+  xe4ux_dya = nvy*C1(4)
+  xe4uy_dxa = nvy*C1(4)
+  xe4uy_dya = nvx*C1(2)
+  
+  ye4ux_dxa = nvy*C1(2)
+  ye4ux_dya = nvx*C1(4)
+  ye4uy_dxa = nvx*C1(4)
+  ye4uy_dya = nvy*C1(3)
 
-    %Below
-    xe4ux_dxb = nvx*C(i+iib,j+jjb,1);
-    xe4ux_dyb = nvy*C(i+iib,j+jjb,4);
-    xe4uy_dxb = nvy*C(i+iib,j+jjb,4);
-    xe4uy_dyb = nvx*C(i+iib,j+jjb,2);
+  ! Below
+  xe4ux_dxb = nvx*C0(1)
+  xe4ux_dyb = nvy*C0(4)
+  xe4uy_dxb = nvy*C0(4)
+  xe4uy_dyb = nvx*C0(2)
+  
+  ye4ux_dxb = nvy*C0(2)
+  ye4ux_dyb = nvx*C0(4)
+  ye4uy_dxb = nvx*C0(4)
+  ye4uy_dyb = nvy*C0(3)
 
-    ye4ux_dxb = nvy*C(i+iib,j+jjb,2);
-    ye4ux_dyb = nvx*C(i+iib,j+jjb,4);
-    ye4uy_dxb = nvx*C(i+iib,j+jjb,4);
-    ye4uy_dyb = nvy*C(i+iib,j+jjb,3);
-
-%BC eq.5
+  ! BC eq.5
+  
     %Above
     xe5ux_dxxa = nvxnvy*C(i+iia,j+jja,1);
     xe5ux_dxya = nvy2*C(i+iia,j+jja,4)-nvx2*C(i+iia,j+jja,1);
