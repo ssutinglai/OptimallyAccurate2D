@@ -39,7 +39,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision :: eps ! zero tolerance
 
   double precision :: xi,zi,distan2 ! intersecion coordinates
-  integer :: iLengthDiscon,iDiscon,iInterSection,err
+  integer :: iLengthDiscon,iDiscon,iInterSection(2),err
 
 
   ! Verify that all the coordinates are already with lmargins
@@ -72,8 +72,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z + dz
 
-           err = 0
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
+
            
            
 
@@ -84,6 +84,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z
 
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
+
            
            ! ctr = 3 right-bottom ix+1,iz-1
            ctr = 3
@@ -91,7 +93,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            pt1x = pt0x + dx
            pt1z = pt0z - dz
-
+           
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            
            
            
@@ -105,6 +108,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            pt1x = pt0x 
            pt1z = pt0z + dz
+
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           
            
            
            ! ctr = 5 centre ix,iz
@@ -122,6 +128,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x 
            pt1z = pt0z - dz
 
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
 
 
 
@@ -138,6 +145,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z + dz
 
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
 
             
            ! ctr = 8 left-centre ix-1,iz
@@ -146,6 +154,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            pt1x = pt0x - dx
            pt1z = pt0z 
+           
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
 
            
             
@@ -156,6 +166,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z - dz
            
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
 
 
 
@@ -269,24 +280,48 @@ end subroutine cales_discon
 
 
 
-subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
   implicit none
   double precision :: x1,z1,x2,z2,distan2
-  double precision :: xi, zi
+  double precision :: xi, zi,eta(0:1,1:2)
   
   integer :: nDiscon,lengthDiscon ! number of discontinuities
   double precision :: dscr(1:2,1:lengthDiscon,1:nDiscon)
-
-  integer :: iLengthDiscon,iDiscon,iInterSection,err
-
+  double precision :: distance2(1:lengthDiscon,1:nDiscon)
+  integer :: iLengthDiscon,iDiscon,iInterSection(1:2),err
+  double precision :: x,z
+  
   err=0
   xi=0.d0
   zi=0.d0
+  distance2=0.d0
 
   do iDiscon = 1,nDiscon
      do iLengthDiscon = 1,lengthDiscon
         
+        x=dscr(1,iLengthDiscon,iDiscon)
+        z=dscr(2,iLengthDiscon,iDiscon)
+        
+        distance2(iLengthDiscon,iDiscon)=(x-x1)*(x-x1)+(z-z1)*(z-z1)+(x-x2)*(x-x2)+(z-z2)*(z-z2)
+        
+     enddo
+  enddo
+
+
+  iInterSection(2)=minloc(distance2)
   
+  if(distance2(iInterSection(1),iInterSection(2))>distan2) then
+     err = 1
+  else
+     xi = dscr(1,iInterSection(1),iInterSection(2))
+     zi = dscr(2,iInterSection(1),iInterSection(2))
+     eta(
+     
+  endif
+end subroutine findNearestPoint
+     
+        
+        
   
 
   

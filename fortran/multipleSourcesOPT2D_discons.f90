@@ -154,7 +154,8 @@ program multipleSourcesOPT2D
 
   
   character(140) :: commandline
-
+  
+  
 
 
 
@@ -359,6 +360,8 @@ program multipleSourcesOPT2D
      print *, 'Courant number is', Courant_number
      
      
+
+
      
      call datainit( maxnz,maxnz,fx)
      call datainit( maxnz,maxnz,fz)
