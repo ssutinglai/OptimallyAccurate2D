@@ -1,5 +1,7 @@
 subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
+  ! isotropic modified operators for discontinuities
+
   implicit none 
   double precision :: coef(1:4),eta(0:1,1:2),normal(1:2)
   double precision :: rho0,rho1,lam0,lam1,mu0,mu1,dx,dz
@@ -337,9 +339,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   A1(7:12,7:12) = A1(1:6,1:6)
   
 
+  
 
-
-
+  
   
 
 
