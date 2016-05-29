@@ -44,6 +44,16 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision :: normal(1:2) ! normal vector
   double precision :: coeftmp(1:4,1:9) ! temporal coef for two points
 
+  integer :: nointersections
+
+  ! temporary small matrices
+  
+  double precision, dimension (3,3) :: tmpM3,pre_dx2,pre_dy2
+  double precision, dimension (6,6) :: tmpM6,pre_dxdy
+  
+  
+
+
   ! Verify that all the coordinates are already with lmargins
 
 
@@ -83,7 +93,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt0z=dble(iz-1)*dz
 
       
-           
+           coeftmp(1:6,1:2,1:9) = 0.d0
+
+
+           nointersections = 1
 
 
            ! ctr = 1 right-top ix+1,iz+1
@@ -99,14 +112,19 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
-              call MizutaniIso(coeftmp(1:4,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
-                   lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
-                   mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)
-              
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)       
            
-
            ! ctr = 2 right-centre ix+1,iz
            ctr = 2
            distan2 = dx2
@@ -115,8 +133,24 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z
 
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
            
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+           
+
+
            ! ctr = 3 right-bottom ix+1,iz-1
            ctr = 3
            distan2 = dDiagonal2
@@ -125,12 +159,29 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z - dz
            
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
            
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
            
 
 
+
            
+
+
+
            
            ! ctr = 4 centre-top ix,iz+1
            ctr = 4
@@ -139,8 +190,25 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x 
            pt1z = pt0z + dz
 
+             
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
+           
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+
+
            
            
            ! ctr = 5 centre ix,iz
@@ -159,7 +227,22 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z - dz
 
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
+           
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+
 
 
 
@@ -176,7 +259,23 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z + dz
 
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
+           
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+
+
             
            ! ctr = 8 left-centre ix-1,iz
            ctr = 8
@@ -184,9 +283,25 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            pt1x = pt0x - dx
            pt1z = pt0z 
-           
+
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
+           
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+
+           
            
             
            ! ctr = 9 left-bottom ix-1,iz-1
@@ -195,15 +310,35 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            pt1x = pt0x - dx
            pt1z = pt0z - dz
-           
+
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
-           call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
-
-
+           if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
+              call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
+              call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              nointersections = nointersections * 0
+              else
+                 normal=0.d0
+                 eta(1,1) = dble(abs(ik(ctr)))
+                 eta(1,2) = dble(abs(jk(ctr)))
+                 eta(0,1) = 1.d0-eta(1,1)
+                 eta(0,2) = 1.d0-eta(1,2)                 
+           endif
+           
+           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
            
 
 
+           ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
+           
+           if(nointersections.eq.1) cycle ! for smoothed points
+           
+           tmpM3 = 0.d0
+           
+           
+           
 
 
 
