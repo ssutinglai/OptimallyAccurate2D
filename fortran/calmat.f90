@@ -15,11 +15,11 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   double precision :: ye4ux_dxa,ye4ux_dya,ye4uy_dxa,ye4uy_dya
   double precision :: xe4ux_dxb,xe4ux_dyb,xe4uy_dxb,xe4uy_dyb 
   double precision :: ye4ux_dxb,ye4ux_dyb,ye4uy_dxb,ye4uy_dyb
-
-
-
-
-
+  double precision :: xe5ux_dxxa,xe5ux_dxya,xe5uy_dxxa,xe5uy_dxya,xe5ux_dyya,xe5uy_dyya
+  double precision :: ye5ux_dxxa,ye5ux_dxya,ye5uy_dxxa,ye5uy_dxya,ye5ux_dyya,ye5uy_dyya
+  double precision :: xe5ux_dxxb,xe5ux_dxyb,xe5uy_dxxb,xe5uy_dxyb,xe5ux_dyyb,xe5uy_dyyb
+  double precision :: ye5ux_dxxb,ye5ux_dxyb,ye5uy_dxxb,ye5uy_dxyb,ye5ux_dyyb,ye5uy_dyyb 
+  
   nvx=normal(1)
   nvy=normal(2)
   nvx2=nvx*nvx
@@ -99,22 +99,22 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   ! BC eq.5
   
-    %Above
-    xe5ux_dxxa = nvxnvy*C(i+iia,j+jja,1);
-    xe5ux_dxya = nvy2*C(i+iia,j+jja,4)-nvx2*C(i+iia,j+jja,1);
-    xe5uy_dxxa = nvy2*C(i+iia,j+jja,4);
-    xe5uy_dxya = nvxnvy*C(i+iia,j+jja,2)-nvxnvy*C(i+iia,j+jja,4);
-    xe5ux_dyya = - nvxnvy*C(i+iia,j+jja,4);
-    xe5uy_dyya = - nvx2*C(i+iia,j+jja,2);
+  ! Above
+  xe5ux_dxxa = nvxnvy*C1(1)
+  xe5ux_dxya = nvy2*C1(4)-nvx2*C1(1)
+  xe5uy_dxxa = nvy2*C1(4)
+  xe5uy_dxya = nvxnvy*C1(2)-nvxnvy*C1(4)
+  xe5ux_dyya = - nvxnvy*C1(4)
+  xe5uy_dyya = - nvx2*C1(2)
 
-    ye5ux_dxxa = nvy2*C(i+iia,j+jja,2);
-    ye5ux_dxya = nvxnvy*C(i+iia,j+jja,4)-nvxnvy*C(i+iia,j+jja,2);
-    ye5uy_dxxa = nvxnvy*C(i+iia,j+jja,4);
-    ye5uy_dxya = nvy2*C(i+iia,j+jja,3)-nvx2*C(i+iia,j+jja,4);
-    ye5ux_dyya =  - nvx2*C(i+iia,j+jja,4);
-    ye5uy_dyya =  - nvxnvy*C(i+iia,j+jja,3);
-
-    %Below
+  ye5ux_dxxa = nvy2*C1(2)
+  ye5ux_dxya = nvxnvy*C1(4)-nvxnvy*C1(2)
+  ye5uy_dxxa = nvxnvy*C1(4)
+  ye5uy_dxya = nvy2*C1(3)-nvx2*C1(4)
+  ye5ux_dyya =  - nvx2*C1(4)
+  ye5uy_dyya =  - nvxnvy*C1(3)
+  
+  ! Below
     xe5ux_dxxb = nvxnvy*C(i+iib,j+jjb,1);
     xe5ux_dxyb = nvy2*C(i+iib,j+jjb,4)-nvx2*C(i+iib,j+jjb,1);
     xe5uy_dxxb = nvy2*C(i+iib,j+jjb,4);
