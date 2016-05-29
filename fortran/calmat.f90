@@ -8,6 +8,18 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   double precision :: C1(1:4), C0(1:4)
   double precision :: eta0x,eta1x,eta0y,eta1y
 
+  ! intermediate values
+  double precision :: xe1ux,ye1uy,xe2ux_dx,xe2ux_dy,ye2uy_dx,ye2uy_dy
+  double precision :: xe3ux_dxx,xe3ux_dyy,xe3ux_dxy,ye3uy_dxx,ye3uy_dyy,ye3uy_dxy 
+  double precision :: xe4ux_dxa,xe4ux_dya,xe4uy_dxa,xe4uy_dya 
+  double precision :: ye4ux_dxa,ye4ux_dya,ye4uy_dxa,ye4uy_dya
+  double precision :: xe4ux_dxb,xe4ux_dyb,xe4uy_dxb,xe4uy_dyb 
+  double precision :: ye4ux_dxb,ye4ux_dyb,ye4uy_dxb,ye4uy_dyb
+
+
+
+
+
   nvx=normal(1)
   nvy=normal(2)
   nvx2=nvx*nvx
@@ -39,32 +51,31 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   C0(4) = mu1
   
   
+
+  ! Hereafter we follow the Oleg Ovcharenko's formulation
   
   
+  ! BC eq.1
+  xe1ux = 1.d0;
+  ye1uy = 1.d0;
+  
+  ! BC eq.2
+  xe2ux_dx = nvy;
+  xe2ux_dy = -nvx;
+  ye2uy_dx = nvy;
+  ye2uy_dy = -nvx;
+  
+  ! BC eq.3
+  xe3ux_dxx = nvy2;
+  xe3ux_dyy = nvx2;
+  xe3ux_dxy = -2.d0*nvxnvy;
+  ye3uy_dxx = nvy2;
+  ye3uy_dyy = nvx2;
+  ye3uy_dxy = -2.d0*nvxnvy;
 
+  ! BC eq.4
 
-
-
-%BC eq.1
-    xe1ux = 1.d0;
-    ye1uy = 1.d0;
-   
-%BC eq.2
-    xe2ux_dx = nvy;
-    xe2ux_dy = -nvx;
-    ye2uy_dx = nvy;
-    ye2uy_dy = -nvx;
-
-%BC eq.3
-    xe3ux_dxx = nvy2;
-    xe3ux_dyy = nvx2;
-    xe3ux_dxy = -2.d0*nvxnvy;
-    ye3uy_dxx = nvy2;
-    ye3uy_dyy = nvx2;
-    ye3uy_dxy = -2.d0*nvxnvy;
-
-%BC eq.4
-    %Above
+  ! Above
     xe4ux_dxa = nvx*C(i+iia,j+jja,1);
     xe4ux_dya = nvy*C(i+iia,j+jja,4);
     xe4uy_dxa = nvy*C(i+iia,j+jja,4);
