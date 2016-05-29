@@ -24,7 +24,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
  
   ! Matrices
   double precision, dimension(1:12,1:12) :: A0,B0,A1,B1
-  
+  double precision :: r, s
   
   nvx=normal(1)
   nvy=normal(2)
@@ -162,6 +162,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
     
   ! Full matrices for left and right points
   
+  ! B0
+
   B0 = 0.d0
   
   B0( 1, 1) = xe1ux
@@ -215,29 +217,35 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   B0(12,11) = ye6uy_dyyb
   
 
+  ! A0
 
+  r = eta0x
+  s = eta0y
+
+  A0 = 0.d0
   
+  A0( 1, 1) = 1.d0
+  A0( 1, 2) = r*dx
+  A0( 1, 3) = s*dz
+  A0( 1, 4) = (r*dx)*(r*dx)*5.d-1
+  A0( 1, 5) = (s*dz)*(s*dz)*5.d-1
+  A0( 1, 6) = r*s*dx*dz
 
+  A0( 2, 2) = 1.d0
+  A0( 2, 4) = r*dx
+  A0( 2, 6) = s*dz
 
+  A0( 3, 3) = 1.d0
+  A0( 3, 5) = s*dz
+  A0( 3, 6) = r*dx
+  
+  A0( 4, 4) = 1.d0
+  A0( 5, 5) = 1.d0
+  A0( 6, 6) = 1.d0
+  
+  A0(7:12,7:12) = A0(1:6,1:6)
 
-
-
-    r = eta0x;
-    s = eta0y;
-    
-        A0=[1.d0 r*dx s*dz (r*dx)^2.d0/2.d0 (s*dz)^2.d0/2.d0 r*s*dx*dz 0 0 0 0 0 0; ...
-            0 1.d0 0 r*dx 0 s*dz 0 0 0 0 0 0; ...
-            0 0 1.d0 0 s*dz r*dx 0 0 0 0 0 0; ...
-            0 0 0 1.d0 0 0 0 0 0 0 0 0; ...
-            0 0 0 0 1.d0 0 0 0 0 0 0 0; ...
-            0 0 0 0 0 1.d0 0 0 0 0 0 0; ...
-            0 0 0 0 0 0 1.d0 r*dx s*dz (r*dx)^2.d0/2.d0 (s*dz)^2.d0/2.d0 r*s*dx*dz; ...
-            0 0 0 0 0 0 0 1.d0 0 r*dx 0 s*dz; ...
-            0 0 0 0 0 0 0 0 1.d0 0 s*dz r*dx; ...
-            0 0 0 0 0 0 0 0 0 1.d0 0 0; ...
-            0 0 0 0 0 0 0 0 0 0 1.d0 0; ...
-            0 0 0 0 0 0 0 0 0 0 0 1.d0];
-        
+                 
     if SHOWALL
         subplot(232);
         pcolor(flipud(A0));
