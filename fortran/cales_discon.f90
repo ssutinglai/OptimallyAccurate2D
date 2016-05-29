@@ -28,7 +28,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   
   ! interface markers
 
-  integer :: ik,jk
+  integer :: ik,jk,ctr
   integer :: markers(maxnz+1,maxnz+1)
   double precision :: pt0x,pt0z,pt1x,pt1z
 
@@ -64,62 +64,102 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt0x=dble(ix-1)*dx
            pt0z=dble(iz-1)*dz
 
-           ! ctr = 0 right-top ix+1,iz+1
-
+           ! ctr = 1 right-top ix+1,iz+1
+           ctr = 1
            distan = dDiagonal
            
-           ! ctr = 1 right-centre ix+1,iz
+           pt1x = pt0x + dx
+           pt1z = pt0z + dz
            
+
+
+           ! ctr = 2 right-centre ix+1,iz
+           ctr = 2
+           distan = dx
+
+           pt1x = pt0x + dx
+           pt1z = pt0z
+
+           
+           ! ctr = 3 right-bottom ix+1,iz-1
+           ctr = 3
+           distan = dDiagonal
+           
+           pt1x = pt0x + dx
+           pt1z = pt0z - dz
+
+           
+           
+           
+
+
+           
+           
+           ! ctr = 4 centre-top ix,iz+1
+           ctr = 4
+           distan = dz
+
+           pt1x = pt0x 
+           pt1z = pt0z + dz
+           
+           
+           ! ctr = 5 centre ix,iz
+           ctr = 5
+           distan = 0.d0
+
+           pt1x = pt0x 
+           pt1z = pt0z 
+           
+           
+           ! ctr = 6 centre-bottom ix,iz-1
+           ctr = 6
+           distan = dz
+           
+           pt1x = pt0x 
+           pt1z = pt0z - dz
+
+
+
+
+
+
+
+
+           
+           
+           ! ctr = 7 left-top ix-1,iz+1
+           ctr = 7
+           distan = dDiagonal
+            
+           pt1x = pt0x - dx
+           pt1z = pt0z + dz
+
+
+            
+           ! ctr = 8 left-centre ix-1,iz
+           ctr = 8
            distan = dx
            
-           ! ctr = 2 right-bottom ix+1,iz-1
-
-            distan = dDiagonal
-
-
-
-
-
-
-
-
-           ! ctr = 3 centre-top ix,iz+1
-
-            distan = dz
-
-           ! ctr = 5 centre-bottom ix,iz-1
-
+           pt1x = pt0x - dx
+           pt1z = pt0z 
 
            
-
-
-           ! ctr = 6 left-top ix-1,iz+1
-            distan = dDiagonal
             
+           ! ctr = 9 left-bottom ix-1,iz-1
+           ctr = 9
+           distan = dDiagonal
 
-            
-           ! ctr = 7 left-centre ix-1,iz
-           
-
-            
-           ! ctr = 8 left-bottom ix-1,iz-1
-            distan = dDiagonal
-
+           pt1x = pt0x - dx
+           pt1z = pt0z - dz
            
 
 
+
+
            
-           do ik=1,-1,-1
-              do jk=1,-1,-1
-                 
-                 ! We are not interested in the same point
-                 
-                 if((ik.eq.0).and.(jk.eq.0)) cycle
-                 
-                 pt1x=dble(ix+ik-1)*dx
-                 pt1z=dble(iz+jk-1)*dz
-                 
-                 ! Finding xi,zi (intersection)
+
+
+
 
 
 
