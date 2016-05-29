@@ -42,6 +42,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   integer :: iLengthDiscon,iDiscon,iInterSection(1:2),err
   double precision :: eta(0:1,1:2)
   double precision :: normal(1:2) ! normal vector
+  double precision :: coeftmp(1:4,1:9) ! temporal coef for two points
 
   ! Verify that all the coordinates are already with lmargins
 
@@ -69,6 +70,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
      enddo
   enddo
   
+  ctr = 0 
 
 
   ! modified operators for discontinuities
@@ -97,7 +99,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
-
+              call MizutaniIso(coeftmp(1:4,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                   lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                   mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)
+              
            endif
            
            
