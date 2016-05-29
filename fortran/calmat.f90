@@ -19,6 +19,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   double precision :: ye5ux_dxxa,ye5ux_dxya,ye5uy_dxxa,ye5uy_dxya,ye5ux_dyya,ye5uy_dyya
   double precision :: xe5ux_dxxb,xe5ux_dxyb,xe5uy_dxxb,xe5uy_dxyb,xe5ux_dyyb,xe5uy_dyyb
   double precision :: ye5ux_dxxb,ye5ux_dxyb,ye5uy_dxxb,ye5uy_dxyb,ye5ux_dyyb,ye5uy_dyyb 
+  double precision :: xe6ux_dxxa,xe6uy_dxya,xe6ux_dyya,ye6ux_dxya,ye6uy_dxxa,ye6uy_dyya
+  double precision :: xe6ux_dxxb,xe6uy_dxyb,xe6ux_dyyb,ye6ux_dxyb,ye6uy_dxxb,ye6uy_dyyb 
+  
   
   nvx=normal(1)
   nvy=normal(2)
@@ -115,31 +118,31 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ye5uy_dyya =  - nvxnvy*C1(3)
   
   ! Below
-    xe5ux_dxxb = nvxnvy*C(i+iib,j+jjb,1);
-    xe5ux_dxyb = nvy2*C(i+iib,j+jjb,4)-nvx2*C(i+iib,j+jjb,1);
-    xe5uy_dxxb = nvy2*C(i+iib,j+jjb,4);
-    xe5uy_dxyb = nvxnvy*C(i+iib,j+jjb,2)-nvxnvy*C(i+iib,j+jjb,4);
-    xe5ux_dyyb = - nvxnvy*C(i+iib,j+jjb,4);
-    xe5uy_dyyb = - nvx2*C(i+iib,j+jjb,2);
+  xe5ux_dxxb = nvxnvy*C0(1)
+  xe5ux_dxyb = nvy2*C0(4)-nvx2*C0(1)
+  xe5uy_dxxb = nvy2*C0(4)
+  xe5uy_dxyb = nvxnvy*C0(2)-nvxnvy*C0(4)
+  xe5ux_dyyb = - nvxnvy*C0(4)
+  xe5uy_dyyb = - nvx2*C0(2)
+  
+  ye5ux_dxxb = nvy2*C0(2)
+  ye5ux_dxyb = nvxnvy*C0(4)-nvxnvy*C0(2)
+  ye5uy_dxxb = nvxnvy*C0(4)
+  ye5uy_dxyb = nvy2*C0(3)-nvx2*C0(4)
+  ye5ux_dyyb =  - nvx2*C0(4)
+  ye5uy_dyyb =  - nvxnvy*C0(3)
 
-    ye5ux_dxxb = nvy2*C(i+iib,j+jjb,2);
-    ye5ux_dxyb = nvxnvy*C(i+iib,j+jjb,4)-nvxnvy*C(i+iib,j+jjb,2);
-    ye5uy_dxxb = nvxnvy*C(i+iib,j+jjb,4);
-    ye5uy_dxyb = nvy2*C(i+iib,j+jjb,3)-nvx2*C(i+iib,j+jjb,4);
-    ye5ux_dyyb =  - nvx2*C(i+iib,j+jjb,4);
-    ye5uy_dyyb =  - nvxnvy*C(i+iib,j+jjb,3);
+  ! BC eq.6
+  ! Above C1
+  xe6ux_dxxa = C1(1)/rho1
+  xe6uy_dxya = (C1(2)+C1(4))/rho1
+  xe6ux_dyya = C1(4)/rho1
+  
+  ye6ux_dxya = (C1(4)+C1(2))/rho1
+  ye6uy_dxxa = C1(4)/rho1
+  ye6uy_dyya = C1(3)/rho1
 
-%BC eq.6
-    %Above
-    xe6ux_dxxa = C(i+iia,j+jja,1)/rho(i+iia,j+jja);
-    xe6uy_dxya = (C(i+iia,j+jja,2)+C(i+iia,j+jja,4))/rho(i+iia,j+jja);
-    xe6ux_dyya = C(i+iia,j+jja,4)/rho(i+iia,j+jja);
-
-    ye6ux_dxya = (C(i+iia,j+jja,4)+C(i+iia,j+jja,2))/rho(i+iia,j+jja);
-    ye6uy_dxxa = C(i+iia,j+jja,4)/rho(i+iia,j+jja);
-    ye6uy_dyya = C(i+iia,j+jja,3)/rho(i+iia,j+jja);
-
-    %Below
+  ! Below C0
     xe6ux_dxxb = C(i+iib,j+jjb,1)/rho(i+iib,j+jjb);
     xe6uy_dxyb = (C(i+iib,j+jjb,2)+C(i+iib,j+jjb,4))/rho(i+iib,j+jjb);
     xe6ux_dyyb = C(i+iib,j+jjb,4)/rho(i+iib,j+jjb);
