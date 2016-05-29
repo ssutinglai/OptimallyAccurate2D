@@ -283,7 +283,9 @@ subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,lengthDiscon,nDiscon,iInte
   xi=0.d0
   zi=0.d0
 
-  
+  do iDiscon = 1,nDiscon
+     do iLengthDiscon = 1,lengthDiscon
+        
   
   
 
