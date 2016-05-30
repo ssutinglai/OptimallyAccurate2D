@@ -48,7 +48,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   integer :: iLengthDiscon,iDiscon,iInterSection(1:2),err
   double precision :: eta(0:1,1:2)
   double precision :: normal(1:2) ! normal vector
-  double precision :: coeftmp(1:4,1:9) ! temporal coef for two points
+  double precision :: coeftmp(1:4,1:2,1:9) ! temporal coef for two points
 
   integer :: nointersections
 
@@ -116,7 +116,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z + dz
 
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+          
+
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -140,7 +142,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -166,7 +168,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x + dx
            pt1z = pt0z - dz
            
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -199,7 +201,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z + dz
 
              
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -234,7 +236,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x 
            pt1z = pt0z - dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -266,7 +268,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z + dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -292,7 +294,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z 
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -319,7 +321,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1x = pt0x - dx
            pt1z = pt0z - dz
 
-           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,lengthDiscon,nDiscon,iInterSection,err,dscr)
+           call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
@@ -641,7 +643,7 @@ subroutine findNearestPoint(x1,z1,x2,z2,distan2,xi,zi,eta,lengthDiscon,nDiscon,i
   enddo
 
 
-  iInterSection(2)=minloc(distance2)
+  iInterSection(1:2)=minloc(distance2)
   
   if(distance2(iInterSection(1),iInterSection(2))>distan2) then
      err = 1
@@ -668,7 +670,7 @@ subroutine xiziEta(xi,zi,x,z,dx,dz,eta)
   eta(1,1) = 1.d0-eta(0,1)
 
   eta(0,2) = abs(zi-z)/dz
-  eta(1,2) - 1.d0-eta(0,2)
+  eta(1,2) = 1.d0-eta(0,2)
 end subroutine xiziEta
 
 
@@ -737,7 +739,7 @@ subroutine calstep_discon( maxnz,nx,nz, &
      ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
      work1,work2,work3,work4, &
      work5,work6,work7,work8, &
-     work9,work10,work11,work12,optimise & ! Hereafter are new variables for cales_discon
+     work9,work10,work11,work12,optimise, & ! Hereafter are new variables for cales_discon
      ee12,ee34,ee56,ee65,ee78,ee87, &
      ff12,ff34,ff56,ff65,ff78,ff87)
 

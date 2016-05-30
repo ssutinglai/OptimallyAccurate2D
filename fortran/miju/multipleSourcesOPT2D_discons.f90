@@ -452,7 +452,11 @@ program multipleSourcesOPT2D
                 ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
                 work(1,1), work(1,5), work(1,9),work(1,13), &
                 work(1,17),work(1,18),work(1,20),work(1,21), &
-                work(1,23),work(1,24),work(1,28),work(1,29), optimise)
+                work(1,23),work(1,24),work(1,28),work(1,29), optimise & ! Hereafter are new variables for cales_discon
+                ee12,ee34,ee56,ee65,ee78,ee87, &
+                ff12,ff34,ff56,ff65,ff78,ff87)
+           
+
         endif
 
            ! increment of t
