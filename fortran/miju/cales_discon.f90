@@ -337,6 +337,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            if(nointersections.eq.1) cycle ! for smoothed points
            
+           ! for derivatives of ux
+
+
            tmpM3 = 0.d0
            
            tmpM3(1,1) = coeftmp(1,1,2)
@@ -388,10 +391,6 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            
            
-           
-           ! NF did not get coeffuy_dx2 ... !!!
-           
-
 
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
@@ -433,55 +432,155 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            
 
-           f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
+           f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (-pre_dxdy(6,3)) &
                 / ( 4.d0 * dxdz )
-           f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
+           f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * pre_dxdy(6,1) &
                 / ( 4.d0 * dxdz )
-           f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
+           ff56(ix,iz) =  dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (pre_dxdy(6,3)+pre_dxdy(6,4)) &
                 / ( 4.d0 * dxdz )
-           f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
+           ff65(ix,iz) =  dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (pre_dxdy(6,1)+pre_dxdy(6,2)) &
                 / ( 4.d0 * dxdz )
+                
+                
+           f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (-pre_dxdy(6,2)) &
+                / ( 4.d0 * dxdz )                     
+           f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * pre_dxdy(6,1) &
+                / ( 4.d0 * dxdz )
+           f78(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (pre_dxdy(6,2)+pre_dxdy(6,4)) &
+                / ( 4.d0 * dxdz )
+           f87(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (pre_dxdy(6,1)+pre_dxdy(6.3)) &
+                / ( 4.d0 * dxdz )
+                
 
 
+           
+           ! for derivatives of uy
 
 
+           tmpM3 = 0.d0
+           
+           tmpM3(1,1) = coeftmp(1,2,2)
+           tmpM3(1,2) = coeftmp(2,2,2)
+           tmpM3(1,3) = coeftmp(4,2,2)
+
+           tmpM3(2,1) = coeftmp(1,2,5)
+           tmpM3(2,2) = coeftmp(2,2,5)
+           tmpM3(2,3) = coeftmp(4,2,5)
+
+           tmpM3(3,1) = coeftmp(1,2,8)
+           tmpM3(3,2) = coeftmp(2,2,8)
+           tmpM3(3,3) = coeftmp(4,2,8)
+
+           call inverse(3,tmpM3,3,pre_dx2)
 
 
+           tmpM3 = 0.d0
 
+           tmpM3(1,1) = coeftmp(1,2,4)
+           tmpM3(1,2) = coeftmp(3,2,4)
+           tmpM3(1,3) = coeftmp(5,2,4)
 
+           tmpM3(2,1) = coeftmp(1,2,5)
+           tmpM3(2,2) = coeftmp(3,2,5)
+           tmpM3(2,3) = coeftmp(5,2,5)
 
+           tmpM3(3,1) = coeftmp(1,2,6)
+           tmpM3(3,2) = coeftmp(3,2,6)
+           tmpM3(3,3) = coeftmp(5,2,6)
 
+           call inverse(3,tmpM3,3,pre_dy2)
+
+           tmpM46 = 0.d0
+           
+           tmpM46(1,1:6) = coeftmp(1:6,2,1)
+           tmpM46(2,1:6) = coeftmp(1:6,2,3)
+           tmpM46(3,1:6) = coeftmp(1:6,2,7)
+           tmpM46(4,1:6) = coeftmp(1:6,2,9)
+
+           tmpM6 = 0.d0
+           tmpM64 = transpose(tmpM64)
+           tmpM6 = matmul(tmpM64,tmpM46)
+          
+           tmppM6 =0.d0
+           
+           call inverse(6,tmpM6,6,tmppM6)
+           pre_dxdy=matmul(tmppM6,tmpM64)
 
            f1(ix,iz) = dt2 / rho(ix,iz) &
-                * ( mu(ix-1,iz) + mu(ix,iz) ) &
-                / ( 2.d0 * dx2 )
+                *  mu(ix,iz)  &
+                * pre_dx2(3,1) &
+                / ( dx2 )
+
+           
            f2(ix,iz) = dt2 / rho(ix,iz) &
-                * ( mu(ix,iz) + mu(ix+1,iz) ) &
-                / ( 2.d0 * dx2 )
+                *  mu(ix,iz)  &
+                * pre_dx2(3,3) &
+                / ( dx2 )
+
+           ff12(ix,iz) = dt2 / rho(ix,iz) &
+                *  mu(ix,iz)  &
+                * (pre_dx2(3,1)+pre_dx2(3,2)+pre_dx2(3,3)) &
+                / ( dx2 )
+
+
            f3(ix,iz) = dt2 / rho(ix,iz) &
-                * ( ( lam(ix,iz-1) + lam(ix,iz) ) &
-                + 2.d0 * ( mu(ix,iz-1) + mu(ix,iz) ) ) &
+                * ( lam(ix,iz)  &
+                + 2.d0 *  mu(ix,iz)  ) &
+                * pre_dy2(3,1) &
                 / ( 2.d0 * dz2 )
+
+
            f4(ix,iz) = dt2 / rho(ix,iz) &
-                * ( ( lam(ix,iz) + lam(ix,iz+1) ) &
-                + 2.d0 * ( mu(ix,iz) + mu(ix,iz+1) ) ) &
+                * ( lam(ix,iz) &
+                + 2.d0 *  mu(ix,iz) ) &
+                * pre_dy2(3,3) &
+                / ( 2.d0 * dz2 )
+
+           ff34(ix,iz) = dt2 / rho(ix,iz) &
+                * ( lam(ix,iz) &
+                + 2.d0 *  mu(ix,iz) ) &
+                * (pre_dy2(3,1)+pre_dy2(3,2)+pre_dy2(3,3)) &
                 / ( 2.d0 * dz2 )
       
+
+           e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (-pre_dxdy(6,3)) &
+                / ( 4.d0 * dxdz )
+
+           e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * pre_dxdy(6,1) &
+                / ( 4.d0 * dxdz )
+
+           ee56(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (pre_dxdy(6,3)+pre_dxdy(6,4)) &
+                / ( 4.d0 * dxdz )
+
+           ee65(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (pre_dxdy(6,1)+pre_dxdy(6,2)) &
+                / ( 4.d0 * dxdz )
+
+           e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (-pre_dxdy(6,2)) &
+                / ( 4.d0 * dxdz )
+
+           e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * pre_dxdy(6,1) &
+                / ( 4.d0 * dxdz )
+
+           ee78(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (pre_dxdy(6,2)+pre_dxdy(6,4)) &
+                / ( 4.d0 * dxdz )
            
-
-
-
-           e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
-                / ( 4.d0 * dxdz )
-
-
-
-
-           e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
-                / ( 4.d0 * dxdz )
-           e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
-                / ( 4.d0 * dxdz )
-           e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
+           ee87(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+                * (pre_dxdy(6,1)+pre_dxdy(6,3)) &
                 / ( 4.d0 * dxdz )
 
 
