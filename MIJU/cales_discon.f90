@@ -60,8 +60,6 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision, dimension (6,4) :: tmpM64,pre_dxdy
   
   
-
-
   ! Verify that all the coordinates are already with lmargins
 
 
@@ -118,6 +116,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
+              print *, 'normal',normal
               nointersections = nointersections * 0
 
            else
@@ -143,14 +142,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)   
-
-                 
+           else
+              normal=0.d0
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                    
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -415,6 +412,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
 
+           !print *, "original e1,e2,e3,e4"
+           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+
            e1(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
@@ -449,6 +449,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 * mu(ix,iz)  &
                 * (pre_dy2(3,1)+pre_dy2(3,2)+pre_dy2(3,3)) &
                 / ( dz2 )
+
+
+           !print *, "new e1,e2,e3,e4,ee12,ee34"
+           ! print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           ! print *, ee12(ix,iz),ee34(ix,iz)
 
            
 
@@ -707,6 +712,7 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
   double precision :: xi, zi, xj, zj, xk, zk
   double precision :: s12, s23
   double precision :: dxds, dzds
+  double precision :: s,dy,dx,s2
 
   normal=0.d0
 
@@ -736,14 +742,23 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
      zk = dscr(2,iInterSection(1)+1,iInterSection(2))
   endif
 
-  s12 = sqrt((xi-xj)*(xi-xj)+(zi-zj)*(zi-zj))
-  s23 = sqrt((xi-xk)*(xi-xk)+(xi-xk)*(xi-xk))
+  ! s12 = sqrt((xi-xj)*(xi-xj)+(zi-zj)*(zi-zj))
+  ! s23 = sqrt((xi-xk)*(xi-xk)+(xi-xk)*(xi-xk))
+  ! 
+  ! dxds = (s23*s23*(xi-xj)+s12*s12*(xk-xi))/(s12*s23*(s12+s23))
+  ! dzds = (s23*s23*(zi-zj)+s12*s12*(zk-zi))/(s12*s23*(s12+s23))
   
-  dxds = (s23*s23*(xi-xj)+s12*s12*(xk-xi))/(s12*s23*(s12+s23))
-  dzds = (s23*s23*(zi-zj)+s12*s12*(zk-zi))/(s12*s23*(s12+s23))
+  ! normal(1)=-dzds
+  ! normal(2)=dxds
 
-  normal(1)=-dzds
-  normal(2)=dxds
+  dx = xk-xj
+  dy = zk-zj
+  s2 = dx*dx+dy*dy
+  s = sqrt(s2)
+  
+  normal(1) = -dy/s
+  normal(2) = dx/s
+
 
 end subroutine NormalFinder
   

@@ -356,6 +356,8 @@ program multipleSourcesOPT2D
   endif
 
 
+  stop
+
   
   
 
