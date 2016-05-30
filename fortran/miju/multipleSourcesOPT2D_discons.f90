@@ -80,6 +80,13 @@ program multipleSourcesOPT2D
   double precision f17(maxnz+1,maxnz+1),f18(maxnz+1,maxnz+1)
   double precision f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
   double precision work(maxnz+1,32)
+
+  ! for discontinuities
+
+  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+
+  
   ! parameter for the structure
   !double precision rrho(6),llam(6),mmu(6)
   character(80) :: vpfile, vsfile, rhofile   ! ,modelname
@@ -292,6 +299,20 @@ program multipleSourcesOPT2D
 
   ! discontinuities
   
+  ee12 = 0.d0
+  ee34 = 0.d0
+  ee56 = 0.d0
+  ee65 = 0.d0
+  ee78 = 0.d0
+  ee87 = 0.d0
+
+  ff12 = 0.d0
+  ff34 = 0.d0
+  ff56 = 0.d0
+  ff65 = 0.d0
+  ff78 = 0.d0
+  ff87 = 0.d0
+  
   if(nDiscon.ne.0) then
  
      ! changing dscr by putting lmargin(1) and (2)
@@ -304,12 +325,14 @@ program multipleSourcesOPT2D
         enddo
      enddo
           
-     
+     call cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     e13,e14,e15,e16,e17,e18,e19,e20, &
+     f1, f2, f3, f4, f5, f6, f7, f8, &
+     f13,f14,f15,f16,f17,f18,f19,f20, & ! hereafter are new variables for cales_discon
+     ee12,ee34,ee56,ee65,ee78,ee87, &
+     ff12,ff34,ff56,ff65,ff78,ff87, &
+     markers,nDiscon,lengthDiscon,dscr)
 
-     ! NF will finish this !
-     !call cales_discon ( ...
-
-     
   endif
 
 
@@ -408,16 +431,31 @@ program multipleSourcesOPT2D
      do it=0,nt
         call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         ! evaluating the next step
-        call calstep( maxnz,nx,nz, &
-             e1, e2, e3, e4, e5, e6, e7, e8, &
-             e13,e14,e15,e16,e17,e18,e19,e20, &
-             f1, f2, f3, f4, f5, f6, f7, f8, &
-             f13,f14,f15,f16,f17,f18,f19,f20, &
-             ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
-             work(1,1), work(1,5), work(1,9),work(1,13), &
-             work(1,17),work(1,18),work(1,20),work(1,21), &
-             work(1,23),work(1,24),work(1,28),work(1,29), optimise)
-        ! increment of t
+        
+        if(nDiscon.eq.0) then
+           call calstep( maxnz,nx,nz, &
+                e1, e2, e3, e4, e5, e6, e7, e8, &
+                e13,e14,e15,e16,e17,e18,e19,e20, &
+                f1, f2, f3, f4, f5, f6, f7, f8, &
+                f13,f14,f15,f16,f17,f18,f19,f20, &
+                ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
+                work(1,1), work(1,5), work(1,9),work(1,13), &
+                work(1,17),work(1,18),work(1,20),work(1,21), &
+                work(1,23),work(1,24),work(1,28),work(1,29), optimise)
+           
+        else
+           call calstep_discon( maxnz,nx,nz, &
+                e1, e2, e3, e4, e5, e6, e7, e8, &
+                e13,e14,e15,e16,e17,e18,e19,e20, &
+                f1, f2, f3, f4, f5, f6, f7, f8, &
+                f13,f14,f15,f16,f17,f18,f19,f20, &
+                ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
+                work(1,1), work(1,5), work(1,9),work(1,13), &
+                work(1,17),work(1,18),work(1,20),work(1,21), &
+                work(1,23),work(1,24),work(1,28),work(1,29), optimise)
+        endif
+
+           ! increment of t
         t = t + dt
         time(it)=t
         !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))

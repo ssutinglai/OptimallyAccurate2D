@@ -3,6 +3,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20, & ! hereafter are new variables for cales_discon
+     ee12,ee34,ee56,ee65,ee78,ee87, &
+     ff12,ff34,ff56,ff65,ff78,ff87, &
      markers,nDiscon,lengthDiscon,dscr)
 
   ! in the vicinity of boundaries :
@@ -23,6 +25,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
   double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
   double precision f19(maxnz+1,*),f20(maxnz+1,*)
+  
+  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+  
   integer ix,iz
   double precision dt2,dx2,dz2,dxdz
   
@@ -722,3 +728,272 @@ end subroutine NormalFinder
   
 
   
+
+subroutine calstep_discon( maxnz,nx,nz, &
+     e1, e2, e3, e4, e5, e6, e7, e8, &
+     e13,e14,e15,e16,e17,e18,e19,e20, &
+     f1, f2, f3, f4, f5, f6, f7, f8, &
+     f13,f14,f15,f16,f17,f18,f19,f20, &
+     ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
+     work1,work2,work3,work4, &
+     work5,work6,work7,work8, &
+     work9,work10,work11,work12,optimise & ! Hereafter are new variables for cales_discon
+     ee12,ee34,ee56,ee65,ee78,ee87, &
+     ff12,ff34,ff56,ff65,ff78,ff87)
+
+  integer maxnz,nx,nz,isx,isz
+  double precision ux(maxnz+1,*),ux1(maxnz+1,*),ux2(maxnz+1,*)
+  double precision uz(maxnz+1,*),uz1(maxnz+1,*),uz2(maxnz+1,*)
+  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
+  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
+  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
+  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
+  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
+  double precision e19(maxnz+1,*),e20(maxnz+1,*)
+  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
+  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
+  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
+  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
+  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
+  double precision f19(maxnz+1,*),f20(maxnz+1,*)
+  double precision fx(maxnz+1,*),fz(maxnz+1,*)
+  double precision work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
+  double precision work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
+  double precision work5(*),work6(maxnz+1,0:1)
+  double precision work7(*),work8(maxnz+1,0:1)
+  double precision work9(*),work10(maxnz+1,-2:1)
+  double precision work11(*),work12(maxnz+1,-1:2)
+  integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
+  logical optimise
+
+
+  
+  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+
+  ! predicting the wavefield
+ do iz=2,nz
+    do ix=2,nx
+       ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &
+            + e1(ix,iz) * ( ux1(ix-1,iz) - ux1(ix,iz) ) &
+            + e2(ix,iz) * ( ux1(ix+1,iz) - ux1(ix,iz) ) &
+            + e3(ix,iz) * ( ux1(ix,iz-1) - ux1(ix,iz) ) &
+            + e4(ix,iz) * ( ux1(ix,iz+1) - ux1(ix,iz) ) &
+            - e5(ix,iz) * ( uz1(ix-1,iz+1) - uz1(ix-1,iz-1) ) &
+            + e6(ix,iz) * ( uz1(ix+1,iz+1) - uz1(ix+1,iz-1) ) &
+            - e7(ix,iz) * ( uz1(ix+1,iz-1) - uz1(ix-1,iz-1) ) &
+            + e8(ix,iz) * ( uz1(ix+1,iz+1) - uz1(ix-1,iz+1) ) & ! Hereafter discon
+            + ee12(ix,iz) * ux1(ix,iz) &
+            + ee34(ix,iz) * ux1(ix,iz) &
+            + ee56(ix,iz) * uz1(ix-1,iz-1) &
+            + ee65(ix,iz) * uz1(ix+1,iz-1) &
+            + ee78(ix,iz) * uz1(ix-1,iz-1) &
+            + ee87(ix,iz) * uz1(ix+1,iz-1)
+       
+
+
+
+       uz(ix,iz) = 2.d0 * uz1(ix,iz) - uz2(ix,iz) &
+            + f1(ix,iz) * ( uz1(ix-1,iz) - uz1(ix,iz) ) &
+            + f2(ix,iz) * ( uz1(ix+1,iz) - uz1(ix,iz) ) &
+            + f3(ix,iz) * ( uz1(ix,iz-1) - uz1(ix,iz) ) &
+            + f4(ix,iz) * ( uz1(ix,iz+1) - uz1(ix,iz) ) &
+            - f5(ix,iz) * ( ux1(ix-1,iz+1) - ux1(ix-1,iz-1) ) &
+            + f6(ix,iz) * ( ux1(ix+1,iz+1) - ux1(ix+1,iz-1) ) &
+            - f7(ix,iz) * ( ux1(ix+1,iz-1) - ux1(ix-1,iz-1) ) &
+            + f8(ix,iz) * ( ux1(ix+1,iz+1) - ux1(ix-1,iz+1) ) & ! Hereafter discon
+            + ff12(ix,iz) * uz1(ix,iz) &
+            + ff34(ix,iz) * uz1(ix,iz) &
+            + ff56(ix,iz) * ux1(ix-1,iz-1) &
+            + ff65(ix,iz) * ux1(ix+1,iz-1) &
+            + ff78(ix,iz) * ux1(ix-1,iz-1) &
+            + ff87(ix,iz) * ux1(ix+1,iz-1)
+
+    enddo
+ enddo
+ ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+ uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
+
+ 
+ if(optimise) then
+    ! correcting the wavefield
+    !
+    do ix=2,nx
+       iz1 = 2
+       iz2 = 3
+       work1(ix,-2) = 0.d0
+       work1(ix,-1) = 0.d0
+       work1(ix,0) = 0.d0
+       work1(ix,1) = ux(ix,iz1) - 2.d0 * ux1(ix,iz1) + ux2(ix,iz1)
+       work2(ix,-1) = 0.d0
+       work2(ix,0) = 0.d0
+       work2(ix,1) = uz(ix,iz1) - 2.d0 * uz1(ix,iz1) + uz2(ix,iz1)
+       work2(ix,2) = uz(ix,iz2) - 2.d0 * uz1(ix,iz2) + uz2(ix,iz2)
+       work3(ix,-2) = 0.d0
+       work3(ix,-1) = 0.d0
+       work3(ix,0) = 0.d0
+       work3(ix,1) = work1(ix,1) + 12.d0 * ux1(ix,iz1)
+       work4(ix,-1) = 0.d0
+       work4(ix,0) = 0.d0
+       work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
+       work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
+    enddo
+    
+    do ix=1,nx+1
+       ix11 = max0( ix-1,1 )
+       ix12 = min0( ix+1,nx+1 )
+       ix21 = max0( ix-2,1 )
+       ix22 = min0( ix+2,nx+1 )
+       work6(ix,0) = 0.d0
+       work6(ix,1) = &
+            (           ( -work3(ix11,1) ) &
+            + 10.d0 * ( -work3(ix,  1) ) & 
+            +         ( -work3(ix12,1) ) &
+            )
+       work8(ix,0) = 0.d0
+       work8(ix,1) = &
+            (           ( -work4(ix11,1) ) &
+            + 10.d0 * ( -work4(  ix,1) ) &
+            +         ( -work4(ix12,1) ) &
+            )
+       work10(ix,-2) = 0.d0
+       work10(ix,-1) = 0.d0
+       work10(ix,0) = 0.d0
+       work10(ix,1)   = (          work3(ix21,1) - 9.d0 * work3(ix11,1) &
+            + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
+       work12(ix,-1) = 0.d0
+       work12(ix,0) = 0.d0
+       work12(ix,1) = ( - 5.d0 * work4(ix11,1) - 3.d0 * work4(  ix,1) &
+            + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
+       work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
+            + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
+       
+    enddo
+    
+    do iz=2,nz
+       iz1 = iz + 1
+       iz2 = min0( iz+2, nz+1 )
+       do ix=2,nx
+          work1(ix,-2) = work1(ix,-1)
+          work1(ix,-1) = work1(ix,0)
+          work1(ix,0) = work1(ix,1)
+          work1(ix,1) = ux(ix,iz1) - 2.d0 * ux1(ix,iz1) + ux2(ix,iz1)
+          work2(ix,-1) = work2(ix,0)
+          work2(ix,0) = work2(ix,1)
+          work2(ix,1) = work2(ix,2)
+          work2(ix,2) = uz(ix,iz2) - 2.d0 * uz1(ix,iz2) + uz2(ix,iz2)
+          work3(ix,-2) = work3(ix,-1)
+          work3(ix,-1) = work3(ix,0)
+          work3(ix,0) = work3(ix,1)
+          work3(ix,1) = work1(ix,1) + 12.d0 * ux1(ix,iz1)
+          work4(ix,-1) = work4(ix,0)
+          work4(ix,0) = work4(ix,1)
+          work4(ix,1) = work4(ix,2)
+          work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
+       enddo
+       do ix=1,nx+1
+          ix11 = max0( ix-1,1 )
+          ix12 = min0( ix+1,nx+1 )
+          ix21 = max0( ix-2,1 )
+          ix22 = min0( ix+2,nx+1 )
+          work5(ix) =   (           ( work3(ix11,-1)-work3(ix,-1) ) &
+               + 10.d0 * ( work3(ix11, 0)-work3(ix, 0) ) &
+               +         ( work3(ix11, 1)-work3(ix, 1) ) )
+          work6(ix,0) = work6(ix,1)
+          work6(ix,1) =  (  ( work3(ix11,0)-work3(ix11,1) ) &
+               + 10.d0 * ( work3(  ix,0)-work3(ix,  1) ) &
+               +         ( work3(ix12,0)-work3(ix12,1) ) )
+          
+          work7(ix) =( ( work4(ix11,-1)-work4(ix,-1) ) &
+               + 10.d0 * ( work4(ix11, 0)-work4(ix, 0) ) &
+               +         ( work4(ix11, 1)-work4(ix, 1) ))
+          
+          work8(ix,0) = work8(ix,1)
+          work8(ix,1) =  (           ( work4(ix11,0)-work4(ix11,1) ) &
+               + 10.d0 * ( work4(  ix,0)-work4(  ix,1) ) &
+               +         ( work4(ix12,0)-work4(ix12,1) ))
+          
+          work9(ix) = (          work3(ix,-2) - 9.d0 * work3(ix,-1) &
+               + 3.d0 * work3(ix,0)  + 5.d0 * work3(ix,1))
+          
+          work10(ix,-2) = work10(ix,-1)
+          work10(ix,-1) = work10(ix,0)
+          work10(ix,0) = work10(ix,1)
+          work10(ix,1) = ( work3(ix21,1) - 9.d0 * work3(ix11,1) &
+               + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
+          
+          work11(ix) = ( - 5.d0 * work4(ix,-1)  - 3.d0 * work4(ix,0) &
+               + 9.d0 * work4(ix, 1)  -        work4(ix,2) )
+          
+          work12(ix,-1) = work12(ix,0)
+          work12(ix,0) = work12(ix,1)
+          work12(ix,1) = work12(ix,2)
+          work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
+               + 9.d0 * work4(ix12,2) -        work4(ix22,2))
+          
+       enddo
+       
+       do ix=2,nx
+          ix21 = max0( ix-2,1 )
+          ix22 = min0( ix+2,nx+1 )
+          ux(ix,iz) = ux(ix,iz) &
+               + ( &
+               - (           (   work1(ix-1,-1) + work1(ix-1,1) &
+               + work1(ix+1,-1) + work1(ix+1,1) ) &
+               + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
+               + work1(  ix, 1) + work1(ix+1, 0) ) &
+               + 100.d0 * work1(ix,0) ) &
+               + e1(ix,iz) * work5(ix) &
+               - e2(ix,iz) * work5(ix+1) &
+               + e3(ix,iz) * work6(ix,0) &
+               - e4(ix,iz) * work6(ix,1) &
+               ) / 144.d0 &
+               + e13(ix,iz) * work11(ix-1) &
+               + e14(ix,iz) * work11(ix) &
+               + e15(ix,iz) * work11(ix+1) &
+               + e16(ix,iz) * work11(ix22) &
+               + e17(ix,iz) * work12(ix,-1) &
+               + e18(ix,iz) * work12(ix,0) &
+               + e19(ix,iz) * work12(ix,1) &
+               + e20(ix,iz) * work12(ix,2)
+          uz(ix,iz) = uz(ix,iz) &
+               + ( &
+               - (           (   work2(ix-1,-1) + work2(ix-1,1) &
+               + work2(ix+1,-1) + work2(ix+1,1) ) &
+               + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
+               + work2(  ix, 1) + work2(ix+1, 0) ) &
+               + 100.d0 * work2(ix,0) ) &
+               + f1(ix,iz) * work7(ix) &
+               - f2(ix,iz) * work7(ix+1) &
+               + f3(ix,iz) * work8(ix,0) &
+               - f4(ix,iz) * work8(ix,1) &
+               ) / 144.d0 &
+               + f13(ix,iz) * work9(ix21) &
+               + f14(ix,iz) * work9(ix-1) &
+               + f15(ix,iz) * work9(ix) &
+               + f16(ix,iz) * work9(ix+1) &
+               + f17(ix,iz) * work10(ix,-2) &
+               + f18(ix,iz) * work10(ix,-1) &
+               + f19(ix,iz) * work10(ix,0) &
+               + f20(ix,iz) * work10(ix,1)
+       enddo
+    enddo
+     ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+     uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
+ endif
+
+ ! swapping u1 & u2 
+ do iz=2,nz
+    do ix=2,nx
+       ux2(ix,iz) = ux1(ix,iz)
+       ux1(ix,iz) =  ux(ix,iz)
+       uz2(ix,iz) = uz1(ix,iz)
+       uz1(ix,iz) =  uz(ix,iz)
+    enddo
+ enddo
+
+
+ 
+ return
+end subroutine calstep_discon
+	
