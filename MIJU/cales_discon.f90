@@ -342,10 +342,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
           
            !print *, "we have some intersections :", nointersections,pt0x,pt0z
-           print *, ix,iz,nointersections
+           !print *, ix,iz,nointersections
            !print *, "coeftmp", coeftmp(:,1,:)
 
            if(nointersections.eq.1) cycle ! for smoothed points
+           
            
          
            
@@ -370,6 +371,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !call inverse(3,tmpM3,3,pre_dx2)
            call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
 
+
            tmpM3 = 0.d0
 
            tmpM3(1,1) = coeftmp(1,1,4)
@@ -389,6 +391,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !call inverse(3,tmpM3,3,pre_dy2)
            call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
 
+
            tmpM46 = 0.d0
            
            tmpM46(1,1:6) = coeftmp(1:6,1,1)
@@ -405,10 +408,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !tmppM6 =0.d0
            !call inverse(6,tmpM6,6,tmppM6)
            pre_dxdy=0.d0           
-           call svdinverse(4,6,tmpM46,pre_dxdy,3*4+6,info)
+           call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
            !pre_dxdy=matmul(tmppM6,tmpM64)
-          
-           
+         
 
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
@@ -538,7 +540,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !pre_dxdy=matmul(tmppM6,tmpM64)
            
            pre_dxdy=0.d0
-           call svdinverse(4,6,tmpM46,pre_dxdy,3*4+6,info)
+           call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
+           
 
 
            f1(ix,iz) = dt2 / rho(ix,iz) &

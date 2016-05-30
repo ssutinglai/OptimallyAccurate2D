@@ -50,7 +50,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   ! LWORK=5*m for this configuration
 
   !if(m.eq.12) print *, a
-  origin=a
+  !origin=a
 
   CALL  DGESVD( 'A', 'A', M, N, A, m, S, B, m, VT, n, &
        WORK, LWORK, INFO )
@@ -79,9 +79,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   do i = 1,n
      do j = 1,m
         do k = 1,ii
-           !if(S(k)>10d9) exit
-           ia(i,j) = ia(i,j) + VT(i,k)*B(k,j)*S(k)
-         
+           ia(i,j) = ia(i,j) + VT(i,k)*B(k,j)*S(k)         
         enddo
      enddo
   enddo
@@ -90,7 +88,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   !ia=0.d0
   !ia=matmul(transpose(VT(1:ii,1:N)),tmpA(1:ii,1:M))
   !ia=matmul(tmpA(1:N,1:ii),transpose(B(1:ii,1:M))
-  print *, ia
+  !print *, ia
   
 
   return

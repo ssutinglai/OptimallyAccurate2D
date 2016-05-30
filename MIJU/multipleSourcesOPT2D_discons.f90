@@ -356,7 +356,7 @@ program multipleSourcesOPT2D
   endif
 
 
-  stop
+  
   
 
   ! for Cerjan absorbing boundary
