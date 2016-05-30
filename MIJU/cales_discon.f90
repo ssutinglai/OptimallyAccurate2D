@@ -337,12 +337,17 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
            
-
+           print *, " alle ist gut " 
 
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
-           
+          
+           print *, "we have some intersections :", nointersections,pt0x,pt0z
+           print *, ix,iz
+
            if(nointersections.eq.1) cycle ! for smoothed points
            
+          
+
            ! for derivatives of ux
 
 
@@ -361,7 +366,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,3) = coeftmp(4,1,8)
 
            call inverse(3,tmpM3,3,pre_dx2)
-
+           
 
            tmpM3 = 0.d0
 
@@ -392,7 +397,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
           
            tmppM6 =0.d0
            
-           call inverse(6,tmpM6,6,tmppM6)
+           !call inverse(6,tmpM6,6,tmppM6)
            pre_dxdy=matmul(tmppM6,tmpM64)
 
            
@@ -517,7 +522,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
           
            tmppM6 =0.d0
            
-           call inverse(6,tmpM6,6,tmppM6)
+           ! call inverse(6,tmpM6,6,tmppM6)
            pre_dxdy=matmul(tmppM6,tmpM64)
 
            f1(ix,iz) = dt2 / rho(ix,iz) &

@@ -29,7 +29,7 @@ FFLAGS = -O4 -check nobounds -xAVX -ftz -assume buffered_io -assume byterecl -ve
 #FFLAGS=    -g -O0 -traceback
 #FFLAGS=    -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl -L/cm/shared/apps/intel/composer_xe/current/compiler/lib/intel64
 
-#FFLAGS=    -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl
+#FFLAGS=    -llapack -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl
 # change    -vec-report0      to      -vec-report3     to get a vectorization report
 
 ################################################
@@ -37,7 +37,7 @@ FFLAGS = -O4 -check nobounds -xAVX -ftz -assume buffered_io -assume byterecl -ve
 ################################################
 
 #FC = mpif90
-FFLAGS = -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
+FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
 
 ################################################
 #   IBM Blue Gene

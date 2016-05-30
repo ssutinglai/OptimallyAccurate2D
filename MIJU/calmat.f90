@@ -35,6 +35,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   nvy2=nvy*nvy
   nvxnvy=nvx*nvy
 
+
   eta0x = dble(ik)*eta(0,1)
   eta1x =-dble(ik)*eta(1,1)
 
@@ -49,8 +50,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   B0 = 0.d0
   B1 = 0.d0
   
-  print *, eta0x,eta1x,eta0y,eta1y
-  print *, nvx,nvy
+  !print *, eta0x,eta1x,eta0y,eta1y
+  !print *, nvx,nvy
 
   
   ! isotropic, PSV
@@ -347,22 +348,10 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ! temporary matrices
 
 
-  do i =1,12
-     print *, "A0", i, "column"
-     print *, A0(i,:)
-   enddo
-
-
-     do i =1,12
-     print *, "B0", i, "column"
-     print *, B0(i,:)
-   enddo
-
-
   M0=matmul(B0,A0)
-  print *, "M0"
   
-  call inverse(12,M0,12,Mm0)
+  !call inverse(12,M0,12,Mm0)
+  !print *, "hello"
 
   M1=matmul(B1,A1)
 
@@ -375,6 +364,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   coef(1:6,1)=M2(1,1:6)
   coef(1:6,2)=M2(7,7:12)
+
+  print *, "das ist gut"
 
 
 end subroutine MizutaniIso

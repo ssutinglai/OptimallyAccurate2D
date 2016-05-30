@@ -31,7 +31,7 @@
 !******************************************************************************
 
 
-subroutine inverseSVD(m,a,n,PINV)
+subroutine inverse(m,a,n,PINV)
 
    implicit none
    
@@ -49,19 +49,22 @@ subroutine inverseSVD(m,a,n,PINV)
    double precision, dimension(M,N) :: A, A1, A2, SIGMA
    double precision, dimension(N,M) :: PINV
    double precision, dimension(M,M) :: U
-   double precision, dimension(M,N) :: VT
+   double precision, dimension(N,N) :: VT
    double precision, dimension(N,N) :: BUFF
    double precision, dimension(2*M+N) :: WORK,WORK2
    double precision, dimension(5*M) :: RWORK
    double precision, dimension(M) :: S
-   integer, dimension(4) :: ISEED
+   !integer, dimension(4) :: ISEED
    double precision :: eps
 
    double precision :: normA, normAPA, normPAP
 
-   data ISEED/0,0,0,1/
+   K=M
+   L=N
 
-   eps = 1.d-9
+   
+
+   eps = 1.d-8
 
    !  Fill A1 with random values and copy into A2
    !call ZLARNV( 1, ISEED, M*N, A1 )
@@ -75,39 +78,41 @@ subroutine inverseSVD(m,a,n,PINV)
       enddo
    enddo
 
-   A = 0.d0 
-   
-   do i =1,M
-      print *, "A1", i, "column"
-      print *, A1(i,:)
-   enddo
+   !print *, "A"
+
+
 
    !  Compute the SVD of A1
    call DGESVD( 'S', 'S', M, N, A1, M, S, U, M, VT, K, WORK, LWORK, &
         RWORK, INFO) 
-    do i =1,M
-      print *, "S", i, "column"
-      print *, S(i)
-   enddo
-   stop
-
+   !print *, "S"
+   !print *, S(1:M)
+   
 
    do i = 1,M
       ii=i
       if(S(i)<eps) exit
    enddo
 
+   A = 0.d0 
+
    do i = 1,ii
-      A(i,i) = 1.d0/S(i)
+      do j = 1,M
+         A(i,j) = U(j,i) /S(i)
+      enddo
    enddo
-   
-   PINV=matmul(transpose(VT(1:ii,1:M)),matmul(A(1:ii,1:ii),transpose(U(1:M,1:ii))))
-   
-
- end subroutine inverseSVD
+   !print *,"1/S"
 
 
-subroutine inverse(n,a,nmax,ia)
+   ! A(1:ii,1:M) = matmul(A(1:ii,1:ii),transpose(U(1:M,1:ii)))
+   !print *, " before"
+   PINV=matmul(transpose(VT(1:ii,1:M)),A(1:ii,1:M))
+   !print *, "PINV"
+
+ end subroutine inverse
+
+
+subroutine inverseLU(n,a,nmax,ia)
   implicit none
   integer n,nmax,i,j
   double precision a(nmax,nmax),ia(nmax,nmax),work(nmax)
@@ -168,5 +173,5 @@ subroutine inverse(n,a,nmax,ia)
   endif
   
   return
-end subroutine inverse
+end subroutine inverseLU
 
