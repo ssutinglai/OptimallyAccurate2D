@@ -1,39 +1,90 @@
-!    Subroutine for inversing a regular matrix
-!
-!     gfortran main.f sub.inverse.f -llapack
-!
-!     inverse(n,a,nmax,ia)
-!             n : (in) dimension of matrix 'a'
-!        a(*,*) : (in) n*n matrix
-!          nmax : (in) working space
-!       ia(*,*) : (out) inv(a)
-!
-!************************* Subroutine using LAPACK ****************************
-!
-!     DGETRF(M,N,A,LDA,IPIV,INFO)
-!             M : number of lines
-!             N : number of columns
-!      A(LDA,*) : input->matrix A(M,N), output->[L]&[U]
-!                 (A=[P]*[L]*[U],[P]:permulation matrix)
-!           LDA : size of 1st dimension of A. LDA=M as usual (so don't care)
-!       IPIV(*) : array. * > min(M,N)
-!          INFO : if successful, return 0
-!
-!     DGETRI(N,A,LDA,IPIV,WORK,LWORK,INFO)
-!             N : dimension of A(N,N)
-!      A(LDA,*) : input->N*N matrix after LU deconposition, output->inv(A) 
-!           LDA : N as usual
-!       IPIV(*) : * > N
-!   WORK(LWORK) : working array.
-!         LWORK : size of WORK. =N,ok
-!          INFO : if successful return 0
-!
-!******************************************************************************
+  !    Subroutine for inversing a regular matrix
+  !
+  !     gfortran main.f sub.inverse.f -llapack
+  !
+  !     inverse(n,a,nmax,ia)
+  !             n : (in) dimension of matrix 'a'
+  !        a(*,*) : (in) n*n matrix
+  !          nmax : (in) working space
+  !       ia(*,*) : (out) inv(a)
+  !
+  !************************* Subroutine using LAPACK ****************************
+  !
+  !     DGETRF(M,N,A,LDA,IPIV,INFO)
+  !             M : number of lines
+  !             N : number of columns
+  !      A(LDA,*) : input->matrix A(M,N), output->[L]&[U]
+  !                 (A=[P]*[L]*[U],[P]:permulation matrix)
+  !           LDA : size of 1st dimension of A. LDA=M as usual (so don't care)
+  !       IPIV(*) : array. * > min(M,N)
+  !          INFO : if successful, return 0
+  !
+  !     DGETRI(N,A,LDA,IPIV,WORK,LWORK,INFO)
+  !             N : dimension of A(N,N)
+  !      A(LDA,*) : input->N*N matrix after LU deconposition, output->inv(A) 
+  !           LDA : N as usual
+  !       IPIV(*) : * > N
+  !   WORK(LWORK) : working array.
+  !         LWORK : size of WORK. =N,ok
+  !          INFO : if successful return 0
+  !
+  !******************************************************************************
+  
+  
+subroutine svdinverse(m,n,a,ia,LWORK,INFO)
+  implicit none
+  
+  ! m.le.n so U is small and VT is big
+  
+  integer m,n,k,j,i
+  double precision :: A(m,n),IA(n,m),tmpA(m,n),origin(m,n)
+  integer :: INFO, LDA, LDU, LDVT, LWORK
+  !parameter(LWORK = 3*n+m)
+  double precision :: S(m),B(m,m),VT(n,n)
+  
+  double precision :: work(LWORK)
+  double precision, parameter :: eps = 1.d-3
+  
+  integer :: ii
+  
+  ! LWORK=5*m for this configuration
+
+  !if(m.eq.12) print *, a
+  origin=a
+
+  CALL  DGESVD( 'A', 'A', M, N, A, m, S, B, m, VT, n, &
+       WORK, LWORK, INFO )
+  
+  if(info.ne.0) return
 
 
-subroutine inverse(m,a,n,PINV)
+  do i = 1,M
+     ii=i
+     if(S(i)<eps) exit
+  enddo
+  
+  tmpA=0.d0
+  do i = 1,ii
+     do j = 1,M
+        tmpA(i,j) = B(j,i) /S(i)
+     enddo
+  enddo
+  
+      
+  ia=0.d0
+  ia=matmul(transpose(VT(1:ii,1:N)),tmpA(1:ii,1:M))
+  
+  
+
+  return
+end subroutine svdinverse
+
+
+subroutine inversebug(m,a,n,PINV)
 
    implicit none
+
+   
    
    external ZLANGE
    double precision :: ZLANGE
@@ -58,6 +109,8 @@ subroutine inverse(m,a,n,PINV)
    double precision :: eps
 
    double precision :: normA, normAPA, normPAP
+
+   return
 
    K=M
    L=N
@@ -109,7 +162,7 @@ subroutine inverse(m,a,n,PINV)
    PINV=matmul(transpose(VT(1:ii,1:M)),A(1:ii,1:M))
    !print *, "PINV"
 
- end subroutine inverse
+ end subroutine inversebug
 
 
 subroutine inverseLU(n,a,nmax,ia)

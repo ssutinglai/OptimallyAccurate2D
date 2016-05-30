@@ -10,7 +10,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   ! in the vicinity of boundaries :
   ! we use Operators for discontinuities (Mizutani 2002; Ovcharenko 2015)
   
-  integer maxnz,nx,nz
+  integer maxnz,nx,nz,info
   double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
   double precision dt,dx,dz
   double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
@@ -337,17 +337,17 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
            
-           print *, " alle ist gut " 
+           ! print *, " alle ist gut " 
 
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
           
-           print *, "we have some intersections :", nointersections,pt0x,pt0z
-           print *, ix,iz
+           !print *, "we have some intersections :", nointersections,pt0x,pt0z
+           !print *, ix,iz
 
            if(nointersections.eq.1) cycle ! for smoothed points
            
-          
-
+         
+           
            ! for derivatives of ux
 
 
@@ -365,8 +365,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,2) = coeftmp(2,1,8)
            tmpM3(3,3) = coeftmp(4,1,8)
 
-           call inverse(3,tmpM3,3,pre_dx2)
-           
+           pre_dx2 = 0.d0
+           !call inverse(3,tmpM3,3,pre_dx2)
+           call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
 
            tmpM3 = 0.d0
 
@@ -382,7 +383,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,2) = coeftmp(3,1,6)
            tmpM3(3,3) = coeftmp(5,1,6)
 
-           call inverse(3,tmpM3,3,pre_dy2)
+        
+           pre_dy2 = 0.d0
+           !call inverse(3,tmpM3,3,pre_dy2)
+           call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
 
            tmpM46 = 0.d0
            
@@ -391,16 +395,18 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(3,1:6) = coeftmp(1:6,1,7)
            tmpM46(4,1:6) = coeftmp(1:6,1,9)
 
-           tmpM6 = 0.d0
-           tmpM64 = transpose(tmpM46)
-           tmpM6 = matmul(tmpM64,tmpM46)
+           !tmpM6 = 0.d0
+           !tmpM64 = transpose(tmpM46)
+           !tmpM6 = matmul(tmpM64,tmpM46)
           
-           tmppM6 =0.d0
            
+           
+           !tmppM6 =0.d0
            !call inverse(6,tmpM6,6,tmppM6)
-           pre_dxdy=matmul(tmppM6,tmpM64)
-
-           
+           pre_dxdy=0.d0           
+           call svdinverse(4,6,tmpM46,pre_dxdy,3*4+6,info)
+           !pre_dxdy=matmul(tmppM6,tmpM64)
+          
            
 
            ! modified operators for interfaces
@@ -490,8 +496,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,2) = coeftmp(2,2,8)
            tmpM3(3,3) = coeftmp(4,2,8)
 
-           call inverse(3,tmpM3,3,pre_dx2)
-
+           pre_dx2=0.d0
+           !call inverse(3,tmpM3,3,pre_dx2)
+           call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
+           
 
            tmpM3 = 0.d0
 
@@ -507,7 +515,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,2) = coeftmp(3,2,6)
            tmpM3(3,3) = coeftmp(5,2,6)
 
-           call inverse(3,tmpM3,3,pre_dy2)
+           pre_dy2=0.d0
+           !call inverse(3,tmpM3,3,pre_dy2)
+           call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
+
 
            tmpM46 = 0.d0
            
@@ -516,14 +527,18 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(3,1:6) = coeftmp(1:6,2,7)
            tmpM46(4,1:6) = coeftmp(1:6,2,9)
 
-           tmpM6 = 0.d0
-           tmpM64 = transpose(tmpM46)
-           tmpM6 = matmul(tmpM64,tmpM46)
+           !tmpM6 = 0.d0
+           !tmpM64 = transpose(tmpM46)
+           !tmpM6 = matmul(tmpM64,tmpM46)
           
-           tmppM6 =0.d0
+           !tmppM6 =0.d0
            
-           ! call inverse(6,tmpM6,6,tmppM6)
-           pre_dxdy=matmul(tmppM6,tmpM64)
+           !call inverse(6,tmpM6,6,tmppM6)
+           !pre_dxdy=matmul(tmppM6,tmpM64)
+           
+           pre_dxdy=0.d0
+           call svdinverse(4,6,tmpM46,pre_dxdy,3*4+6,info)
+
 
            f1(ix,iz) = dt2 / rho(ix,iz) &
                 *  mu(ix,iz)  &

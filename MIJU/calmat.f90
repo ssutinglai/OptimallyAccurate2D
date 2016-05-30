@@ -3,7 +3,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ! isotropic modified operators for discontinuities
 
   implicit none 
-  integer :: i 
+  integer :: i,info 
   double precision :: coef(1:6,1:2),eta(0:1,1:2),normal(1:2)
   double precision :: rho0,rho1,lam0,lam1,mu0,mu1,dx,dz
   integer :: ik,jk
@@ -350,6 +350,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   M0=matmul(B0,A0)
   
+  Mm0=0.d0
+  call svdinverse(12,12,M0,Mm0,5*12,info)
   !call inverse(12,M0,12,Mm0)
   !print *, "hello"
 
@@ -365,7 +367,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   coef(1:6,1)=M2(1,1:6)
   coef(1:6,2)=M2(7,7:12)
 
-  print *, "das ist gut"
+  !print *, "das ist gut"
 
-
+  if(info.ne.0) print *, "bad configuration=", normal,eta
 end subroutine MizutaniIso
+
+
