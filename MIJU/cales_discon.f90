@@ -110,13 +110,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! ctr = 1 right-top ix+1,iz+1
            ctr = 1
            distan2 = dDiagonal2
-           
-           
+                      
            pt1x = pt0x + dx
-           pt1z = pt0z + dz
-
-
-          
+           pt1z = pt0z + dz         
 
            call findNearestPoint(pt0x,pt0z,pt1x,pt1z,distan2,xi,zi,eta,lengthDiscon,nDiscon,iInterSection,err,dscr)
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
