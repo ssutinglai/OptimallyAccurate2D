@@ -37,13 +37,13 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   ! m.le.n so U is small and VT is big
   
   integer m,n,k,j,i
-  double precision :: A(m,n),IA(n,m),tmpA(m,n),origin(m,n)
+  double precision :: A(m,n),IA(n,m),tmpA(n,n),origin(m,n)
   integer :: INFO, LDA, LDU, LDVT, LWORK
   !parameter(LWORK = 3*n+m)
   double precision :: S(m),B(m,m),VT(n,n)
   
   double precision :: work(LWORK)
-  double precision, parameter :: eps = 1.d-3
+  double precision, parameter :: eps = 1.d-9
   
   integer :: ii
   
@@ -55,25 +55,42 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   CALL  DGESVD( 'A', 'A', M, N, A, m, S, B, m, VT, n, &
        WORK, LWORK, INFO )
   
-  if(info.ne.0) return
+  !if(info.ne.0) return
 
 
+  !if(m.eq.12) print *, "S=",S
   do i = 1,M
      ii=i
      if(S(i)<eps) exit
+     S(i) = 1.d0/S(i)    
   enddo
+
+  ii=ii-1
   
-  tmpA=0.d0
-  do i = 1,ii
-     do j = 1,M
-        tmpA(i,j) = B(j,i) /S(i)
+  !tmpA=0.d0
+  !do i = 1,ii
+  !   do j = 1,M
+  !      tmpA(i,j) = B(j,i) !/S(i)
+  !   enddo
+  !enddo
+
+  ia=0.d0
+  
+  do i = 1,n
+     do j = 1,m
+        do k = 1,ii
+           !if(S(k)>10d9) exit
+           ia(i,j) = ia(i,j) + VT(i,k)*B(k,j)*S(k)
+         
+        enddo
      enddo
   enddo
-  
+  !print *, "tmpA",tmpA
       
-  ia=0.d0
-  ia=matmul(transpose(VT(1:ii,1:N)),tmpA(1:ii,1:M))
-  
+  !ia=0.d0
+  !ia=matmul(transpose(VT(1:ii,1:N)),tmpA(1:ii,1:M))
+  !ia=matmul(tmpA(1:N,1:ii),transpose(B(1:ii,1:M))
+  print *, ia
   
 
   return

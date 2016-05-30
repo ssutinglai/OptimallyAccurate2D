@@ -356,11 +356,12 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   !print *, "hello"
 
   M1=matmul(B1,A1)
-
+  print *, 'Mm0'
+  print *, Mm0(1,1:6)
   
   ! coefs 
 
-  coef = 0.d0
+  coef(1:6,1:2) = 0.d0
   
   M2=matmul(Mm0,M1)
 
@@ -369,7 +370,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   !print *, "das ist gut"
 
-  if(info.ne.0) print *, "bad configuration=", normal,eta
+  !if(info.ne.0) print *, "bad configuration=", normal,eta
 end subroutine MizutaniIso
 
 

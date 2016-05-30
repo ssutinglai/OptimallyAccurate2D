@@ -342,7 +342,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
           
            !print *, "we have some intersections :", nointersections,pt0x,pt0z
-           !print *, ix,iz
+           print *, ix,iz,nointersections
+           !print *, "coeftmp", coeftmp(:,1,:)
 
            if(nointersections.eq.1) cycle ! for smoothed points
            
