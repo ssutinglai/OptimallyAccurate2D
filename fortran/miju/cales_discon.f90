@@ -49,7 +49,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   ! temporary small matrices
   
   double precision, dimension (3,3) :: tmpM3,pre_dx2,pre_dy2
-  double precision, dimension (6,6) :: tmpM6,pre_dxdy
+  double precision, dimension (4,6) :: tmpM46
+  double precision, dimension (6,6) :: tmpM6,tmppM6
+  double precision, dimension (6,4) :: tmpM64,pre_dxdy
   
   
 
@@ -337,64 +339,117 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            
            tmpM3 = 0.d0
            
+           tmpM3(1,1) = coeftmp(1,1,2)
+           tmpM3(1,2) = coeftmp(2,1,2)
+           tmpM3(1,3) = coeftmp(4,1,2)
+
+           tmpM3(2,1) = coeftmp(1,1,5)
+           tmpM3(2,2) = coeftmp(2,1,5)
+           tmpM3(2,3) = coeftmp(4,1,5)
+
+           tmpM3(3,1) = coeftmp(1,1,8)
+           tmpM3(3,2) = coeftmp(2,1,8)
+           tmpM3(3,3) = coeftmp(4,1,8)
+
+           call inverse(3,tmpM3,3,pre_dx2)
+
+
+           tmpM3 = 0.d0
+
+           tmpM3(1,1) = coeftmp(1,1,4)
+           tmpM3(1,2) = coeftmp(3,1,4)
+           tmpM3(1,3) = coeftmp(5,1,4)
+
+           tmpM3(2,1) = coeftmp(1,1,5)
+           tmpM3(2,2) = coeftmp(3,1,5)
+           tmpM3(2,3) = coeftmp(5,1,5)
+
+           tmpM3(3,1) = coeftmp(1,1,6)
+           tmpM3(3,2) = coeftmp(3,1,6)
+           tmpM3(3,3) = coeftmp(5,1,6)
+
+           call inverse(3,tmpM3,3,pre_dy2)
+
+           tmpM46 = 0.d0
+           
+           tmpM46(1,1:6) = coeftmp(1:6,1,1)
+           tmpM46(2,1:6) = coeftmp(1:6,1,3)
+           tmpM46(3,1:6) = coeftmp(1:6,1,7)
+           tmpM46(4,1:6) = coeftmp(1:6,1,9)
+
+           tmpM6 = 0.d0
+           tmpM64 = transpose(tmpM64)
+           tmpM6 = matmul(tmpM64,tmpM46)
+          
+           tmppM6 =0.d0
+           
+           call inverse(6,tmpM6,6,tmppM6)
+           pre_dxdy=matmul(tmppM6,tmpM64)
+
            
            
+           
+           ! NF did not get coeffuy_dx2 ... !!!
+           
 
 
-
-
-                 
-                 
-                 
-
-                 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+           ! modified operators for interfaces
+           !                   (Oleg Ovcharenko)
 
            e1(ix,iz) = dt2 / rho(ix,iz) &
-                * ( ( lam(ix-1,iz) + lam(ix,iz) ) &
-                + 2.d0 * ( mu(ix-1,iz) + mu(ix,iz) ) ) &
-                / ( 2.d0 * dx2 )
+                * (  lam(ix,iz)  &
+                + 2.d0 *  mu(ix,iz)  ) &
+                * pre_dx2(3,1) &
+                / ( dx2 )
+
            e2(ix,iz) = dt2 / rho(ix,iz) &
-                * ( ( lam(ix,iz) + lam(ix+1,iz) ) &
-                + 2.d0 * ( mu(ix,iz) + mu(ix+1,iz) ) ) &
-                / ( 2.d0 * dx2 )
+                * (  lam(ix,iz)  &
+                + 2.d0 *  mu(ix,iz)  ) &
+                * pre_dx2(3,3) &
+                / ( dx2 )
+           
+           ee12(ix,iz) = dt2 / rho(ix,iz) &
+                * (  lam(ix,iz)  &
+                + 2.d0 *  mu(ix,iz)  ) &
+                * (pre_dx2(3,1)+pre_dx2(3,2)+pre_dx2(3,3)) &
+                / ( dx2 )
+           
+           
            e3(ix,iz) = dt2 / rho(ix,iz) &
-                * ( mu(ix,iz-1) + mu(ix,iz) ) &
-                / ( 2.d0 * dz2 )
+                * mu(ix,iz)  &
+                * pre_dy2(3,1) &
+                / ( dz2 )
+
+
            e4(ix,iz) = dt2 / rho(ix,iz) &
-                * ( mu(ix,iz) + mu(ix,iz+1) ) &
-                / ( 2.d0 * dz2 )
-           e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
+                * mu(ix,iz)  &
+                * pre_dy2(3,3) &
+                / ( dz2 )
+           
+           ee34(ix,iz) = dt2 / rho(ix,iz) &
+                * mu(ix,iz)  &
+                * (pre_dy2(3,1)+pre_dy2(3,2)+pre_dy2(3,3)) &
+                / ( dz2 )
+
+           
+
+           f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
                 / ( 4.d0 * dxdz )
-           e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
+           f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
                 / ( 4.d0 * dxdz )
-           e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
+           f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
                 / ( 4.d0 * dxdz )
-           e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
+           f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
                 / ( 4.d0 * dxdz )
+
+
+
+
+
+
+
+
+
 
 
            f1(ix,iz) = dt2 / rho(ix,iz) &
@@ -411,15 +466,23 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 * ( ( lam(ix,iz) + lam(ix,iz+1) ) &
                 + 2.d0 * ( mu(ix,iz) + mu(ix,iz+1) ) ) &
                 / ( 2.d0 * dz2 )
-           f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
-                / ( 4.d0 * dxdz )
-           f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
-                / ( 4.d0 * dxdz )
-           f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
-                / ( 4.d0 * dxdz )
-           f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
+      
+           
+
+
+
+           e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
                 / ( 4.d0 * dxdz )
 
+
+
+
+           e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
+                / ( 4.d0 * dxdz )
+           e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
+                / ( 4.d0 * dxdz )
+           e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
+                / ( 4.d0 * dxdz )
 
 
 

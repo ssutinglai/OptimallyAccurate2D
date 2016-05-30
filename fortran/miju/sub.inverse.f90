@@ -30,6 +30,10 @@
 !
 !******************************************************************************
 
+
+
+
+
 subroutine inverse(n,a,nmax,ia)
   implicit none
   integer n,nmax,i,j
