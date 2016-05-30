@@ -37,7 +37,7 @@ FFLAGS = -O4 -check nobounds -xAVX -ftz -assume buffered_io -assume byterecl -ve
 ################################################
 
 #FC = mpif90
-FFLAGS = -std=gnu -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
+FFLAGS = -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
 
 ################################################
 #   IBM Blue Gene

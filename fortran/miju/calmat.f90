@@ -48,6 +48,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   B0 = 0.d0
   B1 = 0.d0
   
+ 
+
   
   ! isotropic, PSV
 
@@ -343,6 +345,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ! temporary matrices
 
   M0=matmul(B0,A0)
+  print *, "M0"
   
   call inverse(12,M0,12,Mm0)
 

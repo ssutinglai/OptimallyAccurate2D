@@ -31,10 +31,83 @@
 !******************************************************************************
 
 
+subroutine inverse(m,a,n,PINV)
+
+   implicit none
+   
+   external ZLANGE
+   double precision :: ZLANGE
+   
+   integer :: i, ii,j, M, N,NMAX,K, L, LWORK, INFO
 
 
+   !K = MIN(M,N) but here we assume K=M and L=N
+   !L = MAX(M,N)
 
-subroutine inverse(n,a,nmax,ia)
+   ! LWORK = MAX(1,2*K+L) so this should be 2*M+N
+
+   double precision, dimension(M,N) :: A, A1, A2, SIGMA
+   double precision, dimension(N,M) :: PINV
+   double precision, dimension(M,M) :: U
+   double precision, dimension(M,N) :: VT
+   double precision, dimension(N,N) :: BUFF
+   double precision, dimension(2*M+N) :: WORK,WORK2
+   double precision, dimension(5*M) :: RWORK
+   double precision, dimension(M) :: S
+   integer, dimension(4) :: ISEED
+   double precision :: eps
+
+   double precision :: normA, normAPA, normPAP
+
+   data ISEED/0,0,0,1/
+
+   eps = 1.d-9
+
+   !  Fill A1 with random values and copy into A2
+   !call ZLARNV( 1, ISEED, M*N, A1 )
+   
+   ! copy A into A1 and A2
+
+   do i=1,M
+      do j=1,N
+         A1(i,j) = A(i,j)
+         A2(i,j) = A(i,j)
+      enddo
+   enddo
+
+   A = 0.d0 
+   
+   do i =1,M
+      print *, "A1", i, "column"
+      print *, A1(i,:)
+   enddo
+
+   !  Compute the SVD of A1
+   call DGESVD( 'S', 'S', M, N, A1, M, S, U, M, VT, K, WORK, LWORK, &
+        RWORK, INFO) 
+    do i =1,M
+      print *, "S", i, "column"
+      print *, S(i)
+   enddo
+   stop
+
+
+   do i = 1,M
+      ii=i
+      if(S(i)<eps) exit
+   enddo
+
+   do i = 1,ii
+      A(i,i) = 1.d0/S(i)
+   enddo
+   
+   PINV=matmul(transpose(VT(1:ii,1:M)),matmul(A(1:ii,1:ii),transpose(U(1:M,1:ii))))
+   
+
+ end subroutine inverse
+
+
+subroutine inverse_LU(n,a,nmax,ia)
   implicit none
   integer n,nmax,i,j
   double precision a(nmax,nmax),ia(nmax,nmax),work(nmax)
@@ -95,5 +168,5 @@ subroutine inverse(n,a,nmax,ia)
   endif
   
   return
-end subroutine inverse
+end subroutine inverse_LU
 
