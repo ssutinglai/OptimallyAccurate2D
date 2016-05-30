@@ -31,7 +31,7 @@
 !******************************************************************************
 
 
-subroutine inverse(m,a,n,PINV)
+subroutine inverseSVD(m,a,n,PINV)
 
    implicit none
    
@@ -104,10 +104,10 @@ subroutine inverse(m,a,n,PINV)
    PINV=matmul(transpose(VT(1:ii,1:M)),matmul(A(1:ii,1:ii),transpose(U(1:M,1:ii))))
    
 
- end subroutine inverse
+ end subroutine inverseSVD
 
 
-subroutine inverse_LU(n,a,nmax,ia)
+subroutine inverse(n,a,nmax,ia)
   implicit none
   integer n,nmax,i,j
   double precision a(nmax,nmax),ia(nmax,nmax),work(nmax)
@@ -168,5 +168,5 @@ subroutine inverse_LU(n,a,nmax,ia)
   endif
   
   return
-end subroutine inverse_LU
+end subroutine inverse
 

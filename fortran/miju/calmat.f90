@@ -3,6 +3,7 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   ! isotropic modified operators for discontinuities
 
   implicit none 
+  integer :: i 
   double precision :: coef(1:6,1:2),eta(0:1,1:2),normal(1:2)
   double precision :: rho0,rho1,lam0,lam1,mu0,mu1,dx,dz
   integer :: ik,jk
@@ -48,7 +49,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   B0 = 0.d0
   B1 = 0.d0
   
- 
+  print *, eta0x,eta1x,eta0y,eta1y
+  print *, nvx,nvy
 
   
   ! isotropic, PSV
@@ -343,6 +345,19 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
 
   ! temporary matrices
+
+
+  do i =1,12
+     print *, "A0", i, "column"
+     print *, A0(i,:)
+   enddo
+
+
+     do i =1,12
+     print *, "B0", i, "column"
+     print *, B0(i,:)
+   enddo
+
 
   M0=matmul(B0,A0)
   print *, "M0"

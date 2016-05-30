@@ -38,7 +38,7 @@ program multipleSourcesOPT2D
   ! integer :: isx, isz ! source position
   ! for Ricker wavelets
   !real :: f0, t0
-  integer, parameter :: nReceiver = 199
+  integer, parameter :: nReceiver = 99
   integer :: nrx(1:nReceiver), nrz(1:nReceiver)
   
   !integer, parameter :: iSourceStart = 2
@@ -237,6 +237,7 @@ program multipleSourcesOPT2D
      endif
   enddo
 
+  markers=0
 
 
   ! Receiver position
