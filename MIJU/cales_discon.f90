@@ -116,11 +116,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(err.eq.0) then ! if there's no intersection and we take ordinary operators 
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
-              print *, 'normal',normal
+              
               nointersections = nointersections * 0
 
            else
-              normal=0.d0
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)
+
               eta(1,1) = dble(abs(ik(ctr)))
               eta(1,2) = dble(abs(jk(ctr)))
               eta(0,1) = 1.d0-eta(1,1)
@@ -143,7 +145,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal=0.d0
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)
+              
               eta(1,1) = dble(abs(ik(ctr)))
               eta(1,2) = dble(abs(jk(ctr)))
               eta(0,1) = 1.d0-eta(1,1)
@@ -169,7 +173,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
               else
-                 normal=0.d0
+                 normal(1)=-dble(jk(ctr))/sqrt(distan2)
+                 normal(2)= dble(ik(ctr))/sqrt(distan2)
                  eta(1,1) = dble(abs(ik(ctr)))
                  eta(1,2) = dble(abs(jk(ctr)))
                  eta(0,1) = 1.d0-eta(1,1)
@@ -201,12 +206,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+           else
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -236,12 +242,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+           else
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -268,12 +275,14 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+           else
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)   
+              
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -294,12 +303,14 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+           else
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)   
+             
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -321,12 +332,14 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
-              else
-                 normal=0.d0
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+           else
+              normal(1)=-dble(jk(ctr))/sqrt(distan2)
+              normal(2)= dble(ik(ctr))/sqrt(distan2)  
+              
+              eta(1,1) = dble(abs(ik(ctr)))
+              eta(1,2) = dble(abs(jk(ctr)))
+              eta(0,1) = 1.d0-eta(1,1)
+              eta(0,2) = 1.d0-eta(1,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
