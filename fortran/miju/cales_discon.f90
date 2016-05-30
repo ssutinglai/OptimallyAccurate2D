@@ -48,7 +48,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   integer :: iLengthDiscon,iDiscon,iInterSection(1:2),err
   double precision :: eta(0:1,1:2)
   double precision :: normal(1:2) ! normal vector
-  double precision :: coeftmp(1:4,1:2,1:9) ! temporal coef for two points
+  double precision :: coeftmp(1:6,1:2,1:9) ! temporal coef for two points
 
   integer :: nointersections
 
@@ -389,7 +389,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(4,1:6) = coeftmp(1:6,1,9)
 
            tmpM6 = 0.d0
-           tmpM64 = transpose(tmpM64)
+           tmpM64 = transpose(tmpM46)
            tmpM6 = matmul(tmpM64,tmpM46)
           
            tmppM6 =0.d0
@@ -460,11 +460,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
                 * pre_dxdy(6,1) &
                 / ( 4.d0 * dxdz )
-           f78(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
+           ff78(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
                 * (pre_dxdy(6,2)+pre_dxdy(6,4)) &
                 / ( 4.d0 * dxdz )
-           f87(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (pre_dxdy(6,1)+pre_dxdy(6.3)) &
+           ff87(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
+                * (pre_dxdy(6,1)+pre_dxdy(6,3)) &
                 / ( 4.d0 * dxdz )
                 
 
@@ -514,7 +514,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(4,1:6) = coeftmp(1:6,2,9)
 
            tmpM6 = 0.d0
-           tmpM64 = transpose(tmpM64)
+           tmpM64 = transpose(tmpM46)
            tmpM6 = matmul(tmpM64,tmpM46)
           
            tmppM6 =0.d0

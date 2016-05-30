@@ -342,18 +342,18 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
 
   ! temporary matrices
 
-  M0=matmal(B0,A0)
+  M0=matmul(B0,A0)
   
   call inverse(12,M0,12,Mm0)
 
-  M1=matmal(B1,A1)
+  M1=matmul(B1,A1)
 
   
   ! coefs 
 
   coef = 0.d0
   
-  M2=matmal(Mm0,M1)
+  M2=matmul(Mm0,M1)
 
   coef(1:6,1)=M2(1,1:6)
   coef(1:6,2)=M2(7,7:12)

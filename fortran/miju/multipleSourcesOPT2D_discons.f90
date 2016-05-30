@@ -13,6 +13,7 @@ program multipleSourcesOPT2D
 
   implicit none
   character(120) :: filename
+  integer :: tmpint
   !character(80), parameter :: modelname = 'homo'
   !character(80), parameter :: vpmodel = './2d_homo.vp'
   !character(80), parameter :: vsmodel = './2d_homo.vs'
@@ -215,8 +216,26 @@ program multipleSourcesOPT2D
   nDiscon = 1
   lengthDiscon = 40*nx+1
   allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+  
+  do ix =1,lengthDiscon
+     dscr(1,ix,1) = dble(ix-1)*dx/40.d0
+     dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
+  enddo
+
   markers(1:maxnz,1:maxnz) = 0
   markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
+
+  markers(1:maxnz,1:maxnz) = 0
+  do ix = 1,nx+1
+     tmpint=nint(199.d0-dble(ix-1)*199.d0/399.d0)
+     if(tmpint-3.ge.1) then
+        markers(ix,tmpint-3:tmpint+3) = 1
+     else if(tmpint-2.ge.1) then
+        markers(ix,tmpint-2:tmpint+3) = 1
+     else
+        markers(ix,1:tmpint+3) = 1
+     endif
+  enddo
 
 
 
@@ -230,7 +249,7 @@ program multipleSourcesOPT2D
   
   do iSource = 1, nSource
      iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
-     iisz(iSource)=1
+     iisz(iSource)=100
      write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
      do j=1, 12
         if(filename(j:j).eq.' ') filename(j:j)='0'
@@ -452,7 +471,8 @@ program multipleSourcesOPT2D
                 ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
                 work(1,1), work(1,5), work(1,9),work(1,13), &
                 work(1,17),work(1,18),work(1,20),work(1,21), &
-                work(1,23),work(1,24),work(1,28),work(1,29), optimise & ! Hereafter are new variables for cales_discon
+                work(1,23),work(1,24),work(1,28),work(1,29), optimise, & 
+                ! Hereafter are new variables for cales_discon
                 ee12,ee34,ee56,ee65,ee78,ee87, &
                 ff12,ff34,ff56,ff65,ff78,ff87)
            
@@ -1464,147 +1484,13 @@ call system(system_command1)
 call system(system_command2)
 end subroutine create_color_image
 
-subroutine definePML(NPOINTS_PML,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,NPOWER,d0_x,d0_y,cp)
-  implicit none
-  integer NPOINTS_PML
-  double precision :: NPOWER
-  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,Rcoef,d0_x,d0_y,cp
-
-  !--- define profile of absorption in PML region
-
-  ! thickness of the PML layer in meters
-  thickness_PML_x = NPOINTS_PML * DELTAX
-  thickness_PML_y = NPOINTS_PML * DELTAY
-  
-  ! reflection coefficient (INRIA report section 6.1) http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
-  Rcoef = 0.001d0
-  
-  ! check that NPOWER is okay
-  if(NPOWER < 1) stop 'NPOWER must be greater than 1'
-  
-  ! compute d0 from INRIA report section 6.1 http://hal.inria.fr/docs/00/07/32/19/PDF/RR-3471.pdf
-  d0_x = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_x)
-  d0_y = - (NPOWER + 1) * cp * log(Rcoef) / (2.d0 * thickness_PML_y)
-  
-end subroutine definePML
-
-
-subroutine setPML(USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,ALPHA_MAX_PML, &
-     maxnz,NX,NY,DELTAX,DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginright, &
-     d_x,K_x,alpha_x,a_x,d_y,K_y,alpha_y,a_y,b_x,b_y)
-
-  logical :: USE_PML_XMIN, USE_PML_XMAX, USE_PML_YMIN, USE_PML_YMAX
-  double precision :: ALPHA_MAX_PML
-  integer :: NX, NY
-  double precision :: DELTAX, DELTAY,thickness_PML_x,thickness_PML_y,xoriginleft,xoriginrigh
-
-  double precision, dimension(maxnz+1) :: d_x,K_x,alpha_x,a_x,b_x,d_x_half,K_x_half,alpha_x_half,a_x_half,b_x_half
-  double precision, dimension(maxnz+1) :: d_y,K_y,alpha_y,a_y,b_y,d_y_half,K_y_half,alpha_y_half,a_y_half,b_y_half
-  double precision, parameter :: ZERO = 0.d0
-
-
-  d_x(:) = ZERO
-  K_x(:) = 1.d0
-  alpha_x(:) = ZERO
-  a_x(:) = ZERO
-
-  d_y(:) = ZERO
-  K_y(:) = 1.d0
-  alpha_y(:) = ZERO
-  a_y(:) = ZERO
-
-! damping in the X direction
-
-! origin of the PML layer (position of right edge minus thickness, in meters)
-  xoriginleft = thickness_PML_x
-  xoriginright = (NX-1)*DELTAX - thickness_PML_x
-
-  do i = 1,NX
-
-! abscissa of current grid point along the damping profile
-    xval = DELTAX * dble(i-1)
-
-!---------- left edge
-    if(USE_PML_XMIN) then
-
-! define damping profile at the grid points
-      abscissa_in_PML = xoriginleft - xval
-      if(abscissa_in_PML >= ZERO) then
-        abscissa_normalized = abscissa_in_PML / thickness_PML_x
-        d_x(i) = d0_x * abscissa_normalized**NPOWER
-! this taken from Gedney page 8.2
-        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
-        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
-      endif
-
-    endif
-
-!---------- right edge
-    if(USE_PML_XMAX) then
-
-! define damping profile at the grid points
-      abscissa_in_PML = xval - xoriginright
-      if(abscissa_in_PML >= ZERO) then
-        abscissa_normalized = abscissa_in_PML / thickness_PML_x
-        d_x(i) = d0_x * abscissa_normalized**NPOWER
-! this taken from Gedney page 8.2
-        K_x(i) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
-        alpha_x(i) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
-      endif
-    endif
-! just in case, for -5 at the end
-    if(alpha_x(i) < ZERO) alpha_x(i) = ZERO
-    b_x(i) = exp(- (d_x(i) / K_x(i) + alpha_x(i)) * DELTAT)
-! this to avoid division by zero outside the PML
-    if(abs(d_x(i)) > 1.d-6) a_x(i) = d_x(i) * (b_x(i) - 1.d0) / (K_x(i) * (d_x(i) + K_x(i) * alpha_x(i)))
-  enddo
-
-! damping in the Y direction
-
-! origin of the PML layer (position of right edge minus thickness, in meters)
-  yoriginbottom = thickness_PML_y
-  yorigintop = NY*DELTAY - thickness_PML_y
-
-  do j = 1,NY
-! abscissa of current grid point along the damping profile
-    yval = DELTAY * dble(j-1)
-!---------- bottom edge
-    if(USE_PML_YMIN) then
-! define damping profile at the grid points
-      abscissa_in_PML = yoriginbottom - yval
-      if(abscissa_in_PML >= ZERO) then
-        abscissa_normalized = abscissa_in_PML / thickness_PML_y
-        d_y(j) = d0_y * abscissa_normalized**NPOWER
-! this taken from Gedney page 8.2
-        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
-        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
-      endif
-    endif
-
-!---------- top edge
-    if(USE_PML_YMAX) then
-! define damping profile at the grid points
-      abscissa_in_PML = yval - yorigintop
-      if(abscissa_in_PML >= ZERO) then
-        abscissa_normalized = abscissa_in_PML / thickness_PML_y
-        d_y(j) = d0_y * abscissa_normalized**NPOWER
-! this taken from Gedney page 8.2
-        K_y(j) = 1.d0 + (K_MAX_PML - 1.d0) * abscissa_normalized**NPOWER
-        alpha_y(j) = ALPHA_MAX_PML * (1.d0 - abscissa_normalized) + 0.1d0 * ALPHA_MAX_PML
-      endif
-    endif
-    b_y(j) = exp(- (d_y(j) / K_y(j) + alpha_y(j)) * DELTAT)
-! this to avoid division by zero outside the PML
-    if(abs(d_y(j)) > 1.d-6) a_y(j) = d_y(j) * (b_y(j) - 1.d0) / (K_y(j) * (d_y(j) + K_y(j) * alpha_y(j)))
-  enddo
-
-
-end subroutine setPML
 
 
 subroutine  compNRBC2(ux,ux1,ux2,uz,uz1,uz2, rrate, lmargin, rmargin,nnx,nnz)
 
   ! Cerjan boundary conditions (2D)
+  implicit none
+  integer :: nnx, nnz
 
   real*8, intent(inout) :: ux2(nnx,nnz),uz2(nnx,nnz)
   real*8, intent(inout) :: ux1(nnx,nnz),uz1(nnx,nnz)
@@ -1654,6 +1540,8 @@ end subroutine compNRBC2
 
 subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
 
+  implicit none
+  integer :: nnx, nnz
   ! Cerjan boundary conditions (2D)
   double precision :: r(nnx,nnz)
   real*8, intent(in) :: rrate

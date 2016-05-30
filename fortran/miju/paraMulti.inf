@@ -1,8 +1,8 @@
-layered
-2d_start.vp
-2d_start.vs
-2d_start.rho
-F
+giza
+2d_giza.vp
+2d_giza.vs
+2d_giza.rho
+T
 100 2 1 
 
 
