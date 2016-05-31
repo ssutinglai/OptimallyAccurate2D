@@ -386,8 +386,8 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   !print *, M2(1,1:6)
   !stop
 
-  coef(1:6,1)=M2(1,1:6)
-  coef(1:6,2)=M2(7,7:12)
+  coef(1:6,1)=M2(1,1:6)*1.d-4
+  coef(1:6,2)=M2(7,7:12)*1.d-4
 
   !print *, "das ist gut"
 

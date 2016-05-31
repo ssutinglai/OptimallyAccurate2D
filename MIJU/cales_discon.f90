@@ -230,6 +230,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            pt1z = pt0z 
            
            
+           
            ! ctr = 6 centre-bottom ix,iz-1
            ctr = 6
            distan2 = dz2
@@ -358,7 +359,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            if(nointersections.eq.1) cycle ! for smoothed points
            
            
-           print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
+           !print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
            
            ! for derivatives of ux
 
@@ -382,7 +383,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !call inverseLU(3,tmpM3,pre_dx2)
            call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
            
-
+           
            tmpM3 = 0.d0
 
            tmpM3(1,1) = coeftmp(1,1,4)
@@ -427,9 +428,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
 
-           print *, "original e1,e2,e3,e4"
-           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           !print *, "original e1,e2,e3,e4"
+           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
 
+           !print *, pre_dx2(3,1:3)
+           
            e1(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
@@ -466,9 +469,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 / ( dz2 )
 
 
-           print *, "new e1,e2,e3,e4,ee12,ee34"
-           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
-           print *, ee12(ix,iz),ee34(ix,iz)
+           !print *, "new e1,e2,e3,e4,ee12,ee34"
+           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           !print *, ee12(ix,iz),ee34(ix,iz)
 
            !stop
            
@@ -634,8 +637,24 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 * (pre_dxdy(6,1)+pre_dxdy(6,3)) &
                 / ( 4.d0 * dxdz )
 
+           if(0.eq.0) then
+              ee12(ix,iz) = 0.d0
+              ee34(ix,iz) = 0.d0
+              ee56(ix,iz) = 0.d0
+              ee65(ix,iz) = 0.d0
+              ee78(ix,iz) = 0.d0
+              ee87(ix,iz) = 0.d0 
+              ff12(ix,iz) = 0.d0
+              ff34(ix,iz) = 0.d0
+              ff56(ix,iz) = 0.d0
+              ff65(ix,iz) = 0.d0
+              ff78(ix,iz) = 0.d0
+              ff87(ix,iz) = 0.d0 
+           endif
 
 
+
+           
         endif
      enddo
   enddo
