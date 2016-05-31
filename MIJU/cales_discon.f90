@@ -55,9 +55,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   ! temporary small matrices
   
   double precision, dimension (3,3) :: tmpM3,pre_dx2,pre_dy2
-  double precision, dimension (4,6) :: tmpM46
+  double precision, dimension (4,6) :: tmpM46,pre_dxdy
   double precision, dimension (6,6) :: tmpM6,tmppM6
-  double precision, dimension (6,4) :: tmpM64,pre_dxdy
+  double precision, dimension (4,4) :: tmpM4,tmppM4
+  double precision, dimension (6,4) :: tmpM64
   
   
   ! Verify that all the coordinates are already with lmargins
@@ -120,13 +121,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               nointersections = nointersections * 0
 
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)
 
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)     
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)     
            endif
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
@@ -145,13 +146,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)
               
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                    
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                    
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -173,12 +174,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
               else
-                 normal(1)=-dble(jk(ctr))/sqrt(distan2)
-                 normal(2)= dble(ik(ctr))/sqrt(distan2)
-                 eta(1,1) = dble(abs(ik(ctr)))
-                 eta(1,2) = dble(abs(jk(ctr)))
-                 eta(0,1) = 1.d0-eta(1,1)
-                 eta(0,2) = 1.d0-eta(1,2)                 
+                 normal(1)= dble(jk(ctr))/sqrt(distan2)
+                 normal(2)=-dble(ik(ctr))/sqrt(distan2)
+                 eta(0,1) = dble(abs(ik(ctr)))
+                 eta(0,2) = dble(abs(jk(ctr)))
+                 eta(1,1) = 1.d0-eta(0,1)
+                 eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -207,12 +208,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                 
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -222,14 +223,15 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            
            
-           ! ctr = 5 centre ix,iz
+           ! ctr = 5 centre ix,iz == the same point
            ctr = 5
            distan2 = 0.d0
 
            pt1x = pt0x 
            pt1z = pt0z 
            
-           
+           coeftmp(1,1,ctr) = 1.d0
+           coeftmp(1,2,ctr) = 1.d0
            
            ! ctr = 6 centre-bottom ix,iz-1
            ctr = 6
@@ -244,12 +246,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                 
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -277,13 +279,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)   
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)   
               
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                 
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -305,13 +307,13 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)   
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)   
              
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                 
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
@@ -334,32 +336,29 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
            else
-              normal(1)=-dble(jk(ctr))/sqrt(distan2)
-              normal(2)= dble(ik(ctr))/sqrt(distan2)  
+              normal(1)= dble(jk(ctr))/sqrt(distan2)
+              normal(2)=-dble(ik(ctr))/sqrt(distan2)  
               
-              eta(1,1) = dble(abs(ik(ctr)))
-              eta(1,2) = dble(abs(jk(ctr)))
-              eta(0,1) = 1.d0-eta(1,1)
-              eta(0,2) = 1.d0-eta(1,2)                 
+              eta(0,1) = dble(abs(ik(ctr)))
+              eta(0,2) = dble(abs(jk(ctr)))
+              eta(1,1) = 1.d0-eta(0,1)
+              eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
            call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
-           
-           ! print *, " alle ist gut " 
+        
 
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
           
-           !print *, "we have some intersections :", nointersections,pt0x,pt0z
-           !print *, ix,iz,nointersections
-           !print *, "coeftmp", coeftmp(:,1,:)
-
-           if(nointersections.eq.1) cycle ! for smoothed points
+         
+           !if(nointersections.eq.1) cycle ! for smoothed points
+           ! NF doit enlever le commentaire au-dessus
            
            
-           !print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
+           print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
            
            ! for derivatives of ux
 
@@ -380,10 +379,16 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
            pre_dx2 = 0.d0
            
-           !call inverseLU(3,tmpM3,pre_dx2)
-           call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
+           !print *, tmpM3
+           tmpM3 = transpose(tmpM3)
+           !print *, tmpM3
            
+           call inverseLU(3,tmpM3,pre_dx2)
+           !call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
            
+           !print *, pre_dx2 
+           !stop
+
            tmpM3 = 0.d0
 
            tmpM3(1,1) = coeftmp(1,1,4)
@@ -398,10 +403,10 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,2) = coeftmp(3,1,6)
            tmpM3(3,3) = coeftmp(5,1,6)
 
-        
+           tmpM3 = transpose(tmpM3)
            pre_dy2 = 0.d0
-           !call inverseLU(3,tmpM3,pre_dy2)
-           call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
+           call inverseLU(3,tmpM3,pre_dy2)
+           !call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
 
 
            tmpM46 = 0.d0
@@ -412,100 +417,107 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(4,1:6) = coeftmp(1:6,1,9)
 
            !tmpM6 = 0.d0
-           !tmpM64 = transpose(tmpM46)
-           !tmpM6 = matmul(tmpM64,tmpM46)
+           tmpM64 = transpose(tmpM46)
+           tmpM4 = 0.d0
+           tmpM4 = matmul(tmpM46,tmpM64)
           
            
            
-           !tmppM6 =0.d0
-           !call inverseLU(6,tmpM6,tmppM6)
+           tmppM4 =0.d0
+           call inverseLU(4,tmpM4,tmppM4)
            pre_dxdy=0.d0           
-           call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
-           !pre_dxdy=matmul(tmppM6,tmpM64)
+           !call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
+           pre_dxdy=matmul(tmppM4,tmpM46)
            !print *, pre_dxdy
            !stop
 
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
 
-           !print *, "original e1,e2,e3,e4"
-           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
-
-           !print *, pre_dx2(3,1:3)
+           print *, "original e1,e2,e3,e4"
+           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           
+           
+          
            
            e1(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
-                * pre_dx2(3,1) &
-                / ( dx2 )
+                * pre_dx2(1,3) !&
+                ! / ( dx2 )
 
            e2(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
-                * pre_dx2(3,3) &
-                / ( dx2 )
+                * pre_dx2(3,3) ! &
+                ! / ( dx2 )
            
            ee12(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
-                * (pre_dx2(3,1)+pre_dx2(3,2)+pre_dx2(3,3)) &
-                / ( dx2 )
+                * (pre_dx2(1,3)+pre_dx2(2,3)+pre_dx2(3,3)) ! &
+                ! / ( dx2 )
            
            
            e3(ix,iz) = dt2 / rho(ix,iz) &
                 * mu(ix,iz)  &
-                * pre_dy2(3,1) &
-                / ( dz2 )
+                * pre_dy2(1,3) ! &
+                ! / ( dz2 )
 
 
            e4(ix,iz) = dt2 / rho(ix,iz) &
                 * mu(ix,iz)  &
-                * pre_dy2(3,3) &
-                / ( dz2 )
+                * pre_dy2(3,3) ! &
+                ! / ( dz2 )
            
            ee34(ix,iz) = dt2 / rho(ix,iz) &
                 * mu(ix,iz)  &
-                * (pre_dy2(3,1)+pre_dy2(3,2)+pre_dy2(3,3)) &
-                / ( dz2 )
+                * (pre_dy2(1,3)+pre_dy2(2,3)+pre_dy2(3,3)) ! &
+                ! / ( dz2 )
 
 
-           !print *, "new e1,e2,e3,e4,ee12,ee34"
-           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
-           !print *, ee12(ix,iz),ee34(ix,iz)
+           print *, "new e1,e2,e3,e4,ee12,ee34"
+           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           print *, ee12(ix,iz),ee34(ix,iz)
 
-           !stop
+           print *, "normal f5,f6,f7,f8"
+           print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
+           
            
            f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (-pre_dxdy(6,3)) &
-                / ( 4.d0 * dxdz )
+                * (-pre_dxdy(3,6)) ! &
+                ! / ( 4.d0 * dxdz )
            f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * pre_dxdy(6,1) &
-                / ( 4.d0 * dxdz )
+                * pre_dxdy(1,6) ! &
+                ! / ( 4.d0 * dxdz )
            ff56(ix,iz) =  dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (pre_dxdy(6,3)+pre_dxdy(6,4)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(3,6)+pre_dxdy(4,6))  ! &
+                ! / ( 4.d0 * dxdz )
            ff65(ix,iz) =  dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (pre_dxdy(6,1)+pre_dxdy(6,2)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(1,6)+pre_dxdy(2,6)) ! &
+                ! / ( 4.d0 * dxdz )
                 
                 
            f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (-pre_dxdy(6,2)) &
-                / ( 4.d0 * dxdz )                     
+                * (-pre_dxdy(2,6))  ! &
+                ! / ( 4.d0 * dxdz )                     
            f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * pre_dxdy(6,1) &
-                / ( 4.d0 * dxdz )
+                * pre_dxdy(1,6) ! &
+                ! / ( 4.d0 * dxdz )
            ff78(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (pre_dxdy(6,2)+pre_dxdy(6,4)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(2,6)+pre_dxdy(4,6))  ! &
+                ! / ( 4.d0 * dxdz )
            ff87(ix,iz) =  dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (pre_dxdy(6,1)+pre_dxdy(6,3)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(1,6)+pre_dxdy(3,6)) ! &
+                ! / ( 4.d0 * dxdz )
                 
 
-
+           print *, "modified f5,f6,f7,f8"
+           print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
+           print 
            
            ! for derivatives of uy
+
 
 
            tmpM3 = 0.d0
@@ -523,8 +535,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,3) = coeftmp(4,2,8)
 
            pre_dx2=0.d0
-           !call inverseLU(3,tmpM3,pre_dx2)
-           call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
+           tmpM3 = transpose(tmpM3)
+           call inverseLU(3,tmpM3,pre_dx2)
+           !call svdinverse(3,3,tmpM3,pre_dx2,3*5,info)
            
 
            tmpM3 = 0.d0
@@ -542,8 +555,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM3(3,3) = coeftmp(5,2,6)
 
            pre_dy2=0.d0
-           !call inverseLU(3,tmpM3,pre_dy2)
-           call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
+           tmpM3 = transpose(tmpM3)
+           call inverseLU(3,tmpM3,pre_dy2)
+           !call svdinverse(3,3,tmpM3,pre_dy2,3*5,info)
 
 
            tmpM46 = 0.d0
@@ -553,91 +567,100 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            tmpM46(3,1:6) = coeftmp(1:6,2,7)
            tmpM46(4,1:6) = coeftmp(1:6,2,9)
 
+
            !tmpM6 = 0.d0
-           !tmpM64 = transpose(tmpM46)
-           !tmpM6 = matmul(tmpM64,tmpM46)
+           tmpM64 = transpose(tmpM46)
+           tmpM4 = 0.d0
+           tmpM4 = matmul(tmpM46,tmpM64)
           
-           !tmppM6 =0.d0
            
-           !call inverseLU(6,tmpM6,tmppM6)
-           pre_dxdy=0.d0
-           !pre_dxdy=matmul(tmppM6,tmpM64)
            
-         
-           call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
+           tmppM4 =0.d0
+           call inverseLU(4,tmpM4,tmppM4)
+           pre_dxdy=0.d0           
+           !call svdinverse(4,6,tmpM46,pre_dxdy,4*5,info)
+           pre_dxdy=matmul(tmppM4,tmpM46)
+
+
+
            
+           print *, "original f1,f2,f3,f4"
+           print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz)
 
 
            f1(ix,iz) = dt2 / rho(ix,iz) &
                 *  mu(ix,iz)  &
-                * pre_dx2(3,1) &
-                / ( dx2 )
+                * pre_dx2(1,3)! &
+                ! / ( dx2 )
 
            
            f2(ix,iz) = dt2 / rho(ix,iz) &
                 *  mu(ix,iz)  &
-                * pre_dx2(3,3) &
-                / ( dx2 )
+                * pre_dx2(3,3)!  &
+               !  / ( dx2 )
 
            ff12(ix,iz) = dt2 / rho(ix,iz) &
                 *  mu(ix,iz)  &
-                * (pre_dx2(3,1)+pre_dx2(3,2)+pre_dx2(3,3)) &
-                / ( dx2 )
+                * (pre_dx2(1,3)+pre_dx2(2,3)+pre_dx2(3,3)) ! &
+                ! / ( dx2 )
 
 
            f3(ix,iz) = dt2 / rho(ix,iz) &
                 * ( lam(ix,iz)  &
                 + 2.d0 *  mu(ix,iz)  ) &
-                * pre_dy2(3,1) &
-                / ( 2.d0 * dz2 )
+                * pre_dy2(1,3) ! &
+                ! / ( 2.d0 * dz2 )
 
 
            f4(ix,iz) = dt2 / rho(ix,iz) &
                 * ( lam(ix,iz) &
                 + 2.d0 *  mu(ix,iz) ) &
-                * pre_dy2(3,3) &
-                / ( 2.d0 * dz2 )
+                * pre_dy2(3,3) ! &
+                ! / ( 2.d0 * dz2 )
 
            ff34(ix,iz) = dt2 / rho(ix,iz) &
                 * ( lam(ix,iz) &
                 + 2.d0 *  mu(ix,iz) ) &
-                * (pre_dy2(3,1)+pre_dy2(3,2)+pre_dy2(3,3)) &
-                / ( 2.d0 * dz2 )
+                * (pre_dy2(1,3)+pre_dy2(2,3)+pre_dy2(3,3)) ! &
+                ! / ( 2.d0 * dz2 )
       
+            print *, "modified f1,f2,f3,f4"
+            print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz),ff12(ix,iz),ff34(ix,iz)
+
 
            e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (-pre_dxdy(6,3)) &
-                / ( 4.d0 * dxdz )
+                * (-pre_dxdy(3,6)) ! &
+                ! / ( 4.d0 * dxdz )
 
            e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * pre_dxdy(6,1) &
-                / ( 4.d0 * dxdz )
+                * pre_dxdy(1,6) ! &
+                ! / ( 4.d0 * dxdz )
 
            ee56(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (pre_dxdy(6,3)+pre_dxdy(6,4)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(3,6)+pre_dxdy(4,6)) ! &
+                !  / ( 4.d0 * dxdz )
 
            ee65(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-                * (pre_dxdy(6,1)+pre_dxdy(6,2)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(1,6)+pre_dxdy(2,6)) ! &
+                ! / ( 4.d0 * dxdz )
 
            e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (-pre_dxdy(6,2)) &
-                / ( 4.d0 * dxdz )
+                * (-pre_dxdy(2,6)) ! &
+                ! / ( 4.d0 * dxdz )
 
            e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * pre_dxdy(6,1) &
-                / ( 4.d0 * dxdz )
+                * pre_dxdy(1,6) ! &
+                ! / ( 4.d0 * dxdz )
 
            ee78(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (pre_dxdy(6,2)+pre_dxdy(6,4)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(2,6)+pre_dxdy(4,6)) ! &
+                ! / ( 4.d0 * dxdz )
            
            ee87(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-                * (pre_dxdy(6,1)+pre_dxdy(6,3)) &
-                / ( 4.d0 * dxdz )
+                * (pre_dxdy(1,6)+pre_dxdy(3,6)) ! &
+                !/ ( 4.d0 * dxdz )
 
-           if(0.eq.0) then
+           if(0.eq.1) then
               ee12(ix,iz) = 0.d0
               ee34(ix,iz) = 0.d0
               ee56(ix,iz) = 0.d0
@@ -791,8 +814,8 @@ subroutine NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
   s2 = dx*dx+dy*dy
   s = sqrt(s2)
   
-  normal(1) = -dy/s
-  normal(2) = dx/s
+  normal(1) = dy/s
+  normal(2) = -dx/s
 
 
 end subroutine NormalFinder

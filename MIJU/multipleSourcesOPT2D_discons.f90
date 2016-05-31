@@ -159,6 +159,7 @@ program multipleSourcesOPT2D
   ! for waveform inversion
   
   real(kind(0e0)) :: singleStrainDiagonal(maxnz+1,maxnz+1)
+  real(kind(0e0)), allocatable:: tmpsingleStrain(:,:)
 
   
   character(140) :: commandline
@@ -209,6 +210,7 @@ program multipleSourcesOPT2D
   f0=6.5d0
   t0=2.d-1
 
+  allocate(tmpsingleStrain(1:nx+1,1:nz+1))
 
 
   ! Discontinuity configuration
@@ -361,7 +363,8 @@ program multipleSourcesOPT2D
 
   endif
 
-  
+  stop 
+  ! a enlever
   
   
 
@@ -518,6 +521,7 @@ program multipleSourcesOPT2D
         
         if(writingStrain) then
            singleStrainDiagonal=0.e0
+           tmpsingleStrain=0.e0
            call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
           
 
@@ -533,7 +537,10 @@ program multipleSourcesOPT2D
            
            outfile = './strains/'//trim(modelname)//'/'//outfile
            open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-           write(1,rec=1) singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+
+           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
+                singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+           write(1,rec=1)  tmpsingleStrain
            close(1,status='keep')
         endif
 
