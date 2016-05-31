@@ -354,8 +354,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
  
 
   M0=matmul(B0,A0)
-  print *, 'M0', M0
+  !print *, 'M0', M0
   A0=M0
+  !M0=A0
   Mm0=0.d0
   call svdinverse(12,12,M0,Mm0,5*12,info)
   !call inverse(12,M0,12,Mm0)
@@ -363,15 +364,22 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
   M1=matmul(B1,A1)
   print *, 'Mm0', Mm0(1,:)
-  print *, 'identity', matmul(Mm0,A0)
-  print *, 'M1', M1(1,:)
+  print *, 'identity'
+  
+  A0=matmul(Mm0,A0)
+  do i = 1, 12
+     print *, A0(i,i)
+  enddo
+     
+  
+  !print *, 'M1', M1(1,:)
   ! coefs 
 
   coef(1:6,1:2) = 0.d0
   
   M2=matmul(Mm0,M1)
 
-  print *, 'M2',M2(7,:)
+  !print *, 'M2',M2(7,:)
   stop
   !print *, M2(1,1:6)
 

@@ -293,9 +293,11 @@ program multipleSourcesOPT2D
   call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
-     
-  call datainit( maxnz,maxnz,lam )
-  call datainit( maxnz,maxnz,mu )
+    
+  lam = 0.d0
+  mu = 0.d0
+  !call datainit( maxnz,maxnz,lam )
+  !call datainit( maxnz,maxnz,mu )
      
   ! Cerjan boundary
   
@@ -306,6 +308,9 @@ program multipleSourcesOPT2D
   
   call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
   
+  !print *, "OK ??"
+  !print *, maxnz,nx,nz,markers,lmargin,rmargin
+  !print *, rho
   call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   
 
@@ -348,16 +353,15 @@ program multipleSourcesOPT2D
      call cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
-     f13,f14,f15,f16,f17,f18,f19,f20, & ! hereafter are new variables for cales_discon
+     f13,f14,f15,f16,f17,f18,f19,f20, & 
+     ! hereafter are new variables for cales_discon
      ee12,ee34,ee56,ee65,ee78,ee87, &
      ff12,ff34,ff56,ff65,ff78,ff87, &
      markers,nDiscon,lengthDiscon,dscr)
 
   endif
 
-
-  stop
-
+  
   
   
 
@@ -719,19 +723,21 @@ end subroutine datainit
 subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
   implicit none
   integer maxnz,nx,nz
-  double precision dx,dz,rho(maxnz+1,*)
-  real(kind(1.0)) rrho(maxnz+1,maxnz+1)
+  double precision dx,dz,rho(1:maxnz+1,1:maxnz+1)
+  real(kind(1.e0)),allocatable :: rrho(:,:)
   integer i,j,k,nox(6),noz(6)
   double precision x,z,xmax,zmax,trho,coef1,coef2
   integer recl_size
   character*80 file2d
   recl_size=kind(1.0)*(nx+1)*(nz+1)
-
+  
+  allocate(rrho(1:nx+1,1:nz+1))
   open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)
   read(1,rec=1) rrho(1:nx+1,1:nz+1)
   close(1)
   rho(1:nx+1,1:nz+1)=1.d-3*rrho(1:nx+1,1:nz+1)
   
+  deallocate(rrho)
   return
 end subroutine calstruct
 
@@ -751,21 +757,26 @@ subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
 end subroutine calstruct2
   
 
+
 subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   implicit none
   integer :: i,j,maxnz,nx,nz,nnx,nnz
-  double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)
-  double precision :: llam(maxnz+1,maxnz+1),mmu(maxnz+1,maxnz+1),rrho(maxnz+1,maxnz+1)
+  double precision ::lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)  
   integer :: rmargin(1:2), lmargin(1:2)
-  integer :: markers(maxnz+1,maxnz+1),mmarkers(maxnz+1,maxnz+1) ! discontinuities
-
+  integer :: markers(maxnz+1,maxnz+1) ! discontinuities
+  ! real(kind(0d0)), dimension(maxnz+1,maxnz+1) ::mmu,rrho,llam
+  double precision, allocatable :: mmu(:,:), rrho(:,:), llam(:,:)
+  integer, allocatable :: mmarkers(:,:)
   
+  allocate(rrho(1:maxnz+1,1:maxnz+1))
+  allocate(mmu(1:maxnz+1,1:maxnz+1))
+  allocate(llam(1:maxnz+1,1:maxnz+1))
+  allocate(mmarkers(1:maxnz+1,1:maxnz+1))
 
-  llam=0.d0
   mmu=0.d0
   rrho=0.d0
   mmarkers=0
-  
+  llam=0.d0
   
 
 
@@ -844,9 +855,13 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   !print *, nx,nz
   !write(12,*) rho(:,:)
   !write(13,*) lam(:,:)
-  !write(14,*) mu(:,:)
+  !write(14,*) mmu(1:nx+1,1:nz+1)
   !stop
-
+  
+  deallocate(llam)
+  deallocate(rrho)
+  deallocate(mmu)
+  deallocate(mmarkers)
 end subroutine calstructBC
 
 

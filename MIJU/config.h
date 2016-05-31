@@ -1,7 +1,8 @@
 CC=icc
 #FC=mpif90 
 #FC=mpiifort
-FC=gfortran
+#FC=gfortran
+FC=ifort
 CCFLAGS = -O3
 # for debugging: change -O3 -check nobounds to      -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv
 
@@ -26,9 +27,9 @@ CCFLAGS = -O3
 FFLAGS = -O4 -check nobounds -xAVX -ftz -assume buffered_io -assume byterecl -vec-report3 -implicitnone -warn truncated_source -warn argument_checking -warn declarations -warn alignments -warn ignore_loc -warn usage -mcmodel=medium -shared-intel
 
 # useful for debugging:
-#FFLAGS=    -g -O0 -traceback
-#FFLAGS=    -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl -L/cm/shared/apps/intel/composer_xe/current/compiler/lib/intel64
-
+#FFLAGS=  -llapack   -g -O0 -traceback
+FFLAGS=  -llapack  -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl -L/cm/shared/apps/intel/composer_xe/current/compiler/lib/intel64
+#FFLAGS = -llapack -check all -debug -g
 #FFLAGS=    -llapack -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -assume byterecl
 # change    -vec-report0      to      -vec-report3     to get a vectorization report
 
@@ -37,7 +38,9 @@ FFLAGS = -O4 -check nobounds -xAVX -ftz -assume buffered_io -assume byterecl -ve
 ################################################
 
 #FC = mpif90
-FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
+#FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
+
+#FFLAGS = -llapack   
 
 ################################################
 #   IBM Blue Gene

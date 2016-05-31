@@ -41,9 +41,9 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   integer :: INFO, LDA, LDU, LDVT, LWORK
   !parameter(LWORK = 3*n+m)
   double precision :: S(m),B(m,m),VT(n,n)
-  
+  double precision :: maxS
   double precision :: work(LWORK)
-  double precision, parameter :: eps = 1.d-3
+  double precision, parameter :: eps = 1.d-9
   
   integer :: ii
   
@@ -57,15 +57,20 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   
   !if(info.ne.0) return
 
-
+  
   !if(m.eq.12) print *, "S=",S
+  maxS=maxval(S)
+  print *, VT(1,:)
+  print *, VT(2,:)
   do i = 1,M
      ii=i
-     if(S(i)<eps) exit
+     if(S(i)<eps*maxS) exit
      S(i) = 1.d0/S(i)    
   enddo
 
   ii=ii-1
+
+ 
   
   !tmpA=0.d0
   !do i = 1,ii
