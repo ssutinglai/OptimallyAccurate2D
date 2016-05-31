@@ -354,11 +354,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! Now we have all the elements for coeftmp(1:6,1:2,1:9) 
           
          
-           !if(nointersections.eq.1) cycle ! for smoothed points
+           if(nointersections.eq.1) cycle ! for smoothed points
            ! NF doit enlever le commentaire au-dessus
            
            
-           print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
+           !print *, "yes there're intersections", nointersections,ik(ctr),jk(ctr)
            
            ! for derivatives of ux
 
@@ -434,8 +434,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
 
-           print *, "original e1,e2,e3,e4"
-           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           !print *, "original e1,e2,e3,e4"
+           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
            
            
           
@@ -476,12 +476,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 ! / ( dz2 )
 
 
-           print *, "new e1,e2,e3,e4,ee12,ee34"
-           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
-           print *, ee12(ix,iz),ee34(ix,iz)
+           !print *, "new e1,e2,e3,e4,ee12,ee34"
+           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           !print *, ee12(ix,iz),ee34(ix,iz)
 
-           print *, "normal f5,f6,f7,f8"
-           print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
+           !print *, "normal f5,f6,f7,f8"
+           !print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
            
            
            f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
@@ -512,9 +512,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 ! / ( 4.d0 * dxdz )
                 
 
-           print *, "modified f5,f6,f7,f8"
-           print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
-           print 
+           !print *, "modified f5,f6,f7,f8"
+           !print *, f5(ix,iz),f6(ix,iz),f7(ix,iz),f8(ix,iz)
+           !print *, ff56(ix,iz),ff65(ix,iz),ff78(ix,iz),ff87(ix,iz)
            
            ! for derivatives of uy
 
@@ -584,8 +584,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
 
            
-           print *, "original f1,f2,f3,f4"
-           print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz)
+           !print *, "original f1,f2,f3,f4"
+           !print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz)
 
 
            f1(ix,iz) = dt2 / rho(ix,iz) &
@@ -624,9 +624,12 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 * (pre_dy2(1,3)+pre_dy2(2,3)+pre_dy2(3,3)) ! &
                 ! / ( 2.d0 * dz2 )
       
-            print *, "modified f1,f2,f3,f4"
-            print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz),ff12(ix,iz),ff34(ix,iz)
+            !print *, "modified f1,f2,f3,f4"
+            !print *, f1(ix,iz),f2(ix,iz),f3(ix,iz),f4(ix,iz),ff12(ix,iz),ff34(ix,iz)
 
+            !print *, "original e5,e6,e7,e8"
+            !print *, e5(ix,iz),e6(ix,iz),e7(ix,iz),e8(ix,iz)
+            
 
            e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
                 * (-pre_dxdy(3,6)) ! &
@@ -659,6 +662,11 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ee87(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
                 * (pre_dxdy(1,6)+pre_dxdy(3,6)) ! &
                 !/ ( 4.d0 * dxdz )
+
+           !print *, "modified e5,e6,e7,e8"
+           !print *, e5(ix,iz),e6(ix,iz),e7(ix,iz),e8(ix,iz)
+           !print *, ee56(ix,iz),ee65(ix,iz),ee78(ix,iz),ee87(ix,iz)
+           !stop
 
            if(0.eq.1) then
               ee12(ix,iz) = 0.d0
