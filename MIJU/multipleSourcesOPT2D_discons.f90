@@ -363,8 +363,6 @@ program multipleSourcesOPT2D
 
   endif
 
-  stop 
-  ! a enlever
   
   
 
