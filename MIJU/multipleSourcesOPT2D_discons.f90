@@ -51,7 +51,7 @@ program multipleSourcesOPT2D
 
 
   integer, parameter :: maxnz = 600 
-  integer, parameter :: maxnt = 2500
+  integer, parameter :: maxnt = 1800
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
     
@@ -200,7 +200,7 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=2500
+  nt=1600
   nx=399
   nz=199
   dt=2.d-3
@@ -217,13 +217,13 @@ program multipleSourcesOPT2D
 
   nDiscon = 1
   lengthDiscon = 40*nx+1
-  allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
-  
-  do ix =1,lengthDiscon
-     dscr(1,ix,1) = dble(ix-1)*dx/40.d0
-     dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
-  enddo
-
+  !allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+  if(nDiscon.ne.0) then
+     do ix =1,lengthDiscon
+        dscr(1,ix,1) = dble(ix-1)*dx/40.d0
+        dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
+     enddo
+  endif
   markers(1:maxnz,1:maxnz) = 0
   markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
 
@@ -461,18 +461,18 @@ program multipleSourcesOPT2D
         call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         ! evaluating the next step
         
-        if(nDiscon.eq.0) then
-           call calstep( maxnz,nx,nz, &
-                e1, e2, e3, e4, e5, e6, e7, e8, &
-                e13,e14,e15,e16,e17,e18,e19,e20, &
-                f1, f2, f3, f4, f5, f6, f7, f8, &
-                f13,f14,f15,f16,f17,f18,f19,f20, &
-                ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
-                work(1,1), work(1,5), work(1,9),work(1,13), &
-                work(1,17),work(1,18),work(1,20),work(1,21), &
-                work(1,23),work(1,24),work(1,28),work(1,29), optimise)
+        !if(nDiscon.eq.0) then
+        !   call calstep( maxnz,nx,nz, &
+        !        e1, e2, e3, e4, e5, e6, e7, e8, &
+        !        e13,e14,e15,e16,e17,e18,e19,e20, &
+        !        f1, f2, f3, f4, f5, f6, f7, f8, &
+        !        f13,f14,f15,f16,f17,f18,f19,f20, &
+        !        ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
+        !        work(1,1), work(1,5), work(1,9),work(1,13), &
+        !        work(1,17),work(1,18),work(1,20),work(1,21), &
+        !        work(1,23),work(1,24),work(1,28),work(1,29), optimise)
            
-        else
+        !else
            call calstep_discon( maxnz,nx,nz, &
                 e1, e2, e3, e4, e5, e6, e7, e8, &
                 e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -487,7 +487,7 @@ program multipleSourcesOPT2D
                 ff12,ff34,ff56,ff65,ff78,ff87)
            
 
-        endif
+        !endif
 
            ! increment of t
         t = t + dt
@@ -577,6 +577,7 @@ program multipleSourcesOPT2D
               call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
                    nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
                    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
+              
               
            endif
            

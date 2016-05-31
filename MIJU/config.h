@@ -1,8 +1,8 @@
 CC=icc
 #FC=mpif90 
 #FC=mpiifort
-#FC=gfortran
-FC=ifort
+FC=gfortran
+#FC=ifort
 CCFLAGS = -O3
 # for debugging: change -O3 -check nobounds to      -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv
 
@@ -38,7 +38,7 @@ FFLAGS=  -llapack  -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv 
 ################################################
 
 #FC = mpif90
-#FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
+FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
 
 #FFLAGS = -llapack   
 
