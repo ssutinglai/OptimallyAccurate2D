@@ -62,10 +62,10 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   C0(4) = mu0
 
  
-  C0(1) = lam1 + 2.d0*mu1
-  C0(2) = lam1
-  C0(3) = C1(1)
-  C0(4) = mu1
+  C1(1) = lam1 + 2.d0*mu1
+  C1(2) = lam1
+  C1(3) = C1(1)
+  C1(4) = mu1
   
   
 
@@ -346,6 +346,9 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   
 
   ! temporary matrices
+  
+  
+
 
 
   M0=matmul(B0,A0)
@@ -354,7 +357,6 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   call svdinverse(12,12,M0,Mm0,5*12,info)
   !call inverse(12,M0,12,Mm0)
   !print *, "hello"
-
   M1=matmul(B1,A1)
   
   

@@ -355,7 +355,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            !print *, ix,iz,nointersections
            !print *, "coeftmp", coeftmp(:,1,:)
 
-           if(nointersections.eq.1) cycle ! for smoothed points
+           !if(nointersections.eq.1) cycle ! for smoothed points
            
            
          
@@ -425,8 +425,8 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
            ! modified operators for interfaces
            !                   (Oleg Ovcharenko)
 
-           !print *, "original e1,e2,e3,e4"
-           !print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           print *, "original e1,e2,e3,e4"
+           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
 
            e1(ix,iz) = dt2 / rho(ix,iz) &
                 * (  lam(ix,iz)  &
@@ -464,9 +464,9 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
                 / ( dz2 )
 
 
-           !print *, "new e1,e2,e3,e4,ee12,ee34"
-           ! print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
-           ! print *, ee12(ix,iz),ee34(ix,iz)
+           print *, "new e1,e2,e3,e4,ee12,ee34"
+           print *, e1(ix,iz), e2(ix,iz), e3(ix,iz), e4(ix,iz)
+           print *, ee12(ix,iz),ee34(ix,iz)
 
            
 
