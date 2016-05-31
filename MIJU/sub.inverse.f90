@@ -58,10 +58,9 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   !if(info.ne.0) return
 
   
-  !if(m.eq.12) print *, "S=",S
   maxS=maxval(S)
-  print *, VT(1,:)
-  print *, VT(2,:)
+  !print *, VT(1,:)
+  !print *, VT(2,:)
   do i = 1,M
      ii=i
      if(S(i)<eps*maxS) exit
@@ -185,11 +184,12 @@ subroutine inversebug(m,a,n,PINV)
  end subroutine inversebug
 
 
-subroutine inverseLU(n,a,nmax,ia)
+subroutine inverseLU(nmax,a,ia)
   implicit none
   integer n,nmax,i,j
   double precision a(nmax,nmax),ia(nmax,nmax),work(nmax)
   integer ipiv(nmax),info
+  n=nmax
   
   !     LU deconposition
   !     keep a copy of 'a' because 'dgetrf' overwrites 'a' 

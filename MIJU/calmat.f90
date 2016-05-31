@@ -358,18 +358,20 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   A0=M0
   !M0=A0
   Mm0=0.d0
-  call svdinverse(12,12,M0,Mm0,5*12,info)
+  !call svdinverse(12,12,M0,Mm0,5*12,info)
+  call inverseLU(12,M0,Mm0)
+
   !call inverse(12,M0,12,Mm0)
   !print *, "hello"
   
   M1=matmul(B1,A1)
-  print *, 'Mm0', Mm0(1,:)
-  print *, 'identity'
-  
-  A0=matmul(Mm0,A0)
-  do i = 1, 12
-     print *, A0(i,i)
-  enddo
+
+  !print *, 'Mm0', Mm0(2,:)
+  !print *, 'identity' 
+  !A0=matmul(Mm0,A0)
+  !do i = 1, 12
+  !   print *, A0(i,i)
+  !enddo
      
   
   !print *, 'M1', M1(1,:)
@@ -380,13 +382,16 @@ subroutine MizutaniIso(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,normal)
   M2=matmul(Mm0,M1)
 
   !print *, 'M2',M2(7,:)
-  stop
+ 
   !print *, M2(1,1:6)
+  !stop
 
   coef(1:6,1)=M2(1,1:6)
   coef(1:6,2)=M2(7,7:12)
 
   !print *, "das ist gut"
+
+  !print *, "ik, jk", ik, jk
 
   !if(info.ne.0) print *, "bad configuration=", normal,eta
 end subroutine MizutaniIso
