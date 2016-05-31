@@ -43,7 +43,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   double precision :: S(m),B(m,m),VT(n,n)
   
   double precision :: work(LWORK)
-  double precision, parameter :: eps = 1.d-9
+  double precision, parameter :: eps = 1.d-3
   
   integer :: ii
   
@@ -70,7 +70,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   !tmpA=0.d0
   !do i = 1,ii
   !   do j = 1,M
-  !      tmpA(i,j) = B(j,i) !/S(i)
+  !      tmpA(i,j) = B(j,i) / S(i)
   !   enddo
   !enddo
 
@@ -79,7 +79,7 @@ subroutine svdinverse(m,n,a,ia,LWORK,INFO)
   do i = 1,n
      do j = 1,m
         do k = 1,ii
-           ia(i,j) = ia(i,j) + VT(i,k)*B(k,j)*S(k)         
+           ia(i,j) = ia(i,j) + VT(k,i)*B(j,k)*S(k)         
         enddo
      enddo
   enddo
