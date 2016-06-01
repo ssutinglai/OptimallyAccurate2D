@@ -23,6 +23,8 @@ program multipleSourcesOPT2D
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
 
+  
+
   ! switch OPT / CONV
   !logical,parameter :: optimise = .false.
   logical :: optimise
@@ -38,7 +40,7 @@ program multipleSourcesOPT2D
   ! integer :: isx, isz ! source position
   ! for Ricker wavelets
   !real :: f0, t0
-  integer, parameter :: nReceiver = 99
+  integer, parameter :: nReceiver = 7
   integer :: nrx(1:nReceiver), nrz(1:nReceiver)
   
   !integer, parameter :: iSourceStart = 2
@@ -51,7 +53,7 @@ program multipleSourcesOPT2D
 
 
   integer, parameter :: maxnz = 600 
-  integer, parameter :: maxnt = 1800
+  integer, parameter :: maxnt = 3000
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
     
@@ -105,7 +107,7 @@ program multipleSourcesOPT2D
   !integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
   real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
   real :: video(maxnz+1,maxnz+1)
-  character(120) :: outfile
+  character(150) :: outfile
  
   
   ! parameter for the waveform
@@ -146,6 +148,10 @@ program multipleSourcesOPT2D
 
   double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
   double precision :: ALPHA_MAX_PML
+
+  ! for water
+  
+  integer :: liquidmarkers(maxnz+1,maxnz+1)
 
   ! for discontinuities
 
@@ -200,7 +206,7 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=1600
+  nt=2000
   nx=399
   nz=199
   dt=2.d-3
@@ -215,10 +221,11 @@ program multipleSourcesOPT2D
 
   ! Discontinuity configuration
 
-  nDiscon = 1
+  nDiscon = 0
   lengthDiscon = 40*nx+1
-  !allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+  
   if(nDiscon.ne.0) then
+     allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
      do ix =1,lengthDiscon
         dscr(1,ix,1) = dble(ix-1)*dx/40.d0
         dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
@@ -246,8 +253,8 @@ program multipleSourcesOPT2D
 
 
   do iReceiver = 1, nReceiver
-     nrx(iReceiver)=4*iReceiver
-     nrz(iReceiver)=1
+     nrx(iReceiver)=70+30*iReceiver
+     nrz(iReceiver)=130
   enddo
   
   do iSource = 1, nSource
@@ -308,12 +315,16 @@ program multipleSourcesOPT2D
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
   
-  call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
+  liquidmarkers = 0
+
+
+  call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
   
   !print *, "OK ??"
   !print *, maxnz,nx,nz,markers,lmargin,rmargin
   !print *, rho
-  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
+  
+  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmargin)
   
 
   ! Smoothed version of CONV/OPT operators
@@ -381,8 +392,8 @@ program multipleSourcesOPT2D
   
 
   do iSource = 1, nSource
-     iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
-     iisz(iSource)=1
+     !iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
+     !iisz(iSource)=1
      isx=iisx(iSource)
      isz=iisz(iSource)
 
@@ -663,14 +674,14 @@ program multipleSourcesOPT2D
         enddo
         
         outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        !open(1, file=outfile,status='unknown',form='formatted')
-        !do it=0,nt
-        !   write (1,*) time(it),synx(it,ir)
-        !enddo
-        !close(1)
-        open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-        write(1,rec=1) synx(0:nt,ir)
-        close(1,status='keep')
+        open(1, file=outfile,status='unknown',form='formatted')
+        do it=0,nt
+           write (1,*) time(it),synx(it,ir)
+        enddo
+        close(1)
+        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+        !write(1,rec=1) synx(0:nt,ir)
+        !close(1,status='keep')
 
         
         if(optimise) then
@@ -686,15 +697,15 @@ program multipleSourcesOPT2D
         enddo
         
         outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        !open(1, file=outfile,status='unknown',form='formatted')
-        !do it=0,nt
-        !   write (1,*) time(it), synz(it,ir)
-        !enddo
-        !close(1)
+        open(1, file=outfile,status='unknown',form='formatted')
+        do it=0,nt
+           write (1,*) time(it), synz(it,ir)
+        enddo
+        close(1)
 
-        open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-        write(1,rec=1) synz(0:nt,ir)
-        close(1,status='keep')
+        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+        !write(1,rec=1) synz(0:nt,ir)
+        !close(1,status='keep')
 
 
         
@@ -747,41 +758,53 @@ subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
   return
 end subroutine calstruct
 
-subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu)
+subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
   implicit none
   
   integer i,j,maxnz,nx,nz
   double precision rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
   double precision lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
+  integer liquidmarkers(maxnz+1,maxnz+1)
 
   do i=1,nx+1
      do j=1,nz+1
+        if(vs(i,j).eq.0.d0) then
+           liquidmarkers(i,j)=1
+           !NF should take out this now
+           !vs(i,j)=vp(i,j)/1.7d0
+        endif
+           
         mu(i,j)=rho(i,j)*vs(i,j)*vs(i,j)
         lam(i,j)=rho(i,j)*vp(i,j)*vp(i,j)-2*mu(i,j)
+
+        
      enddo
   enddo
 end subroutine calstruct2
   
 
 
-subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
+subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmargin)
   implicit none
   integer :: i,j,maxnz,nx,nz,nnx,nnz
   double precision ::lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)  
   integer :: rmargin(1:2), lmargin(1:2)
   integer :: markers(maxnz+1,maxnz+1) ! discontinuities
+  integer :: liquidmarkers(maxnz+1,maxnz+1)
   ! real(kind(0d0)), dimension(maxnz+1,maxnz+1) ::mmu,rrho,llam
   double precision, allocatable :: mmu(:,:), rrho(:,:), llam(:,:)
-  integer, allocatable :: mmarkers(:,:)
+  integer, allocatable :: mmarkers(:,:),lliquidmarkers(:,:)
   
   allocate(rrho(1:maxnz+1,1:maxnz+1))
   allocate(mmu(1:maxnz+1,1:maxnz+1))
   allocate(llam(1:maxnz+1,1:maxnz+1))
   allocate(mmarkers(1:maxnz+1,1:maxnz+1))
+  allocate(lliquidmarkers(1:maxnz+1,1:maxnz+1))
 
   mmu=0.d0
   rrho=0.d0
   mmarkers=0
+  lliquidmarkers=0
   llam=0.d0
   
 
@@ -791,6 +814,8 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   rrho(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=rho(1:nx+1,1:nz+1)
 
   mmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=markers(1:nx+1,1:nz+1)
+  lliquidmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
+       liquidmarkers(1:nx+1,1:nz+1)
 
   ! 4 corners
 
@@ -858,6 +883,7 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
   mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
   markers(1:nx+1,1:nz+1)=mmarkers(1:nx+1,1:nz+1)
+  liquidmarkers(1:nx+1,1:nz+1)=lliquidmarkers(1:nx+1,1:nz+1)
   !print *, nx,nz
   !write(12,*) rho(:,:)
   !write(13,*) lam(:,:)
@@ -868,6 +894,7 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,lmargin,rmargin)
   deallocate(rrho)
   deallocate(mmu)
   deallocate(mmarkers)
+  deallocate(lliquidmarkers)
 end subroutine calstructBC
 
 
@@ -1003,6 +1030,7 @@ subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8
              * (  3.d0 ) / ( 1728.d0 * dxdz )
         f20(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
              * (  5.d0 ) / ( 1728.d0 * dxdz )
+        
      enddo
   enddo
   
@@ -1364,7 +1392,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
   implicit none
   
   !       non linear display to enhance small amplitudes for graphics
-  double precision, parameter :: POWER_DISPLAY = 0.8d0
+  double precision, parameter :: POWER_DISPLAY = 1.d0
   
   !       amplitude threshold above which we draw the color point
   double precision, parameter :: cutvect = 0.01d0
@@ -1420,7 +1448,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
         
         !       define data as vector component normalized to [-1:1] and rounded to nearest integer
         !       keeping in mind that amplitude can be negative
-        normalized_value = image_data_2D(ix,iy) / max_amplitude 
+        normalized_value = image_data_2D(ix,iy) / max_amplitude *1.5d0
         
         !       suppress values that are outside [-1:+1] to avoid small edge effects
         if(normalized_value < -1.d0) normalized_value = -1.d0
@@ -1466,7 +1494,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
            
            !       represent regular image points using red if value is positive, blue if negative
         elseif(kurama) then
-           
+           normalized_value=normalized_value**POWER_DISPLAY
            call plotcolor(normalized_value,R1,G1,B1)
            R = nint(R1)
            G = nint(G1)

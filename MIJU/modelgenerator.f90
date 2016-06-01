@@ -12,7 +12,7 @@ program generator
  real(kind=prec), dimension(nbre_layers)        :: vs
  real(kind=prec), allocatable                   :: fullvp (:,:)
  real(kind=prec), allocatable                   :: fullvs (:,:)
- real(kind=prec), allocatable                   :: fullrho(:,:)
+ real(kind=prec), allocatable                   :: fullrho(:,:),tmpM(:,:)
  real(kind=prec)                                :: dval,pval,xover1,xover2,grad,const
  real(kind=prec), parameter                     :: vpwater = 1.5e3
  integer                                        :: NZ, NX
@@ -46,13 +46,38 @@ program generator
  
 
  
-
+ 
 
 
 
  allocate (fullvp (NX_TOTAL, NZ_TOTAL) )
  allocate (fullvs (NX_TOTAL, NZ_TOTAL) )
  allocate (fullrho(NX_TOTAL, NZ_TOTAL) )
+ allocate(tmpM(NZ_TOTAL,NX_TOTAL))
+ open(1,file='./models/model_cp_400x200.txt',form='formatted')
+ open(2,file='./models/model_cs_400x200.txt',form='formatted')
+ open(3,file='./models/model_rho_400x200.txt',form='formatted')
+ read(1,*) tmpM
+ tmpM=transpose(tmpM)
+ fullvp(1:NX_TOTAL,1:NZ_TOTAL)=tmpM(1:NX_TOTAL,NZ_TOTAL:1:-1)
+ read(2,*) tmpM
+ tmpM=transpose(tmpM)
+ fullvs(1:NX_TOTAL,1:NZ_TOTAL)=tmpM(1:NX_TOTAL,NZ_TOTAL:1:-1)
+ read(3,*) tmpM
+ tmpM=transpose(tmpM)
+ fullrho(1:NX_TOTAL,1:NZ_TOTAL)=tmpM(1:NX_TOTAL,NZ_TOTAL:1:-1)
+
+ write(14,*)fullvp
+ do ix=1,NX_TOTAL
+    do iz=1,NZ_TOTAL
+       if(fullvs(ix,iz)<400.d0) then
+          fullvs(ix,iz) = fullvp(ix,iz)/1.7d0
+       endif
+    enddo
+ enddo
+
+
+ if(1.eq.1) then
 
  dx = 2.d-2
 
@@ -61,18 +86,19 @@ program generator
     tmpint =nint(boundary/dx)
     fullvp(ix,1:tmpint) = 2200.e0
     fullvs(ix,1:tmpint) = 1400.e0
-    fullvp(ix,tmpint+1:NZ_TOTAL) = 3000.e0
-    fullvs(ix,tmpint+1:NZ_TOTAL) = 1900.e0
+    fullvp(ix,tmpint+1:NZ_TOTAL) = 2500.e0
+    fullvs(ix,tmpint+1:NZ_TOTAL) = 2100.e0
  enddo
 
+ endif
 
  recl_size = prec * NX_TOTAL * NZ_TOTAL
 
 !****************************************************************	   
  
- open (1,file='./2d_giza.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_giza.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_giza.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_giza2.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_giza2.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_giza2.rho',form='unformatted',access='direct',recl=recl_size)
 
  !tmp=1
  !do j=1, NZ_TOTAL
@@ -88,7 +114,7 @@ program generator
  write(1,rec=1) fullvp(:,:)
  write(2,rec=1) fullvs(:,:)
 
-
+ if(0.eq.1) then
  do j=1,NZ_TOTAL
      do i=1,NX_TOTAL
         pval = fullvp(i,j)
@@ -108,6 +134,10 @@ program generator
         fullrho(i,j) = dval
      enddo
   enddo
+
+  endif
+
+
   write(3,rec=1) fullrho(:,:)
 
  close (1,status='keep')
