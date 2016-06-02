@@ -107,7 +107,7 @@ program multipleSourcesOPT2D
   !integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
   real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
   real :: video(maxnz+1,maxnz+1)
-  character(150) :: outfile
+  character(120) :: outfile
  
   
   ! parameter for the waveform
@@ -206,7 +206,7 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=2000
+  nt=1000
   nx=399
   nz=199
   dt=2.d-3
@@ -221,7 +221,7 @@ program multipleSourcesOPT2D
 
   ! Discontinuity configuration
 
-  nDiscon = 0
+  nDiscon = 1
   lengthDiscon = 40*nx+1
   
   if(nDiscon.ne.0) then
@@ -324,11 +324,6 @@ program multipleSourcesOPT2D
   !print *, maxnz,nx,nz,markers,lmargin,rmargin
   !print *, rho
   
-  write(12,*) rho
-  write(13,*) vp
-  write(14,*) vs
-  stop
-
   call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmargin)
   
 

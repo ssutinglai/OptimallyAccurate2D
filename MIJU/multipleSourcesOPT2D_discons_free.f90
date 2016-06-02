@@ -161,6 +161,12 @@ program multipleSourcesOPT2D
   double precision, allocatable :: dscr(:,:,:) ! discontinuity coordinates
   double precision :: tmpvaluex,tmpvaluez
 
+  ! for free surface
+  integer :: zerodisplacement(maxnz+1,maxnz+1)
+  integer :: lengthFreeSurface ! with x,z coordinates
+  double precision, allocatable :: free(:,:)
+ 
+  
 
   ! for waveform inversion
   
@@ -221,7 +227,7 @@ program multipleSourcesOPT2D
 
   ! Discontinuity configuration
 
-  nDiscon = 0
+  nDiscon = 1
   lengthDiscon = 40*nx+1
   
   if(nDiscon.ne.0) then
@@ -231,6 +237,9 @@ program multipleSourcesOPT2D
         dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
      enddo
   endif
+
+  
+
   markers(1:maxnz,1:maxnz) = 0
   markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
 
@@ -248,7 +257,26 @@ program multipleSourcesOPT2D
  
   
 
+  ! Free surface configuration
 
+  lengthFreeSurface = 40*nx+1
+  if(lengthFreeSurface.ne.0) then
+     allocate(free(1:2,1:lengthFreeSurface))
+     do ix=1,lengthFreeSurface
+        free(1,ix) = dble(ix-1)*dx/40.d0
+        free(2,ix) = 2.d-1+1.8d-1*sin(free(1,ix)/(dble(nx)*dx)*pi)
+     enddo
+     zerodisplacement(1:maxnz,1:maxnz)=0
+     do ix=1,nx+1
+        tmpint=nint(2.d-1+1.8d-1*sin((dble(ix-1)*dx/40.d0)/(dble(nx)*dx)*pi))
+        zerodisplacement(ix,1:tmpint) = 1
+     enddo
+
+     
+  endif
+
+
+  
   ! Receiver position
 
 
@@ -324,12 +352,12 @@ program multipleSourcesOPT2D
   !print *, maxnz,nx,nz,markers,lmargin,rmargin
   !print *, rho
   
-  write(12,*) rho
-  write(13,*) vp
-  write(14,*) vs
-  stop
+  !write(12,*) rho
+  !write(13,*) vp
+  !write(14,*) vs
+  !stop
 
-  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmargin)
+  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
   
 
   ! Smoothed version of CONV/OPT operators
@@ -378,9 +406,32 @@ program multipleSourcesOPT2D
      markers,nDiscon,lengthDiscon,dscr)
 
   endif
+  
+  if(lengthFreeSurface.ne.0) then
+          
+     call cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     e13,e14,e15,e16,e17,e18,e19,e20, &
+     f1, f2, f3, f4, f5, f6, f7, f8, &
+     f13,f14,f15,f16,f17,f18,f19,f20, & 
+     ! hereafter are new variables for cales_discon
+     ee12,ee34,ee56,ee65,ee78,ee87, &
+     ff12,ff34,ff56,ff65,ff78,ff87, &
+     zerodisplacement,lengthFreeSurface,free)
 
+     
+  endif
   
-  
+
+  if(lengthFreeSurface.ne.0) then
+     ! changing free by putting lmargin(1) and (2)
+     tmpvaluex=dble(lmargin(1))*dx
+     tmpvaluez=dble(lmargin(2))*dz
+     
+     do ix=1,lengthFreeSurface
+           free(1,ix)=free(1,ix)+tmpvaluex
+           free(2,ix)=free(2,ix)+tmpvaluez           
+     enddo
+  endif
 
   ! for Cerjan absorbing boundary
 
@@ -789,29 +840,32 @@ end subroutine calstruct2
   
 
 
-subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmargin)
+subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
   implicit none
   integer :: i,j,maxnz,nx,nz,nnx,nnz
   double precision ::lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)  
   integer :: rmargin(1:2), lmargin(1:2)
   integer :: markers(maxnz+1,maxnz+1) ! discontinuities
+  integer :: zerodisplacement(maxnz+1,maxnz+1) ! above free surface
   integer :: liquidmarkers(maxnz+1,maxnz+1)
   ! real(kind(0d0)), dimension(maxnz+1,maxnz+1) ::mmu,rrho,llam
   double precision, allocatable :: mmu(:,:), rrho(:,:), llam(:,:)
   integer, allocatable :: mmarkers(:,:),lliquidmarkers(:,:)
+  integer, allocatable :: zzerodisplacement(:,:)
   
   allocate(rrho(1:maxnz+1,1:maxnz+1))
   allocate(mmu(1:maxnz+1,1:maxnz+1))
   allocate(llam(1:maxnz+1,1:maxnz+1))
   allocate(mmarkers(1:maxnz+1,1:maxnz+1))
   allocate(lliquidmarkers(1:maxnz+1,1:maxnz+1))
+  allocate(zzerodisplacement(1:maxnz+1,1:maxnz+1))
 
   mmu=0.d0
   rrho=0.d0
   mmarkers=0
   lliquidmarkers=0
   llam=0.d0
-  
+  zzerodisplacement=0
 
 
   llam(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=lam(1:nx+1,1:nz+1)
@@ -821,21 +875,30 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmar
   mmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=markers(1:nx+1,1:nz+1)
   lliquidmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
        liquidmarkers(1:nx+1,1:nz+1)
+  zzerodisplacement(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
+       zerodisplacement(1:nx+1,1:nz+1)
+
 
   ! 4 corners
 
   llam(1:lmargin(1),1:lmargin(2))=lam(1,1)
   mmu(1:lmargin(1),1:lmargin(2))=mu(1,1)
   rrho(1:lmargin(1),1:lmargin(2))=rho(1,1)
+  zzerodisplacement(1:lmargin(1),1:lmargin(2))=zerodisplacement(1,1)
+
 
   llam(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
   mmu(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=mu(1,nz+1)
   rrho(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=rho(1,nz+1)
+  zzerodisplacement(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = zerodisplacement(1,nz+1)
   !print *, llam(1,nz+lmargin(2)+5),mu(1,nz+1),rho(1,nz+1)
 
   llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=lam(nx+1,1)
   mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=mu(nx+1,1)
   rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=rho(nx+1,1)
+  zzerodisplacement(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2)) &
+       = zerodisplacement(nx+1,1)
 
   llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
        = lam(nx+1,nz+1)
@@ -843,6 +906,9 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmar
        = mu(nx+1,nz+1)
   rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
        = rho(nx+1,nz+1)
+  zzerodisplacement(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
+       = zerodisplacement(nx+1,nz+1)
+  
 
   ! 4 rectangles
 
@@ -850,28 +916,32 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmar
      llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(1,1:nz+1)
      mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(1,1:nz+1)
      rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(1,1:nz+1)
-
+     zzerodisplacement(i,1+lmargin(2):nz+1+lmargin(2))  &
+          = zerodisplacement(1,1:nz+1)
   enddo
   
   do i = 1+nx+1+lmargin(1),rmargin(1)+nx+1+lmargin(1)
      llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(nx+1,1:nz+1)
      mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(nx+1,1:nz+1)
      rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(nx+1,1:nz+1)
-
+     zzerodisplacement(i,1+lmargin(2):nz+1+lmargin(2)) &
+          = zerodisplacement(nx+1,1:nx+1)
   enddo
-
+  
   do i = 1,lmargin(2)
      llam(1+lmargin(1):nx+1+lmargin(2),i)=lam(1:nx+1,1)
      mmu(1+lmargin(1):nx+1+lmargin(2),i)=mu(1:nx+1,1)
      rrho(1+lmargin(1):nx+1+lmargin(2),i)=rho(1:nx+1,1)
-
+     zzerodisplacement(1+lmargin(1):nx+1+lmargin(2),i) &
+          =zerodisplacement(1:nx+1,1)
   enddo
 
   do i = 1+nz+1+lmargin(2),rmargin(2)+nz+1+lmargin(2)
      llam(1+lmargin(1):nx+1+lmargin(2),i) = lam(1:nx+1,nz+1)
      mmu(1+lmargin(1):nx+1+lmargin(2),i) = mu(1:nx+1,nz+1)
      rrho(1+lmargin(1):nx+1+lmargin(2),i) = rho(1:nx+1,nz+1)
-     
+     zzerodisplacement(1+lmargin(1):nx+1+lmargin(2),i) &
+          = zerodisplacement(1:nx+1,nz+1)
 
   enddo
 
@@ -883,11 +953,15 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmar
   lam=0.d0
   rho=0.d0
   mu=0.d0
+  liquidmarkers = 0
+  zerodisplacement = 0
+  markers = 0
 
   lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
   rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
   mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
   markers(1:nx+1,1:nz+1)=mmarkers(1:nx+1,1:nz+1)
+  zerodisplacement(1:nx+1,1:nz+1)=zzerodisplacement(1:nx+1,1:nz+1)
   liquidmarkers(1:nx+1,1:nz+1)=lliquidmarkers(1:nx+1,1:nz+1)
   !print *, nx,nz
   !write(12,*) rho(:,:)
@@ -900,6 +974,7 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,lmargin,rmar
   deallocate(mmu)
   deallocate(mmarkers)
   deallocate(lliquidmarkers)
+  deallocate(zzerodisplacement)
 end subroutine calstructBC
 
 
