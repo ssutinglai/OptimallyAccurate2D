@@ -93,8 +93,47 @@ program generator
  endif
 
 
-
  if(1.eq.1) then
+
+ dx = 2.d-2
+
+ do ix = 1,NX_TOTAL
+    boundary = 199.d0*dx-dx*dble(ix-1)*199.d0/399.d0
+    tmpint =nint(boundary/dx)
+    !fullvp(ix,1:tmpint) = 2290.e0
+    !fullvs(ix,1:tmpint) = 3000.e0
+  ! 
+    !fullvp(ix,tmpint+1:NZ_TOTAL) = 2200.e0
+    !fullvs(ix,tmpint+1:NZ_TOTAL) = 1400.e0
+    ! giza inversed (above)
+    
+    fullvp(ix,1:tmpint)=2200.e0
+    fullvs(ix,1:tmpint)=1400.e0
+    fullrho(ix,1:tmpint)=2119.e0
+    
+    fullvp(ix,tmpint+1:NZ_TOTAL)=3000.e0
+    fullvs(ix,tmpint+1:NZ_TOTAL)=1900.e0
+    fullrho(ix,tmpint+1:NZ_TOTAL)=2290.e0
+
+! below
+!rho2290
+!vp 3000
+!vs 1900
+!for above:
+!rho 2119
+!Vp 2200
+!Vs 1400
+    
+ enddo
+ 
+
+
+ endif
+
+
+
+
+ if(1.eq.0) then
     dx=2.d-2
     fullvp(:,:) = 2200.e0
     fullvs(:,:) = 1400.e0
@@ -105,6 +144,7 @@ program generator
           if(tmpfloat.le.2500.d0) then
              fullvp(ix,iz)=3000.e0
              fullvs(ix,iz)=1900.e0
+
           endif
        enddo
     enddo
@@ -115,9 +155,9 @@ program generator
 
 !****************************************************************	   
  
- open (1,file='./2d_circle.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_circle.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_circle.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_gizainverse.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_gizainverse.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_gizainverse.rho',form='unformatted',access='direct',recl=recl_size)
 
  !tmp=1
  !do j=1, NZ_TOTAL
@@ -158,6 +198,8 @@ program generator
 
 
   write(3,rec=1) fullrho(:,:)
+
+  
 
  close (1,status='keep')
  close (2,status='keep')

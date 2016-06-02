@@ -2,7 +2,7 @@
 BIN = ./
 program = $(BIN)/multiOPT.x 
 include ./config.h
-objs =   cales_discon.o cales_free.o sub.inverse.o calmat.o multipleSourcesOPT2D_discons_free.o
+objs =   cales_discon.o cales_free.o sub.inverse.o calmat.o multipleSourcesOPT2D_discons_free_4times.o
 
 .SUFFIXES: .o .f90
 

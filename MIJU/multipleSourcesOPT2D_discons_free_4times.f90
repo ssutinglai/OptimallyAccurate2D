@@ -22,7 +22,8 @@ program multipleSourcesOPT2D
   !character(80), parameter :: modelname = 'layered'
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
-
+  
+  integer, parameter :: times = 4
   
 
   ! switch OPT / CONV
@@ -52,8 +53,8 @@ program multipleSourcesOPT2D
 
 
 
-  integer, parameter :: maxnz = 600 
-  integer, parameter :: maxnt = 3000
+  integer, parameter :: maxnz = 600 * times
+  integer, parameter :: maxnt = 3000 * times
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
     
@@ -127,7 +128,7 @@ program multipleSourcesOPT2D
   logical, parameter :: USE_PML_YMIN = .true.
   logical, parameter :: USE_PML_YMAX = .true.
   ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 100
+  integer, parameter :: NPOINTS_PML = 100*times
   double precision, parameter :: CerjanRate = 0.0015
   double precision :: weightBC(maxnz+1,maxnz+1)
   ! Cerjan boundary condition
@@ -212,12 +213,12 @@ program multipleSourcesOPT2D
   vsfile=vsmodel
   rhofile=rhomodel
 
-  nt=2000
-  nx=399
-  nz=199
-  dt=2.d-3
-  dx=2.d-2
-  dz=2.d-2
+  nt=2000*times
+  nx=399*times
+  nz=199*times
+  dt=2.d-3/dble(times)
+  dx=2.d-2/dble(times)
+  dz=2.d-2/dble(times)
   
   f0=6.5d0
   t0=2.d-1
@@ -310,13 +311,13 @@ program multipleSourcesOPT2D
 
 
   do iReceiver = 1, nReceiver
-     nrx(iReceiver)=70+30*iReceiver
-     nrz(iReceiver)=130
+     nrx(iReceiver)=(69*times+1)+30*times*iReceiver
+     nrz(iReceiver)=(130-1)*times+1
   enddo
   
   do iSource = 1, nSource
-     iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
-     iisz(iSource)=100
+     iisx(iSource)=(iSourceStart-1)*times+1+iSourceInterval*times*(iSource-1)
+     iisz(iSource)=(100-1)*times+1
      write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
      do j=1, 12
         if(filename(j:j).eq.' ') filename(j:j)='0'
