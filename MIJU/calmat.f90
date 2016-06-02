@@ -29,6 +29,9 @@ subroutine MizutaniIsoFree(coef,rho0,rho1,lam0,lam1,mu0,mu1,ik,jk,dx,dz,eta,norm
   double precision, dimension(1:12,1:12) :: A0,B0,A1,B1,M0,Mm0,M1,M2,Bm0,Mm1
   double precision :: r, s
   
+
+  ! A1 is always zero for the free surface
+
   nvx=normal(1)
   nvy=normal(2)
   nvx2=nvx*nvx

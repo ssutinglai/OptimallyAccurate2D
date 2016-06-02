@@ -225,8 +225,15 @@ program multipleSourcesOPT2D
   allocate(tmpsingleStrain(1:nx+1,1:nz+1))
 
 
+
+
   ! Discontinuity configuration
 
+
+  ! diagonal discontinuity
+
+  if(1.eq.1) then
+  
   nDiscon = 1
   lengthDiscon = 40*nx+1
   
@@ -237,9 +244,6 @@ program multipleSourcesOPT2D
         dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
      enddo
   endif
-
-  
-
   markers(1:maxnz,1:maxnz) = 0
   markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
 
@@ -255,20 +259,51 @@ program multipleSourcesOPT2D
      endif
   enddo
  
+  endif
+
+  ! Circle discontinuity
+  
+  if(0.eq.1) then
+     
+     nDiscon = 2
+     lengthDiscon = 40*100+1
+     
+     if(nDiscon.ne.0) then
+        allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+        do ix =1,lengthDiscon
+           dscr(1,ix,1) = 99.d0*dx+dble(ix-1)*dx/40.d0
+           dscr(1,ix,2) = dscr(1,ix,1)
+           !dscr(2,ix,1) = 99.d0+sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-50.d0)**2)
+           dscr(2,ix,1) = 99.d0
+           dscr(2,ix,2) = 99.d0-sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-50.d0)**2)
+        enddo
+     endif
+     markers(1:nx+1,1:nz+1)=1
+  endif
 
 
+  ! Oleg discontinuties
+
+  if(0.eq.0) then
+
+     open(1, file=
+
+     stop
+
+
+  endif
   
   ! Receiver position
 
 
   do iReceiver = 1, nReceiver
      nrx(iReceiver)=70+30*iReceiver
-     nrz(iReceiver)=130
+     nrz(iReceiver)=100
   enddo
   
   do iSource = 1, nSource
      iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
-     iisz(iSource)=100
+     iisz(iSource)=10
      write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
      do j=1, 12
         if(filename(j:j).eq.' ') filename(j:j)='0'
@@ -316,7 +351,7 @@ program multipleSourcesOPT2D
 
   ! Free surface configuration
 
-  lengthFreeSurface = 40*nx+1
+  lengthFreeSurface = 0
   if(lengthFreeSurface.ne.0) then
      allocate(free(1:2,1:lengthFreeSurface))
      do ix=1,lengthFreeSurface

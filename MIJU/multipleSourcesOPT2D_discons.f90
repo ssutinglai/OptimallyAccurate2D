@@ -221,6 +221,10 @@ program multipleSourcesOPT2D
 
   ! Discontinuity configuration
 
+  ! diagonal discontinuity
+
+  if(0.eq.1) then
+  
   nDiscon = 0
   lengthDiscon = 40*nx+1
   
@@ -246,6 +250,26 @@ program multipleSourcesOPT2D
      endif
   enddo
  
+  endif
+
+  ! Circle discontinuity
+  
+  if(1.eq.1) then
+     
+     nDiscon = 2
+     lengthDiscon = 40*100+1
+     
+     if(nDiscon.ne.0) then
+        allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+        do ix =1,lengthDiscon
+           dscr(1,ix,1) = 99.d0*dx+dble(ix-1)*dx/40.d0
+           dscr(1,ix,2) = dscr(1,ix,1)
+           dscr(2,ix,1) = 99.d0+sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-50.d0)**2)
+           dscr(2,ix,2) = 99.d0-sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-50.d0)**2)
+        enddo
+     endif
+     markers(1:nx+1,1:nz+1)=1
+  
   
 
 

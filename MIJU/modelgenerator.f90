@@ -17,7 +17,7 @@ program generator
  real(kind=prec), parameter                     :: vpwater = 1.5e3
  integer                                        :: NZ, NX
  integer ::ix,iz,tmpint
- double precision :: boundary,dx
+ double precision :: boundary,dx,tmpfloat
  integer                                        :: NX_TOTAL, NZ_TOTAL
  integer                                        :: recl_size
 !************************************************************************	
@@ -77,7 +77,7 @@ program generator
  enddo
 
 
- if(1.eq.1) then
+ if(1.eq.0) then
 
  dx = 2.d-2
 
@@ -92,13 +92,32 @@ program generator
 
  endif
 
+
+
+ if(1.eq.1) then
+    dx=2.d-2
+    fullvp(:,:) = 2200.e0
+    fullvs(:,:) = 1400.e0
+ 
+    do iz=50,150
+       do ix = 100,200
+          tmpfloat=(dble(ix)-150.d0)**2+(dble(iz)-50.d0)**2
+          if(tmpfloat.le.2500.d0) then
+             fullvp(ix,iz)=3000.e0
+             fullvs(ix,iz)=1900.e0
+          endif
+       enddo
+    enddo
+ endif
+
+
  recl_size = prec * NX_TOTAL * NZ_TOTAL
 
 !****************************************************************	   
  
- open (1,file='./2d_giza2.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_giza2.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_giza2.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_circle.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_circle.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_circle.rho',form='unformatted',access='direct',recl=recl_size)
 
  !tmp=1
  !do j=1, NZ_TOTAL
