@@ -232,7 +232,7 @@ program multipleSourcesOPT2D
 
   ! diagonal discontinuity
 
-  if(1.eq.1) then
+  if(1.eq.0) then
   
   nDiscon = 1
   lengthDiscon = 40*nx+1
@@ -285,10 +285,21 @@ program multipleSourcesOPT2D
   ! Oleg discontinuties
 
   if(0.eq.0) then
-
-     open(1, file=
-
-     stop
+     nDiscon=1
+     lengthDiscon = 160000
+     allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
+     open(1, file='grid_x_Oleg.txt')
+     do ix = 1,400
+        read(1,*)  dscr(1,400*(ix-1)+1:400*ix,1)
+     enddo
+!123  format(400(F.2,1x))
+     close(1)
+     open(1, file='grid_y_Oleg.txt')
+     do ix = 1,400
+        read(1,*)  dscr(2,400*(ix-1)+1:400*ix,1)
+     enddo
+     close(1)
+     
 
 
   endif
@@ -298,7 +309,7 @@ program multipleSourcesOPT2D
 
   do iReceiver = 1, nReceiver
      nrx(iReceiver)=70+30*iReceiver
-     nrz(iReceiver)=100
+     nrz(iReceiver)=1
   enddo
   
   do iSource = 1, nSource
