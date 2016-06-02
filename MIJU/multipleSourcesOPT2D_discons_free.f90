@@ -255,25 +255,6 @@ program multipleSourcesOPT2D
      endif
   enddo
  
-  
-
-  ! Free surface configuration
-
-  lengthFreeSurface = 40*nx+1
-  if(lengthFreeSurface.ne.0) then
-     allocate(free(1:2,1:lengthFreeSurface))
-     do ix=1,lengthFreeSurface
-        free(1,ix) = dble(ix-1)*dx/40.d0
-        free(2,ix) = 2.d-1+1.8d-1*sin(free(1,ix)/(dble(nx)*dx)*pi)
-     enddo
-     zerodisplacement(1:maxnz,1:maxnz)=0
-     do ix=1,nx+1
-        tmpint=nint(2.d-1+1.8d-1*sin((dble(ix-1)*dx/40.d0)/(dble(nx)*dx)*pi))
-        zerodisplacement(ix,1:tmpint) = 1
-     enddo
-
-     
-  endif
 
 
   
@@ -331,6 +312,31 @@ program multipleSourcesOPT2D
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
     
+    
+
+  ! Free surface configuration
+
+  lengthFreeSurface = 40*nx+1
+  if(lengthFreeSurface.ne.0) then
+     allocate(free(1:2,1:lengthFreeSurface))
+     do ix=1,lengthFreeSurface
+        free(1,ix) = dble(ix-1)*dx/40.d0
+        free(2,ix) = 5.d-1+3.d-1*sin(free(1,ix)/(dble(nx)*dx)*pi*4)
+     enddo
+     zerodisplacement(1:maxnz,1:maxnz)=0
+     do ix=1,nx+1
+        tmpint=nint((5.d-1+3.d-1*sin((dble(ix-1)*dx)/(dble(nx)*dx)*pi*4))/dx)
+        zerodisplacement(ix,1:tmpint) = 1
+        vp(ix,1:tmpint)=0.d0
+        vs(ix,1:tmpint)=0.d0
+     enddo
+
+     
+  endif
+  
+
+  
+
   lam = 0.d0
   mu = 0.d0
   !call datainit( maxnz,maxnz,lam )
@@ -352,9 +358,9 @@ program multipleSourcesOPT2D
   !print *, maxnz,nx,nz,markers,lmargin,rmargin
   !print *, rho
   
-  !write(12,*) rho
-  !write(13,*) vp
-  !write(14,*) vs
+  write(12,*) rho
+  write(13,*) vp
+  write(14,*) vs
   !stop
 
   call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
@@ -420,7 +426,8 @@ program multipleSourcesOPT2D
 
      
   endif
-  
+
+
 
   if(lengthFreeSurface.ne.0) then
      ! changing free by putting lmargin(1) and (2)
@@ -555,6 +562,19 @@ program multipleSourcesOPT2D
            
 
         !endif
+
+
+           if(lengthFreeSurface.ne.0) then
+              do iz=1,nz+1
+                 do ix=1,nx+1
+                    if(zerodisplacement(ix,iz).eq.1) then
+                       ux(ix,iz) = 0.d0
+                       uz(ix,iz) = 0.d0
+                    endif
+                 enddo
+              enddo
+           endif
+
 
            ! increment of t
         t = t + dt
@@ -925,7 +945,7 @@ subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplace
      mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(nx+1,1:nz+1)
      rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(nx+1,1:nz+1)
      zzerodisplacement(i,1+lmargin(2):nz+1+lmargin(2)) &
-          = zerodisplacement(nx+1,1:nx+1)
+          = zerodisplacement(nx+1,1:nz+1)
   enddo
   
   do i = 1,lmargin(2)

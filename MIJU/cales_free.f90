@@ -121,6 +121,10 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               
               nointersections = nointersections * 0
+              
+              call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)   
 
            else
               normal(1)= dble(jk(ctr))/sqrt(distan2)
@@ -130,10 +134,13 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(0,2) = dble(abs(jk(ctr)))
               eta(1,1) = 1.d0-eta(0,1)
               eta(1,2) = 1.d0-eta(0,2)     
+
+              call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                   lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                   mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)   
+
            endif
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
-                lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
-                mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal)       
+    
            
            ! ctr = 2 right-centre ix+1,iz
            ctr = 2
@@ -147,6 +154,10 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               call xiziEta(xi,zi,pt0x,pt0z,dx,dz,eta)
               call NormalFinder(normal,lengthDiscon,nDiscon,iInterSection,dscr)
               nointersections = nointersections * 0
+              call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+                   lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
+                   mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
+              
            else
               normal(1)= dble(jk(ctr))/sqrt(distan2)
               normal(2)=-dble(ik(ctr))/sqrt(distan2)
@@ -155,12 +166,11 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(0,2) = dble(abs(jk(ctr)))
               eta(1,1) = 1.d0-eta(0,1)
               eta(1,2) = 1.d0-eta(0,2)                    
-           endif
-           
-           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+
+              call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
-           
+           endif
 
 
            ! ctr = 3 right-bottom ix+1,iz-1
@@ -184,7 +194,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
                  eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
            
@@ -218,7 +228,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
@@ -256,7 +266,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
@@ -290,7 +300,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
@@ -318,7 +328,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
@@ -347,7 +357,7 @@ subroutine cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e
               eta(1,2) = 1.d0-eta(0,2)                 
            endif
            
-           call MizutaniIso(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
+           call MizutaniIsoFree(coeftmp(1:6,1:2,ctr),rho(ix,iz),rho(ix+ik(ctr),iz+jk(ctr)), &
                 lam(ix,iz),lam(ix+ik(ctr),iz+jk(ctr)), &
                 mu(ix,iz),mu(ix+ik(ctr),iz+jk(ctr)),ik(ctr),jk(ctr),dx,dz,eta,normal) 
 
