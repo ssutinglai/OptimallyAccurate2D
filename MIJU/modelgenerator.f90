@@ -5,6 +5,7 @@ program generator
  integer                :: i,j
  integer                :: level,tmp
 
+ integer, parameter :: times = 2
 
  integer, parameter                             :: nbre_layers = 5
  integer, dimension(nbre_layers)                :: layer_thikness
@@ -26,8 +27,8 @@ program generator
 
 !************************************************************************
 ! Model initialization	
- NX_TOTAL = 400
- NZ_TOTAL = 200
+ NX_TOTAL = (400-1)*times+1
+ NZ_TOTAL = (200-1)*times+1
 
 !*** Thikness, Vp, Vs *******************************************		
 
@@ -54,6 +55,7 @@ program generator
  allocate (fullvs (NX_TOTAL, NZ_TOTAL) )
  allocate (fullrho(NX_TOTAL, NZ_TOTAL) )
  allocate(tmpM(NZ_TOTAL,NX_TOTAL))
+ if(0.eq.1) then
  open(1,file='./models/model_cp_400x200.txt',form='formatted')
  open(2,file='./models/model_cs_400x200.txt',form='formatted')
  open(3,file='./models/model_rho_400x200.txt',form='formatted')
@@ -75,6 +77,7 @@ program generator
        endif
     enddo
  enddo
+ endif
 
 
  if(1.eq.0) then
@@ -98,7 +101,7 @@ program generator
  dx = 2.d-2
 
  do ix = 1,NX_TOTAL
-    boundary = 199.d0*dx-dx*dble(ix-1)*199.d0/399.d0
+    boundary = 199.d0*dx*dble(times)-dx*dble(ix-1)*199.d0/399.d0
     tmpint =nint(boundary/dx)
     !fullvp(ix,1:tmpint) = 2290.e0
     !fullvs(ix,1:tmpint) = 3000.e0
@@ -155,9 +158,9 @@ program generator
 
 !****************************************************************	   
  
- open (1,file='./2d_gizainverse.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_gizainverse.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_gizainverse.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_ginv3tim.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_ginv3tim.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_ginv3tim.rho',form='unformatted',access='direct',recl=recl_size)
 
  !tmp=1
  !do j=1, NZ_TOTAL

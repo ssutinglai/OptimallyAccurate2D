@@ -23,7 +23,7 @@ program multipleSourcesOPT2D
   !character(80), parameter :: vpmodel = './2d_start.vp'
   !character(80), parameter :: vsmodel = './2d_start.vs'
   
-  integer, parameter :: times = 4
+  integer, parameter :: times = 2
   
 
   ! switch OPT / CONV
@@ -244,7 +244,7 @@ program multipleSourcesOPT2D
      allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
      do ix =1,lengthDiscon
         dscr(1,ix,1) = dble(ix-1)*dx/40.d0
-        dscr(2,ix,1) = 199.d0*dz-dscr(1,ix,1)*199.d0/399.d0
+        dscr(2,ix,1) = 199.d0*dble(times)*dz-dscr(1,ix,1)*199.d0/399.d0
      enddo
   endif
   markers(1:maxnz,1:maxnz) = 0
@@ -1226,7 +1226,7 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
   double precision t,dt,dx,dz,rho,f0,t0,fx(maxnz+1,*),fz(maxnz+1,*)
   double precision b,a,factor
   
-  factor=1.d3
+  factor=1.d9
   
   if ( it.le.ist ) then
 
