@@ -188,7 +188,7 @@ program multipleSourcesOPT2D
      t=0.d0
      time(0)=t
      do it=0,nt
-        print *, isx,isz
+       
         call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         t=t+dt
         !write(13,*) t, fx(isx,isz),fz(isx,isz)
@@ -208,7 +208,8 @@ program multipleSourcesOPT2D
      
 
      do it=0,nt
-        call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
+        !print *, isx,isz
+        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         ! evaluating the next step
         
         !if(nDiscon.eq.0) then
