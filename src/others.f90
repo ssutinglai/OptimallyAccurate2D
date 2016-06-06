@@ -301,3 +301,135 @@ subroutine calstructBC(maxnx,maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodi
   deallocate(zzerodisplacement)
 end subroutine calstructBC
 
+
+
+
+subroutine datainit( nx,nz,ux )
+  
+  integer nx,nz
+  double precision ux(nx+1,*)
+  integer i,j
+  
+  do j=1,nz+1
+     do i=1,nx+1
+        ux(i,j) = 0.d0
+     enddo
+  enddo
+  
+  return
+end subroutine datainit
+
+
+
+
+subroutine  compNRBC2(ux,ux1,ux2,uz,uz1,uz2, rrate, lmargin, rmargin,nnx,nnz)
+
+  ! Cerjan boundary conditions (2D)
+  implicit none
+  integer :: nnx, nnz
+
+  real*8, intent(inout) :: ux2(nnx,nnz),uz2(nnx,nnz)
+  real*8, intent(inout) :: ux1(nnx,nnz),uz1(nnx,nnz)
+  real*8, intent(inout) :: ux(nnx,nnz),uz(nnx,nnz)
+  real*8, intent(in) :: rrate
+  integer, dimension(3), intent(in) :: lmargin, rmargin
+  integer ix, iy, iz
+  integer i, j, k
+  real*8 r
+  
+  do iz = 1, nnz
+     !do iy = 1, nny
+     do ix = 1, nnx
+        
+        i = 0
+        j = 0
+        k = 0
+           
+        if (ix < lmargin(1) + 1) i = lmargin(1) + 1 - ix
+        !   if (iy < lmargin(2) + 1) j = lmargin(2) + 1 - iy
+        if (iz < lmargin(2) + 1) k = lmargin(2) + 1 - iz
+        if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
+        !if (nny - rmargin(2) < iy) j = iy - nny + rmargin(2)
+        if (nnz - rmargin(2) < iz) k = iz - nnz + rmargin(2)
+           
+        if (i == 0 .and. j == 0 .and. k == 0) cycle
+        
+        r = rrate * rrate * dble( i * i + j * j + k * k )
+        r = exp( - r )
+        
+
+        ux2(:,:) = ux2(:,:) * r
+        ux1(:,:) = ux1(:,:) * r
+        ux(:,:) = ux(:,:) * r
+
+        uz2(:,:) = uz2(:,:) * r
+        uz1(:,:) = uz1(:,:) * r
+        uz(:,:) = uz(:,:) * r
+        
+     enddo
+     !enddo
+  enddo
+  
+end subroutine compNRBC2
+
+
+
+subroutine  compNRBCpre(r,rrate, lmargin, rmargin,nnx,nnz)
+
+  implicit none
+  integer :: nnx, nnz
+  ! Cerjan boundary conditions (2D)
+  double precision :: r(nnx,nnz)
+  real*8, intent(in) :: rrate
+  integer, dimension(3), intent(in) :: lmargin, rmargin
+  integer ix, iy, iz
+  integer i, j, k
+  double precision :: rr
+  
+  
+  do iz = 1, nnz
+     !do iy = 1, nny
+     do ix = 1, nnx
+        
+        i = 0
+        j = 0
+        k = 0
+           
+        if (ix < lmargin(1) + 1) i = lmargin(1) + 1 - ix
+        !   if (iy < lmargin(2) + 1) j = lmargin(2) + 1 - iy
+        if (iz < lmargin(2) + 1) k = lmargin(2) + 1 - iz
+   
+        if (nnx - rmargin(1) < ix) i = ix - nnx + rmargin(1)
+        !if (nny - rmargin(2) < iy) j = iy - nny + rmargin(2)
+        if (nnz - rmargin(2) < iz) k = iz - nnz + rmargin(2)
+           
+        if (i == 0 .and. j == 0 .and. k == 0) cycle
+        
+        rr = rrate * rrate * dble( i * i + j * j + k * k )
+        r(ix,iz) = exp( - rr )
+        
+        !if(r(ix,iz).ne.1.d0) then
+        !   print *, ix,iz,r(ix,iz)
+        !endif
+        
+        !print *, ix,iy,r
+        !ux2(:,:) = ux2(:,:) * r
+        !ux1(:,:) = ux1(:,:) * r
+        !ux(:,:) = ux(:,:) * r
+
+        !uz2(:,:) = uz2(:,:) * r
+        !uz1(:,:) = uz1(:,:) * r
+        !uz(:,:) = uz(:,:) * r
+        
+     enddo
+
+     
+     
+     !enddo
+  enddo
+  
+end subroutine compNRBCpre
+
+
+
+
