@@ -28,13 +28,11 @@ program multipleSourcesOPT2D
 
   ! writing strains
   logical, parameter :: writingStrain = .true.
-  
-  integer, parameter :: nReceiver = 7 ! those parameters should be defined either in inffile or somepara files
+  integer :: iReceiverStart,iReceiverInterval,nReceiver
   integer, allocatable :: nrx(:),nrz(:) ! Receiver positions
 
 
   integer :: iSourceStart,iSourceInterval,nSource
-  integer, parameter :: maxnSource = 1
   integer, allocatable, dimension(:) :: iisx, iisz
 
   integer :: iSource, iReceiver
@@ -75,18 +73,17 @@ program multipleSourcesOPT2D
 
   
   ! parameter for the receiver
-  integer, parameter :: maxReceiver = nReceiver ! number of receivers
   integer :: ir,j
   real, allocatable, dimension(:,:) :: synx,synz
   real, allocatable, dimension(:) :: time
-  real, allocatable, dimension(:,:) :: video
   character(200) :: outfile
  
   
   ! parameter for the waveform
   double precision t
-  !parameter for video
-  real,dimension(maxnz+1,maxnz+1) :: snapux,snapuz
+  !parameter for video  
+  real, allocatable, dimension(:,:) :: video
+  real, allocatable, dimension(:,:) :: snapux,snapuz
   integer, parameter :: IT_DISPLAY = 10
  
   integer(2) head(1:120)
@@ -162,6 +159,7 @@ program multipleSourcesOPT2D
   read(5,110) rhomodel
   read(5,'(L1)') optimise
   read(5,*) iSourceStart,iSourceInterval,nSource
+  read(5,*) iReceiverStart,iReceiverInterval,nReceiver
  
   call system('mkdir ./inffile')
    
@@ -205,8 +203,8 @@ program multipleSourcesOPT2D
 
   allocate(nrx(1:nReceiver)) ! receivers
   allocate(nrz(1:nReceiver))
-  allocate(iisx(1:maxnSource)) ! Sources
-  allocate(iisz(1:maxnSource))
+  allocate(iisx(1:nSource)) ! Sources
+  allocate(iisz(1:nSource))
 
 
   allocate(ux(maxnx+1,maxnz+1),uz(maxnx+1,maxnz+1))
@@ -241,9 +239,12 @@ program multipleSourcesOPT2D
   allocate(vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1))
   
   
-  allocate(synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)) ! synthetics
+  allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
 
   allocate(video(maxnx+1,maxnz+1))
+
+  allocate(snapux(maxnx+1,maxnz+1),snapuz(maxnx+1,maxnz+1))
+  
 
   ! Discontinuity configuration
 
@@ -328,7 +329,7 @@ program multipleSourcesOPT2D
 
 
   do iReceiver = 1, nReceiver
-     nrx(iReceiver)=(69*times+1)+30*times*iReceiver
+     nrx(iReceiver)=(iReceiverStart-1)*times+1+iReceiverInterval*times*(iReceiver-1)
      nrz(iReceiver)=(130-1)*times+1
   enddo
   
