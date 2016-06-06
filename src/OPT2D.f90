@@ -52,7 +52,7 @@ program multipleSourcesOPT2D
 
   ! Smoothed version of CONV/OPT operators
 
-  call cales( maxnx,nx,nz,rho,lam,mu,dt,dx,dz, &
+  call cales( nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
        f1, f2, f3, f4, f5, f6, f7, f8, &
@@ -86,7 +86,7 @@ program multipleSourcesOPT2D
         enddo
      enddo
           
-     call cales_discon( maxnx,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     call cales_discon( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20, & 
@@ -140,9 +140,11 @@ program multipleSourcesOPT2D
 
   do iSource = 1, nSource
     
-     isx=iisx(iSource)
-     isz=iisz(iSource)
-
+     isx=iisx(iSource)+lmargin(1)
+     isz=iisz(iSource)+lmargin(2)
+     
+     ist=nt/4
+    
 
      ! for video (without boundary)
      recl_size=(nx+1)*(nz+1)*kind(0e0)
@@ -180,16 +182,7 @@ program multipleSourcesOPT2D
      ! isx = nx / 2 + 1
      ! isz = nz / 2 + 1
      
-     
-     ist=nt/4
-     
-     ! isx = 30s
-     ! isz = 4
-     
-     
-     isx=isx+lmargin(1)
-     isz=isz+lmargin(2)
-     
+   
  
      
      t=0.d0

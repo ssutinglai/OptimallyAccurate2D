@@ -1,5 +1,5 @@
 
-subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+subroutine cales_discon( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20, & ! hereafter are new variables for cales_discon
@@ -9,25 +9,25 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
 
   ! in the vicinity of boundaries :
   ! we use Operators for discontinuities (Mizutani 2002; Ovcharenko 2015)
-  
-  integer maxnz,nx,nz,info
-  double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
+  implicit none
+  integer nx,nz,info
+  double precision rho(nx+1,nz+1),lam(nx+1,nz+1),mu(nx+1,nz+1)
   double precision dt,dx,dz
-  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
-  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
-  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
-  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
-  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
-  double precision e19(maxnz+1,*),e20(maxnz+1,*)
-  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
-  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
-  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
-  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
-  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-  double precision f19(maxnz+1,*),f20(maxnz+1,*)
+  double precision  e1(nx+1,nz+1), e2(nx+1,nz+1), e3(nx+1,nz+1)
+  double precision  e4(nx+1,nz+1), e5(nx+1,nz+1), e6(nx+1,nz+1)
+  double precision  e7(nx+1,nz+1), e8(nx+1,nz+1)
+  double precision e13(nx+1,nz+1),e14(nx+1,nz+1),e15(nx+1,nz+1)
+  double precision e16(nx+1,nz+1),e17(nx+1,nz+1),e18(nx+1,nz+1)
+  double precision e19(nx+1,nz+1),e20(nx+1,nz+1)
+  double precision  f1(nx+1,nz+1), f2(nx+1,nz+1), f3(nx+1,nz+1)
+  double precision  f4(nx+1,nz+1), f5(nx+1,nz+1), f6(nx+1,nz+1)
+  double precision  f7(nx+1,nz+1), f8(nx+1,nz+1)
+  double precision f13(nx+1,nz+1),f14(nx+1,nz+1),f15(nx+1,nz+1)
+  double precision f16(nx+1,nz+1),f17(nx+1,nz+1),f18(nx+1,nz+1)
+  double precision f19(nx+1,nz+1),f20(nx+1,nz+1)
   
-  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
-  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+  double precision, dimension(nx+1,nz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, dimension(nx+1,nz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
   
   integer ix,iz
   double precision dt2,dx2,dz2,dxdz
@@ -35,7 +35,7 @@ subroutine cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6,
   ! interface markers
 
   integer :: ik(1:9),jk(1:9),ctr
-  integer :: markers(maxnz+1,maxnz+1)
+  integer :: markers(nx+1,nz+1)
   double precision :: pt0x,pt0z,pt1x,pt1z
 
   integer :: nDiscon,lengthDiscon ! number of discontinuities
@@ -847,27 +847,27 @@ subroutine calstep_discon( maxnz,nx,nz, &
      ff12,ff34,ff56,ff65,ff78,ff87)
 
   integer maxnz,nx,nz,isx,isz
-  double precision ux(maxnz+1,*),ux1(maxnz+1,*),ux2(maxnz+1,*)
-  double precision uz(maxnz+1,*),uz1(maxnz+1,*),uz2(maxnz+1,*)
-  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
-  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
-  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
-  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
-  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
-  double precision e19(maxnz+1,*),e20(maxnz+1,*)
-  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
-  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
-  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
-  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
-  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-  double precision f19(maxnz+1,*),f20(maxnz+1,*)
-  double precision fx(maxnz+1,*),fz(maxnz+1,*)
-  double precision work1(maxnz+1,-2:1),work2(maxnz+1,-1:2)
-  double precision work3(maxnz+1,-2:1),work4(maxnz+1,-1:2)
-  double precision work5(*),work6(maxnz+1,0:1)
-  double precision work7(*),work8(maxnz+1,0:1)
-  double precision work9(*),work10(maxnz+1,-2:1)
-  double precision work11(*),work12(maxnz+1,-1:2)
+  double precision ux(nx+1,nz+1),ux1(nx+1,nz+1),ux2(nx+1,nz+1)
+  double precision uz(nx+1,nz+1),uz1(nx+1,nz+1),uz2(nx+1,nz+1)
+  double precision  e1(nx+1,nz+1), e2(nx+1,nz+1), e3(nx+1,nz+1)
+  double precision  e4(nx+1,nz+1), e5(nx+1,nz+1), e6(nx+1,nz+1)
+  double precision  e7(nx+1,nz+1), e8(nx+1,nz+1)
+  double precision e13(nx+1,nz+1),e14(nx+1,nz+1),e15(nx+1,nz+1)
+  double precision e16(nx+1,nz+1),e17(nx+1,nz+1),e18(nx+1,nz+1)
+  double precision e19(nx+1,nz+1),e20(nx+1,nz+1)
+  double precision  f1(nx+1,nz+1), f2(nx+1,nz+1), f3(nx+1,nz+1)
+  double precision  f4(nx+1,nz+1), f5(nx+1,nz+1), f6(nx+1,nz+1)
+  double precision  f7(nx+1,nz+1), f8(nx+1,nz+1)
+  double precision f13(nx+1,nz+1),f14(nx+1,nz+1),f15(nx+1,nz+1)
+  double precision f16(nx+1,nz+1),f17(nx+1,nz+1),f18(nx+1,nz+1)
+  double precision f19(nx+1,nz+1),f20(nx+1,nz+1)
+  double precision fx(nx+1,nz+1),fz(nx+1,nz+1)
+  double precision work1(nx+1,-2:1),work2(nx+1,-1:2)
+  double precision work3(nx+1,-2:1),work4(nx+1,-1:2)
+  double precision work5(nx+1),work6(nx+1,0:1)
+  double precision work7(nx+1),work8(nx+1,0:1)
+  double precision work9(nx+1),work10(nx+1,-2:1)
+  double precision work11(nx+1),work12(nx+1,-1:2)
   integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
   logical optimise
 
