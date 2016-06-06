@@ -1,7 +1,7 @@
 gizainverse_nd
-2d_gizainverse.vp
-2d_gizainverse.vs
-2d_gizainverse.rho
+../models/2d_gizainverse.vp
+../models/2d_gizainverse.vs
+../models/2d_gizainverse.rho
 T
 100 2 1 
 

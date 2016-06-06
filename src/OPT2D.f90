@@ -7,26 +7,20 @@ program multipleSourcesOPT2D
   !
   !					originally from 1997.6  N. Takeuchi
   !                                                     2016.5. N. Fuji
-  !                                  discon operators : 2016.5. O. Ovcharenko
+  !                         discon operators (matlab) : 2016.5. O. Ovcharenko
   !                                         colorbars : 2016.5. K. Okubo
   !  
+  !                                          cleaning : 2016.6. N. Fuji   
+
 
   implicit none
   character(120) :: filename
   integer :: tmpint
-  !character(80), parameter :: modelname = 'homo'
-  !character(80), parameter :: vpmodel = './2d_homo.vp'
-  !character(80), parameter :: vsmodel = './2d_homo.vs'
-  !character(80), parameter :: rhomodel = './2d_homo.rho'
   character(80) :: modelname,vpmodel,vsmodel,rhomodel
-  !character(80), parameter :: modelname = 'layered'
-  !character(80), parameter :: vpmodel = './2d_start.vp'
-  !character(80), parameter :: vsmodel = './2d_start.vs'
   
   integer, parameter :: times = 1 ! this can make the dx,dz,dt finer  
 
   ! switch OPT / CONV
-  !logical,parameter :: optimise = .false.
   logical :: optimise
 
   ! switch video
@@ -35,29 +29,22 @@ program multipleSourcesOPT2D
   ! writing strains
   logical, parameter :: writingStrain = .true.
   
-  !integer :: nt, nx, nz
-  !real :: dt, dx, dz
-  ! integer :: isx, isz ! source position
-  ! for Ricker wavelets
-  !real :: f0, t0
-  integer, parameter :: nReceiver = 7
-  integer :: nrx(1:nReceiver), nrz(1:nReceiver)
-  
-  !integer, parameter :: iSourceStart = 2
-  !integer, parameter :: iSourceInterval=2
+  integer, parameter :: nReceiver = 7 ! those parameters should be defined either in inffile or somepara files
+  integer, allocatable :: nrx(:),nrz(:) ! Receiver positions
+
+
   integer :: iSourceStart,iSourceInterval,nSource
   integer, parameter :: maxnSource = 1
-  integer :: iisx(1:maxnSource), iisz(1:maxnSource)
+
   integer :: iSource, iReceiver
 
-
-
   integer, parameter :: maxnz = 600 * times
+  integer, parameter :: maxnx = maxnz ! for the moment (and NF will verify all so that we can allocate those)
   integer, parameter :: maxnt = 3000 * times
   double precision, parameter :: pi=3.1415926535897932d0 
   double precision, parameter :: ZERO = 0.d0
     
-  !
+  
   ! parameters for the gridding
   double precision dt,dx,dz
   ! parameters for the wavefield
@@ -91,7 +78,7 @@ program multipleSourcesOPT2D
 
   
   ! parameter for the structure
-  !double precision rrho(6),llam(6),mmu(6)
+  ! double precision rrho(6),llam(6),mmu(6)
   character(80) :: vpfile, vsfile, rhofile   ! ,modelname
   double precision :: rho(maxnz+1,maxnz+1)
   double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
@@ -101,10 +88,8 @@ program multipleSourcesOPT2D
   
   double precision Courant_number
   ! parameter for the receiver
-  !integer :: nReceiver ! number of receiver
-  integer, parameter :: maxReceiver = nReceiver
+  integer, parameter :: maxReceiver = nReceiver ! number of receivers
   integer :: ir,j
-  !integer :: nrx(1:maxReceiver),nrz(1:maxReceiver)
   real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
   real :: video(maxnz+1,maxnz+1)
   character(200) :: outfile
@@ -225,6 +210,15 @@ program multipleSourcesOPT2D
   allocate(tmpsingleStrain(1:nx+1,1:nz+1))
 
 
+
+
+
+  ! Array allocation
+
+  allocate(nrx(1:nReceiver)) ! receivers
+  allocate(nrz(1:nReceiver))
+  allocate(iisx(1:maxnSource)) ! Sources
+  allocate(iisz(1:maxnSource))
 
 
   ! Discontinuity configuration
