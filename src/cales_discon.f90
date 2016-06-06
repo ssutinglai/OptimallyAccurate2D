@@ -834,7 +834,7 @@ end subroutine NormalFinder
 
   
 
-subroutine calstep_discon( maxnz,nx,nz, &
+subroutine calstep_discon( nx,nz, &
      e1, e2, e3, e4, e5, e6, e7, e8, &
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
@@ -846,7 +846,7 @@ subroutine calstep_discon( maxnz,nx,nz, &
      ee12,ee34,ee56,ee65,ee78,ee87, &
      ff12,ff34,ff56,ff65,ff78,ff87)
 
-  integer maxnz,nx,nz,isx,isz
+  integer nx,nz,isx,isz
   double precision ux(nx+1,nz+1),ux1(nx+1,nz+1),ux2(nx+1,nz+1)
   double precision uz(nx+1,nz+1),uz1(nx+1,nz+1),uz2(nx+1,nz+1)
   double precision  e1(nx+1,nz+1), e2(nx+1,nz+1), e3(nx+1,nz+1)
@@ -873,8 +873,8 @@ subroutine calstep_discon( maxnz,nx,nz, &
 
 
   
-  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
-  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+  double precision, dimension(nx+1,nz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, dimension(nx+1,nz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
 
   ! predicting the wavefield
  do iz=2,nz

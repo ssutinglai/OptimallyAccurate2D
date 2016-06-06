@@ -2,7 +2,7 @@
 BIN = ../bin/
 program = $(BIN)/multiOPT.x 
 include ../etc/config.h
-objs =   modules.o others.o vectors.o disconConfig.o cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o OPT2D.o
+objs =   modules.o others.o vectors.o disconConfig.o seismicSources.o cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o OPT2D.o
 
 .SUFFIXES: .o .f90
 

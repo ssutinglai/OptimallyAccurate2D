@@ -188,8 +188,8 @@ program multipleSourcesOPT2D
      t=0.d0
      time(0)=t
      do it=0,nt
-        
-        call calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
+        print *, isx,isz
+        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         t=t+dt
         !write(13,*) t, fx(isx,isz),fz(isx,isz)
         
@@ -223,7 +223,7 @@ program multipleSourcesOPT2D
         !        work(1,23),work(1,24),work(1,28),work(1,29), optimise)
            
         !else
-           call calstep_discon( maxnx,nx,nz, &
+           call calstep_discon( nx,nz, &
                 e1, e2, e3, e4, e5, e6, e7, e8, &
                 e13,e14,e15,e16,e17,e18,e19,e20, &
                 f1, f2, f3, f4, f5, f6, f7, f8, &
@@ -492,73 +492,6 @@ end subroutine datainit
 
  
 
-
-
-
-subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
-
-  double precision pi
-  parameter ( pi=3.1415926535897932d0 )
-  integer maxnz,it,ist,isx,isz
-  double precision t,dt,dx,dz,rho,tp,ts,fx(maxnz+1,*),fz(maxnz+1,*)
-  double precision b
-  
-  if ( it.le.ist ) then
-     b = pi * ( t - ts ) / tp
-     fx(isx,isz) &
-          = dsqrt(pi) / 2.d0 * (b*b-0.5d0) * dexp(-b*b) &
-          / ( dx * dz )
-     fx(isx,isz) = fx(isx,isz) * dt * dt / rho
-     fz(isx,isz) = fx(isx,isz)
-     if ( (it.eq.0).or.(it.eq.ist) ) then
-        fx(isx,isz) = fx(isx,isz) / 2.d0
-        fz(isx,isz) = fz(isx,isz) / 2.d0
-     endif
-  else
-     fx(isx,isz) = 0.d0
-     fz(isx,isz) = 0.d0
-  endif
-
-  ! NF for point source
-  fx(isx,isx)=0.d0
-  
-  return
-end subroutine calf
-
-subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
-
-  implicit none
-  double precision pi
-  parameter ( pi=3.1415926535897932d0 )
-  integer maxnz,it,ist,isx,isz
-  double precision t,dt,dx,dz,rho,f0,t0,fx(maxnz+1,*),fz(maxnz+1,*)
-  double precision b,a,factor
-  
-  factor=1.d9
-  
-  if ( it.le.ist ) then
-
-     a = pi*pi*f0*f0*(t-t0)*(t-t0)
-     !print *,pi, t,t0,t-t0,a
-     !print *, f0,t0,a
-     ! Ricker source time function (second derivative of a Gaussian)
-     fx(isx,isz) = factor * (1.d0 - 2.d0*a)*exp(-a);
-     fx(isx,isz) = fx(isx,isz) * dt * dt / rho
-     fz(isx,isz) = fx(isx,isz)
-     if ( (it.eq.0).or.(it.eq.ist) ) then
-        fx(isx,isz) = fx(isx,isz) / 2.d0
-        fz(isx,isz) = fz(isx,isz) / 2.d0
-     endif
-  else
-     fx(isx,isz) = 0.d0
-     fz(isx,isz) = 0.d0
-  endif
-
-  !NF for point source
-  fx(isx,isx)=0.d0
-  
-  return
-end subroutine calf2
 
 
 
