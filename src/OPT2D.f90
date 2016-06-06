@@ -35,6 +35,7 @@ program multipleSourcesOPT2D
 
   integer :: iSourceStart,iSourceInterval,nSource
   integer, parameter :: maxnSource = 1
+  integer, allocatable, dimension(:) :: iisx, iisz
 
   integer :: iSource, iReceiver
 
