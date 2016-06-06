@@ -1,0 +1,135 @@
+
+
+
+subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     e13,e14,e15,e16,e17,e18,e19,e20, &
+     f1, f2, f3, f4, f5, f6, f7, f8, &
+     f13,f14,f15,f16,f17,f18,f19,f20 )
+  implicit none
+  integer maxnz,nx,nz
+  double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
+  double precision dt,dx,dz
+  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
+  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
+  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
+  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
+  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
+  double precision e19(maxnz+1,*),e20(maxnz+1,*)
+  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
+  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
+  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
+  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
+  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
+  double precision f19(maxnz+1,*),f20(maxnz+1,*)
+  integer ix,iz
+  double precision dt2,dx2,dz2,dxdz
+
+  ! for smoothed part of the model :
+  !  we use Zahradnik operators and optimally accurate operators
+
+  
+  dt2 = dt * dt
+  dx2 = dx * dx
+  dz2 = dz * dz
+  dxdz = dx * dz
+  
+  do iz=2,nz
+     do ix=2,nx
+        e1(ix,iz) = dt2 / rho(ix,iz) &
+             * ( ( lam(ix-1,iz) + lam(ix,iz) ) &
+             + 2.d0 * ( mu(ix-1,iz) + mu(ix,iz) ) ) &
+             / ( 2.d0 * dx2 )
+        e2(ix,iz) = dt2 / rho(ix,iz) &
+             * ( ( lam(ix,iz) + lam(ix+1,iz) ) &
+             + 2.d0 * ( mu(ix,iz) + mu(ix+1,iz) ) ) &
+             / ( 2.d0 * dx2 )
+        e3(ix,iz) = dt2 / rho(ix,iz) &
+             * ( mu(ix,iz-1) + mu(ix,iz) ) &
+             / ( 2.d0 * dz2 )
+        e4(ix,iz) = dt2 / rho(ix,iz) &
+             * ( mu(ix,iz) + mu(ix,iz+1) ) &
+             / ( 2.d0 * dz2 )
+        e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
+             / ( 4.d0 * dxdz )
+        e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
+             / ( 4.d0 * dxdz )
+        e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
+             / ( 4.d0 * dxdz )
+        e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
+             / ( 4.d0 * dxdz )
+        e13(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
+             * ( -5.d0 ) / ( 1728.d0 * dxdz )
+        e14(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+             * ( -3.d0 ) / ( 1728.d0 * dxdz )
+        e15(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
+           * ( +9.d0 ) / ( 1728.d0 * dxdz )
+        if ( ix+2.le.nx+1 ) then
+           e16(ix,iz) = dt2 / rho(ix,iz) * lam(ix+2,iz) &
+                * ( -1.d0 ) / ( 1728.d0 * dxdz )
+        else
+           e16(ix,iz) = 0.d0
+        endif
+        e17(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
+             * ( -5.d0 ) / ( 1728.d0 * dxdz )
+        e18(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+             * ( -3.d0 ) / ( 1728.d0 * dxdz )
+        e19(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
+             * ( +9.d0 ) / ( 1728.d0 * dxdz )
+        if ( iz+2.le.nz+1) then
+           e20(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+2) &
+                * ( -1.d0 ) / ( 1728.d0 * dxdz )
+        else
+           e20(ix,iz) = 0.d0
+        endif
+        f1(ix,iz) = dt2 / rho(ix,iz) &
+             * ( mu(ix-1,iz) + mu(ix,iz) ) &
+             / ( 2.d0 * dx2 )
+        f2(ix,iz) = dt2 / rho(ix,iz) &
+             * ( mu(ix,iz) + mu(ix+1,iz) ) &
+             / ( 2.d0 * dx2 )
+        f3(ix,iz) = dt2 / rho(ix,iz) &
+             * ( ( lam(ix,iz-1) + lam(ix,iz) ) &
+             + 2.d0 * ( mu(ix,iz-1) + mu(ix,iz) ) ) &
+             / ( 2.d0 * dz2 )
+        f4(ix,iz) = dt2 / rho(ix,iz) &
+             * ( ( lam(ix,iz) + lam(ix,iz+1) ) &
+           + 2.d0 * ( mu(ix,iz) + mu(ix,iz+1) ) ) &
+           / ( 2.d0 * dz2 )
+        f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
+             / ( 4.d0 * dxdz )
+        f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
+             / ( 4.d0 * dxdz )
+        f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
+             / ( 4.d0 * dxdz )
+        f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
+             / ( 4.d0 * dxdz )
+        if ( ix-2.ge.1 ) then
+           f13(ix,iz) = dt2 / rho(ix,iz) * mu(ix-2,iz) &
+                * (  1.d0 ) / ( 1728.d0 * dxdz )
+        else
+           f13(ix,iz) = 0.d0
+        endif
+        f14(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
+             * ( -9.d0 ) / ( 1728.d0 * dxdz )
+        f15(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
+             * (  3.d0 ) / ( 1728.d0 * dxdz )
+        f16(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
+             * (  5.d0 ) / ( 1728.d0 * dxdz )
+        if ( iz-2.ge.1 ) then
+           f17(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-2) &
+                * (  1.d0 ) / ( 1728.d0 * dxdz )
+        else
+           f17(ix,iz) = 0.d0
+        endif
+        f18(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
+             * ( -9.d0 ) / ( 1728.d0 * dxdz )
+        f19(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
+             * (  3.d0 ) / ( 1728.d0 * dxdz )
+        f20(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
+             * (  5.d0 ) / ( 1728.d0 * dxdz )
+        
+     enddo
+  enddo
+  
+  return
+end subroutine cales

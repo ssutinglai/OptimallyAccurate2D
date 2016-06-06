@@ -31,41 +31,28 @@ program multipleSourcesOPT2D
 
   !!!! for each source we calculate synthetics
   
-  !computing the intermediate parameters
+  ! reading intermediate parameters (vp,vs,rho)
   
-  call calstruct( maxnz,rhofile,dx,dz,nx,nz,rho )
-  call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
-  call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
+  call calstruct( maxnx,maxnz,rhofile,nx,nz,rho )
+  call calstruct( maxnx,maxnz,vpfile, nx,nz,vp )
+  call calstruct( maxnx,maxnz,vsfile, nx,nz,vs )
     
   call freeConfig
-  
-  lam = 0.d0
-  mu = 0.d0
-  !call datainit( maxnz,maxnz,lam )
-  !call datainit( maxnz,maxnz,mu )
-     
 
+  ! calculate lamda and mu
+  call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
   
-  liquidmarkers = 0
+  !write(12,*) rho
+  !write(13,*) vp
+  !write(14,*) vs
 
 
-  call calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
-  
-  !print *, "OK ??"
-  !print *, maxnz,nx,nz,markers,lmargin,rmargin
-  !print *, rho
-  
-  write(12,*) rho
-  write(13,*) vp
-  write(14,*) vs
-  !stop
+  call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
 
-  call calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
-  
 
   ! Smoothed version of CONV/OPT operators
 
-  call cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz, &
+  call cales( maxnx,nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
        f1, f2, f3, f4, f5, f6, f7, f8, &
@@ -99,7 +86,7 @@ program multipleSourcesOPT2D
         enddo
      enddo
           
-     call cales_discon( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     call cales_discon( maxnx,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20, & 
@@ -112,7 +99,7 @@ program multipleSourcesOPT2D
   
   if(lengthFreeSurface.ne.0) then
           
-     call cales_free( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
+     call cales_free( maxnx,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20, & 
@@ -152,8 +139,7 @@ program multipleSourcesOPT2D
   
 
   do iSource = 1, nSource
-     !iisx(iSource)=iSourceStart+iSourceInterval*(iSource-1)
-     !iisz(iSource)=1
+    
      isx=iisx(iSource)
      isz=iisz(iSource)
 
@@ -244,7 +230,7 @@ program multipleSourcesOPT2D
         !        work(1,23),work(1,24),work(1,28),work(1,29), optimise)
            
         !else
-           call calstep_discon( maxnz,nx,nz, &
+           call calstep_discon( maxnx,nx,nz, &
                 e1, e2, e3, e4, e5, e6, e7, e8, &
                 e13,e14,e15,e16,e17,e18,e19,e20, &
                 f1, f2, f3, f4, f5, f6, f7, f8, &
@@ -304,7 +290,7 @@ program multipleSourcesOPT2D
         if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
            singleStrainDiagonal=0.e0
            tmpsingleStrain=0.e0
-           call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
+           call calStrainDiagonal(nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
           
 
 
@@ -510,329 +496,10 @@ subroutine datainit( nx,nz,ux )
 end subroutine datainit
 
 
-subroutine calstruct( maxnz,file2d,dx,dz,nx,nz,rho )
-  implicit none
-  integer maxnz,nx,nz
-  double precision dx,dz,rho(1:maxnz+1,1:maxnz+1)
-  real(kind(1.e0)),allocatable :: rrho(:,:)
-  integer i,j,k,nox(6),noz(6)
-  double precision x,z,xmax,zmax,trho,coef1,coef2
-  integer recl_size
-  character*80 file2d
-  recl_size=kind(1.0)*(nx+1)*(nz+1)
-  
-  allocate(rrho(1:nx+1,1:nz+1))
-  open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)
-  read(1,rec=1) rrho(1:nx+1,1:nz+1)
-  close(1)
-  rho(1:nx+1,1:nz+1)=1.d-3*rrho(1:nx+1,1:nz+1)
-  
-  deallocate(rrho)
-  return
-end subroutine calstruct
-
-subroutine calstruct2(maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
-  implicit none
-  
-  integer i,j,maxnz,nx,nz
-  double precision rho(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1),vs(maxnz+1,maxnz+1)
-  double precision lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
-  integer liquidmarkers(maxnz+1,maxnz+1)
-
-  do i=1,nx+1
-     do j=1,nz+1
-        if(vs(i,j).eq.0.d0) then
-           liquidmarkers(i,j)=1
-           !NF should take out this now
-           !vs(i,j)=vp(i,j)/1.7d0
-        endif
-           
-        mu(i,j)=rho(i,j)*vs(i,j)*vs(i,j)
-        lam(i,j)=rho(i,j)*vp(i,j)*vp(i,j)-2*mu(i,j)
-
-        
-     enddo
-  enddo
-end subroutine calstruct2
-  
-
-
-subroutine calstructBC(maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
-  implicit none
-  integer :: i,j,maxnz,nx,nz,nnx,nnz
-  double precision ::lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1),rho(maxnz+1,maxnz+1)  
-  integer :: rmargin(1:2), lmargin(1:2)
-  integer :: markers(maxnz+1,maxnz+1) ! discontinuities
-  integer :: zerodisplacement(maxnz+1,maxnz+1) ! above free surface
-  integer :: liquidmarkers(maxnz+1,maxnz+1)
-  ! real(kind(0d0)), dimension(maxnz+1,maxnz+1) ::mmu,rrho,llam
-  double precision, allocatable :: mmu(:,:), rrho(:,:), llam(:,:)
-  integer, allocatable :: mmarkers(:,:),lliquidmarkers(:,:)
-  integer, allocatable :: zzerodisplacement(:,:)
-  
-  allocate(rrho(1:maxnz+1,1:maxnz+1))
-  allocate(mmu(1:maxnz+1,1:maxnz+1))
-  allocate(llam(1:maxnz+1,1:maxnz+1))
-  allocate(mmarkers(1:maxnz+1,1:maxnz+1))
-  allocate(lliquidmarkers(1:maxnz+1,1:maxnz+1))
-  allocate(zzerodisplacement(1:maxnz+1,1:maxnz+1))
-
-  mmu=0.d0
-  rrho=0.d0
-  mmarkers=0
-  lliquidmarkers=0
-  llam=0.d0
-  zzerodisplacement=0
-
-
-  llam(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=lam(1:nx+1,1:nz+1)
-  mmu(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=mu(1:nx+1,1:nz+1)
-  rrho(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=rho(1:nx+1,1:nz+1)
-
-  mmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))=markers(1:nx+1,1:nz+1)
-  lliquidmarkers(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
-       liquidmarkers(1:nx+1,1:nz+1)
-  zzerodisplacement(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
-       zerodisplacement(1:nx+1,1:nz+1)
-
-
-  ! 4 corners
-
-  llam(1:lmargin(1),1:lmargin(2))=lam(1,1)
-  mmu(1:lmargin(1),1:lmargin(2))=mu(1,1)
-  rrho(1:lmargin(1),1:lmargin(2))=rho(1,1)
-  zzerodisplacement(1:lmargin(1),1:lmargin(2))=zerodisplacement(1,1)
-
-
-  llam(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=lam(1,nz+1)
-  mmu(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=mu(1,nz+1)
-  rrho(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2))=rho(1,nz+1)
-  zzerodisplacement(1:lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = zerodisplacement(1,nz+1)
-  !print *, llam(1,nz+lmargin(2)+5),mu(1,nz+1),rho(1,nz+1)
-
-  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=lam(nx+1,1)
-  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=mu(nx+1,1)
-  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2))=rho(nx+1,1)
-  zzerodisplacement(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1:lmargin(2)) &
-       = zerodisplacement(nx+1,1)
-
-  llam(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = lam(nx+1,nz+1)
-  mmu(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = mu(nx+1,nz+1)
-  rrho(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = rho(nx+1,nz+1)
-  zzerodisplacement(1+nx+1+lmargin(1):rmargin(1)+nx+1+lmargin(1),1+nz+1+lmargin(2):rmargin(2)+nz+1+lmargin(2)) &
-       = zerodisplacement(nx+1,nz+1)
-  
-
-  ! 4 rectangles
-
-  do i = 1,lmargin(1)
-     llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(1,1:nz+1)
-     mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(1,1:nz+1)
-     rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(1,1:nz+1)
-     zzerodisplacement(i,1+lmargin(2):nz+1+lmargin(2))  &
-          = zerodisplacement(1,1:nz+1)
-  enddo
-  
-  do i = 1+nx+1+lmargin(1),rmargin(1)+nx+1+lmargin(1)
-     llam(i,1+lmargin(2):nz+1+lmargin(2)) = lam(nx+1,1:nz+1)
-     mmu(i,1+lmargin(2):nz+1+lmargin(2)) = mu(nx+1,1:nz+1)
-     rrho(i,1+lmargin(2):nz+1+lmargin(2)) = rho(nx+1,1:nz+1)
-     zzerodisplacement(i,1+lmargin(2):nz+1+lmargin(2)) &
-          = zerodisplacement(nx+1,1:nz+1)
-  enddo
-  
-  do i = 1,lmargin(2)
-     llam(1+lmargin(1):nx+1+lmargin(2),i)=lam(1:nx+1,1)
-     mmu(1+lmargin(1):nx+1+lmargin(2),i)=mu(1:nx+1,1)
-     rrho(1+lmargin(1):nx+1+lmargin(2),i)=rho(1:nx+1,1)
-     zzerodisplacement(1+lmargin(1):nx+1+lmargin(2),i) &
-          =zerodisplacement(1:nx+1,1)
-  enddo
-
-  do i = 1+nz+1+lmargin(2),rmargin(2)+nz+1+lmargin(2)
-     llam(1+lmargin(1):nx+1+lmargin(2),i) = lam(1:nx+1,nz+1)
-     mmu(1+lmargin(1):nx+1+lmargin(2),i) = mu(1:nx+1,nz+1)
-     rrho(1+lmargin(1):nx+1+lmargin(2),i) = rho(1:nx+1,nz+1)
-     zzerodisplacement(1+lmargin(1):nx+1+lmargin(2),i) &
-          = zerodisplacement(1:nx+1,nz+1)
-
-  enddo
-
-  nnx=rmargin(1)+nx+lmargin(1)
-  nnz=rmargin(2)+nz+lmargin(2)
-
-  nx=nnx
-  nz=nnz
-  lam=0.d0
-  rho=0.d0
-  mu=0.d0
-  liquidmarkers = 0
-  zerodisplacement = 0
-  markers = 0
-
-  lam(1:nx+1,1:nz+1) = llam(1:nx+1,1:nz+1)
-  rho(1:nx+1,1:nz+1) = rrho(1:nx+1,1:nz+1)
-  mu(1:nx+1,1:nz+1) = mmu(1:nx+1,1:nz+1)
-  markers(1:nx+1,1:nz+1)=mmarkers(1:nx+1,1:nz+1)
-  zerodisplacement(1:nx+1,1:nz+1)=zzerodisplacement(1:nx+1,1:nz+1)
-  liquidmarkers(1:nx+1,1:nz+1)=lliquidmarkers(1:nx+1,1:nz+1)
-  !print *, nx,nz
-  !write(12,*) rho(:,:)
-  !write(13,*) lam(:,:)
-  !write(14,*) mmu(1:nx+1,1:nz+1)
-  !stop
-  
-  deallocate(llam)
-  deallocate(rrho)
-  deallocate(mmu)
-  deallocate(mmarkers)
-  deallocate(lliquidmarkers)
-  deallocate(zzerodisplacement)
-end subroutine calstructBC
-
 
  
 
 
-
-
-
-subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
-     e13,e14,e15,e16,e17,e18,e19,e20, &
-     f1, f2, f3, f4, f5, f6, f7, f8, &
-     f13,f14,f15,f16,f17,f18,f19,f20 )
-  implicit none
-  integer maxnz,nx,nz
-  double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
-  double precision dt,dx,dz
-  double precision  e1(maxnz+1,*), e2(maxnz+1,*), e3(maxnz+1,*)
-  double precision  e4(maxnz+1,*), e5(maxnz+1,*), e6(maxnz+1,*)
-  double precision  e7(maxnz+1,*), e8(maxnz+1,*)
-  double precision e13(maxnz+1,*),e14(maxnz+1,*),e15(maxnz+1,*)
-  double precision e16(maxnz+1,*),e17(maxnz+1,*),e18(maxnz+1,*)
-  double precision e19(maxnz+1,*),e20(maxnz+1,*)
-  double precision  f1(maxnz+1,*), f2(maxnz+1,*), f3(maxnz+1,*)
-  double precision  f4(maxnz+1,*), f5(maxnz+1,*), f6(maxnz+1,*)
-  double precision  f7(maxnz+1,*), f8(maxnz+1,*)
-  double precision f13(maxnz+1,*),f14(maxnz+1,*),f15(maxnz+1,*)
-  double precision f16(maxnz+1,*),f17(maxnz+1,*),f18(maxnz+1,*)
-  double precision f19(maxnz+1,*),f20(maxnz+1,*)
-  integer ix,iz
-  double precision dt2,dx2,dz2,dxdz
-
-  ! for smoothed part of the model :
-  !  we use Zahradnik operators and optimally accurate operators
-
-  
-  dt2 = dt * dt
-  dx2 = dx * dx
-  dz2 = dz * dz
-  dxdz = dx * dz
-  
-  do iz=2,nz
-     do ix=2,nx
-        e1(ix,iz) = dt2 / rho(ix,iz) &
-             * ( ( lam(ix-1,iz) + lam(ix,iz) ) &
-             + 2.d0 * ( mu(ix-1,iz) + mu(ix,iz) ) ) &
-             / ( 2.d0 * dx2 )
-        e2(ix,iz) = dt2 / rho(ix,iz) &
-             * ( ( lam(ix,iz) + lam(ix+1,iz) ) &
-             + 2.d0 * ( mu(ix,iz) + mu(ix+1,iz) ) ) &
-             / ( 2.d0 * dx2 )
-        e3(ix,iz) = dt2 / rho(ix,iz) &
-             * ( mu(ix,iz-1) + mu(ix,iz) ) &
-             / ( 2.d0 * dz2 )
-        e4(ix,iz) = dt2 / rho(ix,iz) &
-             * ( mu(ix,iz) + mu(ix,iz+1) ) &
-             / ( 2.d0 * dz2 )
-        e5(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
-             / ( 4.d0 * dxdz )
-        e6(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
-             / ( 4.d0 * dxdz )
-        e7(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
-             / ( 4.d0 * dxdz )
-        e8(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
-             / ( 4.d0 * dxdz )
-        e13(ix,iz) = dt2 / rho(ix,iz) * lam(ix-1,iz) &
-             * ( -5.d0 ) / ( 1728.d0 * dxdz )
-        e14(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-             * ( -3.d0 ) / ( 1728.d0 * dxdz )
-        e15(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
-           * ( +9.d0 ) / ( 1728.d0 * dxdz )
-        if ( ix+2.le.nx+1 ) then
-           e16(ix,iz) = dt2 / rho(ix,iz) * lam(ix+2,iz) &
-                * ( -1.d0 ) / ( 1728.d0 * dxdz )
-        else
-           e16(ix,iz) = 0.d0
-        endif
-        e17(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz-1) &
-             * ( -5.d0 ) / ( 1728.d0 * dxdz )
-        e18(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-             * ( -3.d0 ) / ( 1728.d0 * dxdz )
-        e19(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
-             * ( +9.d0 ) / ( 1728.d0 * dxdz )
-        if ( iz+2.le.nz+1) then
-           e20(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+2) &
-                * ( -1.d0 ) / ( 1728.d0 * dxdz )
-        else
-           e20(ix,iz) = 0.d0
-        endif
-        f1(ix,iz) = dt2 / rho(ix,iz) &
-             * ( mu(ix-1,iz) + mu(ix,iz) ) &
-             / ( 2.d0 * dx2 )
-        f2(ix,iz) = dt2 / rho(ix,iz) &
-             * ( mu(ix,iz) + mu(ix+1,iz) ) &
-             / ( 2.d0 * dx2 )
-        f3(ix,iz) = dt2 / rho(ix,iz) &
-             * ( ( lam(ix,iz-1) + lam(ix,iz) ) &
-             + 2.d0 * ( mu(ix,iz-1) + mu(ix,iz) ) ) &
-             / ( 2.d0 * dz2 )
-        f4(ix,iz) = dt2 / rho(ix,iz) &
-             * ( ( lam(ix,iz) + lam(ix,iz+1) ) &
-           + 2.d0 * ( mu(ix,iz) + mu(ix,iz+1) ) ) &
-           / ( 2.d0 * dz2 )
-        f5(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
-             / ( 4.d0 * dxdz )
-        f6(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
-             / ( 4.d0 * dxdz )
-        f7(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
-             / ( 4.d0 * dxdz )
-        f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
-             / ( 4.d0 * dxdz )
-        if ( ix-2.ge.1 ) then
-           f13(ix,iz) = dt2 / rho(ix,iz) * mu(ix-2,iz) &
-                * (  1.d0 ) / ( 1728.d0 * dxdz )
-        else
-           f13(ix,iz) = 0.d0
-        endif
-        f14(ix,iz) = dt2 / rho(ix,iz) * mu(ix-1,iz) &
-             * ( -9.d0 ) / ( 1728.d0 * dxdz )
-        f15(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz) &
-             * (  3.d0 ) / ( 1728.d0 * dxdz )
-        f16(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
-             * (  5.d0 ) / ( 1728.d0 * dxdz )
-        if ( iz-2.ge.1 ) then
-           f17(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-2) &
-                * (  1.d0 ) / ( 1728.d0 * dxdz )
-        else
-           f17(ix,iz) = 0.d0
-        endif
-        f18(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-1) &
-             * ( -9.d0 ) / ( 1728.d0 * dxdz )
-        f19(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz) &
-             * (  3.d0 ) / ( 1728.d0 * dxdz )
-        f20(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
-             * (  5.d0 ) / ( 1728.d0 * dxdz )
-        
-     enddo
-  enddo
-  
-  return
-end subroutine cales
 
 
 subroutine calf( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
@@ -901,38 +568,6 @@ subroutine calf2( maxnz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
 end subroutine calf2
 
 
-subroutine calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
-  implicit none
-  integer :: maxnz,nx,nz,ix,iz
-  double precision :: ux(1:maxnz,1:maxnz),uz(1:maxnz,1:maxnz)
-  integer :: lmargin(1:2), rmargin(1:2)
-  real(kind(0e0)) :: singleStrainDiagonal(1:maxnz,1:maxnz)
-  double precision :: straintmp
-  double precision, parameter :: onetwelfth = 0.0833333333333333d0
-  
-  integer :: nxstart,nxend,nzstart,nzend
-  ! we calculate only for the box of interest (without absorbing boundaries)
-  ! and we suppose that we have lmargin != 0 and rmargin != 0
-  ! i.e., we use the four-point first derivative operators with one extra point to the left
-
-  nxstart=lmargin(1)+1
-  nxend=nx+1-rmargin(1)
-
-  nzstart=lmargin(2)+1
-  nzend=nz+1-rmargin(2)
-
-  
-  do ix=nxstart,nxend
-     do iz=nzstart,nzend
-        straintmp=0.d0
-        straintmp=(5.d0*ux(ix+1,iz)+3.d0*ux(ix,iz)-9.d0*ux(ix-1,iz)+ux(ix-2,iz))*onetwelfth
-        straintmp=straintmp+(5.d0*uz(ix,iz+1)+3.d0*uz(ix,iz)-9.d0*uz(ix,iz-1)+uz(ix,iz-2))*onetwelfth
-        singleStrainDiagonal(ix,iz)=straintmp
-     enddo
-  enddo
- 
-     
-end subroutine calStrainDiagonal
 
 subroutine calstep( maxnz,nx,nz, &
      e1, e2, e3, e4, e5, e6, e7, e8, &
