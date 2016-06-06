@@ -50,26 +50,12 @@ program multipleSourcesOPT2D
   ! parameters for the wavefield
   integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size
   ! Attention ! nx and nz are modified with absorbing boundaries
-  double precision ux(maxnz+1,maxnz+1),uz(maxnz+1,maxnz+1)
-  double precision ux1(maxnz+1,maxnz+1),ux2(maxnz+1,maxnz+1)
-  double precision uz1(maxnz+1,maxnz+1),uz2(maxnz+1,maxnz+1)
-  double precision  e1(maxnz+1,maxnz+1), e2(maxnz+1,maxnz+1)
-  double precision  e3(maxnz+1,maxnz+1), e4(maxnz+1,maxnz+1)
-  double precision  e5(maxnz+1,maxnz+1), e6(maxnz+1,maxnz+1)
-  double precision  e7(maxnz+1,maxnz+1), e8(maxnz+1,maxnz+1)
-  double precision e13(maxnz+1,maxnz+1),e14(maxnz+1,maxnz+1)
-  double precision e15(maxnz+1,maxnz+1),e16(maxnz+1,maxnz+1)
-  double precision e17(maxnz+1,maxnz+1),e18(maxnz+1,maxnz+1)
-  double precision e19(maxnz+1,maxnz+1),e20(maxnz+1,maxnz+1)
-  double precision  f1(maxnz+1,maxnz+1), f2(maxnz+1,maxnz+1)
-  double precision  f3(maxnz+1,maxnz+1), f4(maxnz+1,maxnz+1)
-  double precision  f5(maxnz+1,maxnz+1), f6(maxnz+1,maxnz+1)
-  double precision  f7(maxnz+1,maxnz+1), f8(maxnz+1,maxnz+1)
-  double precision f13(maxnz+1,maxnz+1),f14(maxnz+1,maxnz+1)
-  double precision f15(maxnz+1,maxnz+1),f16(maxnz+1,maxnz+1)
-  double precision f17(maxnz+1,maxnz+1),f18(maxnz+1,maxnz+1)
-  double precision f19(maxnz+1,maxnz+1),f20(maxnz+1,maxnz+1)
-  double precision work(maxnz+1,32)
+  double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
+  double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
+  double precision, allocatable, dimension(:,:) :: e13,e14,e15,e16,e17,e18,e19,e20
+  double precision, allocatable, dimension(:,:) :: f1,f2,f3,f4,f5,f6,f7,f8
+  double precision, allocatable, dimension(:,:) :: f13,f14,f15,f16,f17,f18,f19,f20
+  double precision, allocatable, dimension(:,:) :: work
 
   ! for discontinuities
 
