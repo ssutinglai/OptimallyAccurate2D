@@ -59,21 +59,20 @@ program multipleSourcesOPT2D
   double precision, allocatable, dimension(:,:) :: work
 
   ! for discontinuities
-
-  double precision, dimension(maxnz+1,maxnz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
-  double precision, dimension(maxnz+1,maxnz+1) :: ff12,ff34,ff56,ff65,ff78,ff87
+  
+  double precision, allocatable, dimension(:,:) :: ee12,ee34,ee56,ee65,ee78,ee87
+  double precision, allocatable, dimension(:,:) :: ff12,ff34,ff56,ff65,ff78,ff87
 
   
   ! parameter for the structure
-  ! double precision rrho(6),llam(6),mmu(6)
-  character(80) :: vpfile, vsfile, rhofile   ! ,modelname
-  double precision :: rho(maxnz+1,maxnz+1)
-  double precision :: lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1)
-  double precision :: fx(maxnz+1,maxnz+1),fz(maxnz+1,maxnz+1)
-  double precision :: vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1)
+  
+  character(80) :: vpfile, vsfile, rhofile   ! modelname
+  double precision, allocatable, dimension(:,:) :: rho,lam,mu,fx,fz,vs,vp
   double precision :: cp ! maxvalue of vp
   
-  double precision Courant_number
+  double precision :: Courant_number
+
+  
   ! parameter for the receiver
   integer, parameter :: maxReceiver = nReceiver ! number of receivers
   integer :: ir,j
@@ -228,6 +227,17 @@ program multipleSourcesOPT2D
   allocate(f17(maxnx+1,maxnz+1),f18(maxnx+1,maxnz+1))
   allocate(f19(maxnx+1,maxnz+1),f20(maxnx+1,maxnz+1))
   allocate(work(maxnz+1,32)) ! NF, is it nz or nx ??
+  
+  allocate(ee12(maxnx+1,maxnz+1),ee34(maxnx+1,maxnz+1),ee56(maxnx+1,maxnz+1))
+  allocate(ee65(maxnx+1,maxnz+1),ee78(maxnx+1,maxnz+1),ee87(maxnx+1,maxnz+1))
+  allocate(ff12(maxnx+1,maxnz+1),ff34(maxnx+1,maxnz+1),ff56(maxnx+1,maxnz+1))
+  allocate(ff65(maxnx+1,maxnz+1),ff78(maxnx+1,maxnz+1),ff87(maxnx+1,maxnz+1))
+
+  allocate(rho(maxnx+1,maxnz+1))
+  allocate(lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1))
+  allocate(fx(maxnz+1,maxnz+1),fz(maxnz+1,maxnz+1))
+  allocate(vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1))
+  
 
 
   ! Discontinuity configuration
@@ -1059,7 +1069,7 @@ subroutine cales( maxnz,nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8
      e13,e14,e15,e16,e17,e18,e19,e20, &
      f1, f2, f3, f4, f5, f6, f7, f8, &
      f13,f14,f15,f16,f17,f18,f19,f20 )
-  
+  implicit none
   integer maxnz,nx,nz
   double precision rho(maxnz+1,*),lam(maxnz+1,*),mu(maxnz+1,*)
   double precision dt,dx,dz
