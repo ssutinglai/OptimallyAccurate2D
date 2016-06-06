@@ -12,366 +12,24 @@ program multipleSourcesOPT2D
   !  
   !                                          cleaning : 2016.6. N. Fuji   
 
-
+  use parameters
   implicit none
-  character(120) :: filename
-  integer :: tmpint
-  character(80) :: modelname,vpmodel,vsmodel,rhomodel
+
+  ! Cerjan boundary
+  lmargin(1)=NPOINTS_PML
+  rmargin(1)=NPOINTS_PML
+  lmargin(2)=NPOINTS_PML
+  rmargin(2)=NPOINTS_PML
+
+  call paramMultiReader
   
-  integer, parameter :: times = 1 ! this can make the dx,dz,dt finer  
-
-  ! switch OPT / CONV
-  logical :: optimise
-
-  ! switch video
-  logical, parameter :: videoornot = .true.
-
-  ! writing strains
-  logical, parameter :: writingStrain = .true.
-  integer :: iReceiverStart,iReceiverInterval,nReceiver
-  integer, allocatable :: nrx(:),nrz(:) ! Receiver positions
-
-
-  integer :: iSourceStart,iSourceInterval,nSource
-  integer, allocatable, dimension(:) :: iisx, iisz
-
-  integer :: iSource, iReceiver
-
-  integer, parameter :: maxnz = 600 * times
-  integer, parameter :: maxnx = maxnz ! for the moment (and NF will verify all so that we can allocate those)
-  integer, parameter :: maxnt = 3000 * times
-  double precision, parameter :: pi=3.1415926535897932d0 
-  double precision, parameter :: ZERO = 0.d0
-    
+  call vectorAllocate
   
-  ! parameters for the gridding
-  double precision dt,dx,dz
-  ! parameters for the wavefield
-  integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size
-  ! Attention ! nx and nz are modified with absorbing boundaries
-  double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
-  double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
-  double precision, allocatable, dimension(:,:) :: e13,e14,e15,e16,e17,e18,e19,e20
-  double precision, allocatable, dimension(:,:) :: f1,f2,f3,f4,f5,f6,f7,f8
-  double precision, allocatable, dimension(:,:) :: f13,f14,f15,f16,f17,f18,f19,f20
-  double precision, allocatable, dimension(:,:) :: work
-
-  ! for discontinuities
+  call disconConfig ! discontinuity configuration
   
-  double precision, allocatable, dimension(:,:) :: ee12,ee34,ee56,ee65,ee78,ee87
-  double precision, allocatable, dimension(:,:) :: ff12,ff34,ff56,ff65,ff78,ff87
-
-  
-  ! parameter for the structure
-  
-  character(80) :: vpfile, vsfile, rhofile   ! modelname
-  double precision, allocatable, dimension(:,:) :: rho,lam,mu,fx,fz,vs,vp
-
-  ! Courant number
-  double precision :: cp ! maxvalue of vp
-  double precision :: Courant_number
-
-  
-  ! parameter for the receiver
-  integer :: ir,j
-  real, allocatable, dimension(:,:) :: synx,synz
-  real, allocatable, dimension(:) :: time
-  character(200) :: outfile
- 
-  
-  ! parameter for the waveform
-  double precision t
-  !parameter for video  
-  real, allocatable, dimension(:,:) :: video
-  real, allocatable, dimension(:,:) :: snapux,snapuz
-  integer, parameter :: IT_DISPLAY = 10
- 
-  integer(2) head(1:120)
-  character(80) :: routine
-  
-  logical,parameter :: dummylog = .false.
-
-  ! switch C-PML 
-  logical, parameter :: USE_PML_XMIN = .true.
-  logical, parameter :: USE_PML_XMAX = .true.
-  logical, parameter :: USE_PML_YMIN = .true.
-  logical, parameter :: USE_PML_YMAX = .true.
-  ! thickness of the PML layer in grid points
-  integer, parameter :: NPOINTS_PML = 100*times
-  double precision, parameter :: CerjanRate = 0.0015
-  double precision :: weightBC(maxnz+1,maxnz+1)
-  ! Cerjan boundary condition
-  integer :: lmargin(1:2),rmargin(1:2)
-  
-
-  ! Ricker wavelets source
-  double precision f0,t0
-  !double precision tp,ts
-
-
-  ! for evolution of total energy in the medium
-  double precision epsilon_xx,epsilon_yy,epsilon_xy
-  double precision, dimension(maxnt+1) :: total_energy_kinetic,total_energy_potential
-  
-  ! power to compute d0 profile
-  double precision, parameter :: NPOWER = 2.d0
-
-  double precision, parameter :: K_MAX_PML = 1.d0 ! from Gedney page 8.11
-  double precision :: ALPHA_MAX_PML
-
-  ! for water
-  
-  integer :: liquidmarkers(maxnz+1,maxnz+1)
-
-  ! for discontinuities
-
-  integer :: markers(maxnz+1,maxnz+1)
-  integer :: nDiscon ! number of discontinuities
-  integer :: lengthDiscon ! with x,z coordinates
-  double precision, allocatable :: dscr(:,:,:) ! discontinuity coordinates
-  double precision :: tmpvaluex,tmpvaluez
-
-  ! for free surface
-  integer :: zerodisplacement(maxnz+1,maxnz+1)
-  integer :: lengthFreeSurface ! with x,z coordinates
-  double precision, allocatable :: free(:,:)
- 
-  
-
-  ! for waveform inversion
-  
-  real(kind(0e0)) :: singleStrainDiagonal(maxnz+1,maxnz+1)
-  real(kind(0e0)), allocatable:: tmpsingleStrain(:,:)
-
-  
-  character(140) :: commandline
-  
-  
-
-
-
-
-  ! Reading Inf File
-110 format(a80)
-  read(5,110) modelname
-  read(5,110) vpmodel
-  read(5,110) vsmodel
-  read(5,110) rhomodel
-  read(5,'(L1)') optimise
-  read(5,*) iSourceStart,iSourceInterval,nSource
-  read(5,*) iReceiverStart,iReceiverInterval,nReceiver
- 
-  call system('mkdir ./inffile')
-   
-  commandline="mkdir synthetics"
-  call system(commandline)
-  commandline="mkdir snapshots"
-  call system(commandline)
-  commandline="mkdir videos"
-  call system(commandline)
-  commandline="mkdir synthetics/"//trim(modelname)
-  call system(commandline)
-  commandline="mkdir videos/"//trim(modelname)
-  call system(commandline)
-  commandline="mkdir strains"
-  call system(commandline)
-  commandline="mkdir strains/"//trim(modelname)
-  call system(commandline)
-
-
-  vpfile=vpmodel
-  vsfile=vsmodel
-  rhofile=rhomodel
-
-  nt=2000*times
-  nx=399*times
-  nz=199*times
-  dt=2.d-3/dble(times)
-  dx=2.d-2/dble(times)
-  dz=2.d-2/dble(times)
-  
-  f0=6.5d0
-  t0=2.d-1
-
-  allocate(tmpsingleStrain(1:nx+1,1:nz+1))
-
-
-
-
-
-  ! Array allocation
-
-  allocate(nrx(1:nReceiver)) ! receivers
-  allocate(nrz(1:nReceiver))
-  allocate(iisx(1:nSource)) ! Sources
-  allocate(iisz(1:nSource))
-
-
-  allocate(ux(maxnx+1,maxnz+1),uz(maxnx+1,maxnz+1))
-  allocate(ux1(maxnx+1,maxnz+1),ux2(maxnx+1,maxnz+1))
-  allocate(uz1(maxnx+1,maxnz+1),uz2(maxnx+1,maxnz+1))
-  allocate(e1(maxnx+1,maxnz+1), e2(maxnx+1,maxnz+1))
-  allocate(e3(maxnx+1,maxnz+1), e4(maxnx+1,maxnz+1))
-  allocate(e5(maxnx+1,maxnz+1), e6(maxnx+1,maxnz+1))
-  allocate(e7(maxnx+1,maxnz+1), e8(maxnx+1,maxnz+1))
-  allocate(e13(maxnx+1,maxnz+1),e14(maxnx+1,maxnz+1))
-  allocate(e15(maxnx+1,maxnz+1),e16(maxnx+1,maxnz+1))
-  allocate(e17(maxnx+1,maxnz+1),e18(maxnx+1,maxnz+1))
-  allocate(e19(maxnx+1,maxnz+1),e20(maxnx+1,maxnz+1))
-  allocate(f1(maxnx+1,maxnz+1), f2(maxnx+1,maxnz+1))
-  allocate(f3(maxnx+1,maxnz+1), f4(maxnx+1,maxnz+1))
-  allocate(f5(maxnx+1,maxnz+1), f6(maxnx+1,maxnz+1))
-  allocate(f7(maxnx+1,maxnz+1), f8(maxnx+1,maxnz+1))
-  allocate(f13(maxnx+1,maxnz+1),f14(maxnx+1,maxnz+1))
-  allocate(f15(maxnx+1,maxnz+1),f16(maxnx+1,maxnz+1))
-  allocate(f17(maxnx+1,maxnz+1),f18(maxnx+1,maxnz+1))
-  allocate(f19(maxnx+1,maxnz+1),f20(maxnx+1,maxnz+1))
-  allocate(work(maxnz+1,32)) ! NF, is it nz or nx ??
-  
-  allocate(ee12(maxnx+1,maxnz+1),ee34(maxnx+1,maxnz+1),ee56(maxnx+1,maxnz+1))
-  allocate(ee65(maxnx+1,maxnz+1),ee78(maxnx+1,maxnz+1),ee87(maxnx+1,maxnz+1))
-  allocate(ff12(maxnx+1,maxnz+1),ff34(maxnx+1,maxnz+1),ff56(maxnx+1,maxnz+1))
-  allocate(ff65(maxnx+1,maxnz+1),ff78(maxnx+1,maxnz+1),ff87(maxnx+1,maxnz+1))
-
-  allocate(rho(maxnx+1,maxnz+1))
-  allocate(lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1))
-  allocate(fx(maxnz+1,maxnz+1),fz(maxnz+1,maxnz+1))
-  allocate(vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1))
-  
-  
-  allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
-
-  allocate(video(maxnx+1,maxnz+1))
-
-  allocate(snapux(maxnx+1,maxnz+1),snapuz(maxnx+1,maxnz+1))
-  
-
-  ! Discontinuity configuration
-
-
-  ! diagonal discontinuity
-  nDiscon = 0
-
-
-  if(1.eq.0) then
-  
-  nDiscon = 1
-  lengthDiscon = 40*nx+1
-  
-  if(nDiscon.ne.0) then
-     allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
-     do ix =1,lengthDiscon
-        dscr(1,ix,1) = dble(ix-1)*dx/40.d0
-        dscr(2,ix,1) = 199.d0*dble(times)*dz-dscr(1,ix,1)*199.d0/399.d0
-     enddo
-  endif
-  markers(1:maxnz,1:maxnz) = 0
-  markers(1:nx+1,1:nz+1) = 1 ! for the moment NF will search for all the points (of course it is not good)
-
-  markers(1:maxnz,1:maxnz) = 0
-  do ix = 1,nx+1
-     tmpint=nint(199.d0-dble(ix-1)*199.d0/399.d0)
-     if(tmpint-3.ge.1) then
-        markers(ix,tmpint-3:tmpint+3) = 1
-     else if(tmpint-2.ge.1) then
-        markers(ix,tmpint-2:tmpint+3) = 1
-     else
-        markers(ix,1:tmpint+3) = 1
-     endif
-  enddo
- 
-  endif
-
-  ! Circle discontinuity
-  
-  if(1.eq.0) then
-     
-     nDiscon = 2
-     lengthDiscon = 40*100+1
-     
-     if(nDiscon.ne.0) then
-        allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
-        do ix =1,lengthDiscon
-           dscr(1,ix,1) = 99.d0*dx+dble(ix-1)*dx/40.d0
-           dscr(1,ix,2) = dscr(1,ix,1)
-           dscr(2,ix,1) = 99.d0+sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-dx*149.d0)**2)
-           !dscr(2,ix,1) = 99.d0
-           dscr(2,ix,2) = 99.d0-sqrt(2500.d0*dx**2-(dble(ix-1)*dx/40.d0-dx*149.d0)**2)
-        enddo
-     endif
-     markers(1:nx+1,1:nz+1)=1
-  endif
-
-
-  ! Oleg discontinuties
-
-  if(0.eq.1) then
-     nDiscon=1
-     lengthDiscon = 160000
-     allocate(dscr(1:2,1:lengthDiscon,1:nDiscon))
-     open(1, file='grid_x_Oleg.txt')
-     do ix = 1,400
-        read(1,*)  dscr(1,400*(ix-1)+1:400*ix,1)
-     enddo
-!123  format(400(F.2,1x))
-     close(1)
-     open(1, file='grid_y_Oleg.txt')
-     do ix = 1,400
-        read(1,*)  dscr(2,400*(ix-1)+1:400*ix,1)
-     enddo
-     close(1)
-     
-
-
-  endif
-  
-  ! Receiver position
-
-
-  do iReceiver = 1, nReceiver
-     nrx(iReceiver)=(iReceiverStart-1)*times+1+iReceiverInterval*times*(iReceiver-1)
-     nrz(iReceiver)=(130-1)*times+1
-  enddo
-  
-  do iSource = 1, nSource
-     iisx(iSource)=(iSourceStart-1)*times+1+iSourceInterval*times*(iSource-1)
-     iisz(iSource)=(100-1)*times+1
-     write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
-     do j=1, 12
-        if(filename(j:j).eq.' ') filename(j:j)='0'
-     enddo
-    filename= './inffile/'//trim(modelname)//'.'//filename
-    
-       
-
-     open(1, file=filename, form='formatted')
-     write(1,'(a)') 'c grids'
-     write(1,*) nt, nx, nz
-     write(1,*) dt, dx, dz
-     write(1,'(a)') 'c modelname'
-     write(1,'(a)') trim(modelname)
-     write(1,'(a)') trim(vpmodel)
-     write(1,'(a)') trim(vsmodel)
-     write(1,'(a)') trim(rhomodel)
-
-     write(1,'(a)') 'c source position (in grids) '
-     write(1,*) iisx(iSource),iisz(iSource)
-     write(1,'(a)') 'c source time function (Ricker wavelet)'
-     write(1,*) f0,t0     
-     write(1,'(a)') 'c receivers information'
-     write(1,*) nReceiver
-     do iReceiver = 1, nReceiver
-        write(1,*) nrx(iReceiver), nrz(iReceiver)
-     enddo
-     
-
-     !write(1,*) 'c'
-     write(1,'(a)') 'end'     
-  enddo
-
+  call ReceiverSourcePositions 
 
   !!!! for each source we calculate synthetics
-
   
   !computing the intermediate parameters
   
@@ -379,42 +37,14 @@ program multipleSourcesOPT2D
   call calstruct( maxnz,vpfile,dx,dz,nx,nz,vp)
   call calstruct( maxnz,vsfile,dx,dz,nx,nz,vs )
     
-    
-
-  ! Free surface configuration
-
-  lengthFreeSurface = 0
-  if(lengthFreeSurface.ne.0) then
-     allocate(free(1:2,1:lengthFreeSurface))
-     do ix=1,lengthFreeSurface
-        free(1,ix) = dble(ix-1)*dx/40.d0
-        free(2,ix) = 5.d-1+3.d-1*sin(free(1,ix)/(dble(nx)*dx)*pi*4)
-     enddo
-     zerodisplacement(1:maxnz,1:maxnz)=0
-     do ix=1,nx+1
-        tmpint=nint((5.d-1+3.d-1*sin((dble(ix-1)*dx)/(dble(nx)*dx)*pi*4))/dx)
-        zerodisplacement(ix,1:tmpint) = 1
-        vp(ix,1:tmpint)=0.d0
-        vs(ix,1:tmpint)=0.d0
-     enddo
-
-     
-  endif
+  call freeConfig
   
-
-  
-
   lam = 0.d0
   mu = 0.d0
   !call datainit( maxnz,maxnz,lam )
   !call datainit( maxnz,maxnz,mu )
      
-  ! Cerjan boundary
-  
-  lmargin(1)=NPOINTS_PML
-  rmargin(1)=NPOINTS_PML
-  lmargin(2)=NPOINTS_PML
-  rmargin(2)=NPOINTS_PML
+
   
   liquidmarkers = 0
 
@@ -671,7 +301,7 @@ program multipleSourcesOPT2D
         ! calculating strains
         
         
-        if(writingStrain) then
+        if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
            singleStrainDiagonal=0.e0
            tmpsingleStrain=0.e0
            call calStrainDiagonal(maxnz,nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
