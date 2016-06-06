@@ -221,6 +221,28 @@ program multipleSourcesOPT2D
   allocate(iisz(1:maxnSource))
 
 
+  allocate(ux(maxnx+1,maxnz+1),uz(maxnx+1,maxnz+1))
+  allocate(ux1(maxnx+1,maxnz+1),ux2(maxnx+1,maxnz+1))
+  allocate(uz1(maxnx+1,maxnz+1),uz2(maxnx+1,maxnz+1))
+  allocate(e1(maxnx+1,maxnz+1), e2(maxnx+1,maxnz+1))
+  allocate(e3(maxnx+1,maxnz+1), e4(maxnx+1,maxnz+1))
+  allocate(e5(maxnx+1,maxnz+1), e6(maxnx+1,maxnz+1))
+  allocate(e7(maxnx+1,maxnz+1), e8(maxnx+1,maxnz+1))
+  allocate(e13(maxnx+1,maxnz+1),e14(maxnx+1,maxnz+1))
+  allocate(e15(maxnx+1,maxnz+1),e16(maxnx+1,maxnz+1))
+  allocate(e17(maxnx+1,maxnz+1),e18(maxnx+1,maxnz+1))
+  allocate(e19(maxnx+1,maxnz+1),e20(maxnx+1,maxnz+1))
+  allocate(f1(maxnx+1,maxnz+1), f2(maxnx+1,maxnz+1))
+  allocate(f3(maxnx+1,maxnz+1), f4(maxnx+1,maxnz+1))
+  allocate(f5(maxnx+1,maxnz+1), f6(maxnx+1,maxnz+1))
+  allocate(f7(maxnx+1,maxnz+1), f8(maxnx+1,maxnz+1))
+  allocate(f13(maxnx+1,maxnz+1),f14(maxnx+1,maxnz+1))
+  allocate(f15(maxnx+1,maxnz+1),f16(maxnx+1,maxnz+1))
+  allocate(f17(maxnx+1,maxnz+1),f18(maxnx+1,maxnz+1))
+  allocate(f19(maxnx+1,maxnz+1),f20(maxnx+1,maxnz+1))
+  allocate(work(maxnz+1,32)) ! NF, is it nz or nx ??
+
+
   ! Discontinuity configuration
 
 
