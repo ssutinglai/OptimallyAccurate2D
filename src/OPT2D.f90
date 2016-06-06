@@ -68,16 +68,18 @@ program multipleSourcesOPT2D
   
   character(80) :: vpfile, vsfile, rhofile   ! modelname
   double precision, allocatable, dimension(:,:) :: rho,lam,mu,fx,fz,vs,vp
+
+  ! Courant number
   double precision :: cp ! maxvalue of vp
-  
   double precision :: Courant_number
 
   
   ! parameter for the receiver
   integer, parameter :: maxReceiver = nReceiver ! number of receivers
   integer :: ir,j
-  real :: synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)
-  real :: video(maxnz+1,maxnz+1)
+  real, allocatable, dimension(:,:) :: synx,synz
+  real, allocatable, dimension(:) :: time
+  real, allocatable, dimension(:,:) :: video
   character(200) :: outfile
  
   
@@ -238,7 +240,10 @@ program multipleSourcesOPT2D
   allocate(fx(maxnz+1,maxnz+1),fz(maxnz+1,maxnz+1))
   allocate(vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1))
   
+  
+  allocate(synx(0:maxnt,1:maxReceiver),synz(0:maxnt,1:maxReceiver),time(0:maxnt)) ! synthetics
 
+  allocate(video(maxnx+1,maxnz+1))
 
   ! Discontinuity configuration
 
