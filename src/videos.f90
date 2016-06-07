@@ -60,7 +60,7 @@ subroutine create_color_image(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_r
         
         !       define data as vector component normalized to [-1:1] and rounded to nearest integer
         !       keeping in mind that amplitude can be negative
-        normalized_value = image_data_2D(ix,iy) / max_amplitude * 1.5d0
+        normalized_value = image_data_2D(ix,iy) / max_amplitude *1.5d0
         
         !       suppress values that are outside [-1:+1] to avoid small edge effects
         if(normalized_value < -1.d0) normalized_value = -1.d0
@@ -219,7 +219,7 @@ subroutine create_color_kernel(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_
         
         !       define data as vector component normalized to [-1:1] and rounded to nearest integer
         !       keeping in mind that amplitude can be negative
-        normalized_value = image_data_2D(ix,iy) / max_amplitude * 1.5d0
+        normalized_value = image_data_2D(ix,iy) / max_amplitude 
         
         !       suppress values that are outside [-1:+1] to avoid small edge effects
         if(normalized_value < -1.d0) normalized_value = -1.d0

@@ -30,7 +30,7 @@ program frechetKernel
      time(it)=dt*dble(it)
   enddo
 
-  recl_size=kind(1.0)*(nx+1)*(nz+1)
+  recl_size=kind(1.e0)*(nx+1)*(nz+1)
   
   do it = 0,nt,IT_DISPLAY
 
@@ -38,9 +38,12 @@ program frechetKernel
      
      do it1 = 0,nt,IT_DISPLAY
      
-        it2 = it1+it
+        !it2 = nt-it1+it
         
+        it2=it1
+
         if(it2.gt.nt) cycle
+        if(it2.lt.0) cycle
 
         if(optimise) then
            write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it1,isx1,isz1
@@ -53,11 +56,10 @@ program frechetKernel
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        read(1,rec=1) singleStrainForward
+        read(1,rec=1) singleStrainForward(1:nx+1,1:nz+1)
         
         StrainForward(:,:) = singleStrainForward(:,:)
         
-  
         
         if(optimise) then
            write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it2,isx2,isz2
@@ -74,14 +76,18 @@ program frechetKernel
         
         StrainBack(:,:) = singleStrainBack(:,:)
 
-        kernelP= kernelP+IT_DISPLAY*dble(dt)*(StrainForward*StrainBack)
-
+        !kernelP= kernelP+IT_DISPLAY*dble(dt)*(StrainForward*StrainBack)
+        ! NF for debugging
+        if(videoornot) then
+           call create_color_kernel(StrainBack,nx,nz,it2,isx1,isz1,iisx(2:2),iisz(2:2),1,2,1.d-3)
+           
+        endif
      enddo   
+     stop
      
-
      
      if(videoornot) then
-        call create_color_kernel(kernelP,nx,nz,it,isx1,isz1,iisx(2:2),iisz(2:2),1,2,1.d-5)
+        call create_color_kernel(kernelP,nx,nz,it,isx1,isz1,iisx(2:2),iisz(2:2),1,2,1.d-4)
         
      endif
      
