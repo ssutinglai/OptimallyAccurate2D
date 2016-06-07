@@ -6,7 +6,7 @@ T optimise or conventional
 T video or not
 T writingStrain
 10 IT_DISPLAY
-20 20 1  iSourceStart, iSourceInverval, nSource
+20 360 2  iSourceStart, iSourceInverval, nSource
 1 izSourceStart
 20 20 20 iReceiverStart, iReceiverInterval, nReceiver
 1 izReceiverStart

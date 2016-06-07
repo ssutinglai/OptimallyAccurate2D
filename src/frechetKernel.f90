@@ -17,18 +17,18 @@ program frechetKernel
   use paramFrechet
   implicit none
 
-  call paramMultiReader
+  call paramFrechetReader
+  call vectorAllocateFrechet
+  call ReceiverSourcePositions
 
-  ! nx and nz here are not considering boundary conditions
-  allocate(singleStrainForward(1:nx+1,1:nz+1))
-  allocate(singleStrainBack(1:nx+1,1:nz+1))
-  allocate(strainForward(1:nx+1,1:nz+1))
-  allocate(strainBack(1:nx+1,1:nz+1))
+  isx1 = iisx(i1Source)
+  isz1 = iisz(i1Source)
+  isx2 = iisx(i2Source)
+  isz2 = iisz(i2Source)
 
-  
-  
-  t=0.d0
-  time(0)=t
+  do it = 0, nt
+     time(it)=dt*dble(it)
+  enddo
   
   do it = 0, nt
      if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
@@ -43,8 +43,12 @@ program frechetKernel
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        read(1,rec=1) tmpsingleStrain
+        read(1,rec=1) singleStrain
         
+        
+        
+     endif
+
   enddo
 
 

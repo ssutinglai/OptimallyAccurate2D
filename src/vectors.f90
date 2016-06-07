@@ -61,6 +61,37 @@ subroutine vectorAllocate
 end subroutine vectorAllocate
 
 
+subroutine vectorAllocateFrechet
+  use paramFrechet
+  implicit none
+  
+  ! For Frechet calculation, we don't need to think about absorbing boundaries
+  maxnx=nx
+  maxnz=nz
+
+  ! Array allocation
+
+  allocate(nrx(1:nReceiver)) ! receivers
+  allocate(nrz(1:nReceiver))
+  allocate(iisx(1:nSource)) ! Sources
+  allocate(iisz(1:nSource))
+  
+  ! nx and nz here are not considering boundary conditions
+  allocate(singleStrainForward(1:nx+1,1:nz+1))
+  allocate(singleStrainBack(1:nx+1,1:nz+1))
+  allocate(strainForward(1:nx+1,1:nz+1))
+  allocate(strainBack(1:nx+1,1:nz+1))
+
+  allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
+
+  allocate(video(maxnx+1,maxnz+1))
+
+  allocate(snapux(maxnx+1,maxnz+1),snapuz(maxnx+1,maxnz+1))
+  
+end subroutine vectorAllocate
+
+
+
 
 subroutine calStrainDiagonal(nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
   implicit none
