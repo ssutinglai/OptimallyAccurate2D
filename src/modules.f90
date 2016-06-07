@@ -132,7 +132,7 @@ module parameters
   real(kind(0e0)), allocatable, dimension(:,:):: singleStrainDiagonal,tmpsingleStrain
 
   
-  character(240) :: commandline
+  character(340) :: commandline
   
 
   
