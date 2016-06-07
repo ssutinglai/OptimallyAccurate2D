@@ -399,11 +399,13 @@ program multipleSourcesOPT2D
         
         
         commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
+
+        call system(commandline)
      
      endif
      
      
-     call system(commandline)
+
   
   
      do ir = 1,nReceiver

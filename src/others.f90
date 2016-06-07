@@ -102,6 +102,8 @@ subroutine paramFrechetReader
   call system(commandline)
   commandline="mkdir snapshots"
   call system(commandline)
+  commandline="mkdir kernelsnapshots" ! we need kernelsnapshots folders too
+  call system(commandline)
   commandline="mkdir videos"
   call system(commandline)
   commandline="mkdir synthetics/"//trim(modelname)

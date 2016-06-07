@@ -77,12 +77,37 @@ program frechetKernel
         kernelP= kernelP+IT_DISPLAY*dble(dt)*(StrainForward*StrainBack)
 
      enddo   
-     singleKernelP = kernelP
-
      
+     if(videoornot) then
+        call create_color_kernel(kernelP,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_rec,nrec, field_number,1.d-5)
+        
+     endif
      
   enddo
+  
+  if(videoornot) then
+     
+     if(optimise) then
+        write(outfile,'("frechet",".",I5,".",I5,".",I5,".",I5,".OPT.mp4") ') isx1,isz1,isx2,isz2
+     else
+        write(outfile,'("frechet",".",I5,".",I5,".",I5,".",I5,".CON.mp4") ') isx1,isz1,isx2,isz2
+     endif
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './videos/'//trim(modelname)//'/'//outfile
+     
+     
+     commandline="ffmpeg -framerate 5 -pattern_type glob -i 'kernelsnapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//outfile
+     
+     call system(commandline)
+     
+  endif
+  
+     
+
 
 
 end program frechetKernel
-  
+
