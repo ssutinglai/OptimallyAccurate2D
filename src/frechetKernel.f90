@@ -81,7 +81,7 @@ program frechetKernel
 
      
      if(videoornot) then
-        call create_color_kernel(kernelP,nx,nz,it,isx1,isz1,iisx(2:2),iisz(2:2),1, field_number,1.d-5)
+        call create_color_kernel(kernelP,nx,nz,it,isx1,isz1,iisx(2:2),iisz(2:2),1,2,1.d-5)
         
      endif
      
