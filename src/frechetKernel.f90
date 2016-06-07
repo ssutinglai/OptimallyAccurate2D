@@ -29,6 +29,8 @@ program frechetKernel
   do it = 0, nt
      time(it)=dt*dble(it)
   enddo
+
+  
   
   do it = 0, nt
      if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
@@ -43,7 +45,7 @@ program frechetKernel
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        read(1,rec=1) singleStrain
+        read(1,rec=1) singleStrainForward
         
         
         

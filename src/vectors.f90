@@ -63,6 +63,7 @@ end subroutine vectorAllocate
 
 subroutine vectorAllocateFrechet
   use paramFrechet
+  use parameters
   implicit none
   
   ! For Frechet calculation, we don't need to think about absorbing boundaries
@@ -81,6 +82,10 @@ subroutine vectorAllocateFrechet
   allocate(singleStrainBack(1:nx+1,1:nz+1))
   allocate(strainForward(1:nx+1,1:nz+1))
   allocate(strainBack(1:nx+1,1:nz+1))
+  
+  allocate(kernelP(1:nx+1,1:nz+1))
+  allocate(kernelS(1:nx+1,1:nz+1))
+
 
   allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
 
@@ -88,7 +93,7 @@ subroutine vectorAllocateFrechet
 
   allocate(snapux(maxnx+1,maxnz+1),snapuz(maxnx+1,maxnz+1))
   
-end subroutine vectorAllocate
+end subroutine vectorAllocateFrechet
 
 
 

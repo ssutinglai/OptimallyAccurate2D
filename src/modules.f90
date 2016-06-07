@@ -144,9 +144,9 @@ module paramFrechet
   
   implicit none
   integer :: i1Source, i2Source ! 2 sources for cross correlations
-  integer :: isx1,isx2,isz1,isz2
+  integer :: isx1,isx2,isz1,isz2,it1,it2
   real, allocatable, dimension(:,:) :: singleStrainForward,singleStrainBack
   double precision, allocatable, dimension (:,:) :: strainForward,strainBack
- 
+  double precision, allocatable, dimension (:,:) :: kernelP,kernelS
   
 end module paramFrechet
