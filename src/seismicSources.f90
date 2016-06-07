@@ -60,7 +60,7 @@ subroutine calf2(nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
   endif
 
   !NF for point source
-  fx(isx,isx)=0.d0
+  fx(isx,isz)=0.d0
   
   return
 end subroutine calf2

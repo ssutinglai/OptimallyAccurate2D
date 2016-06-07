@@ -30,14 +30,22 @@ program frechetKernel
      time(it)=dt*dble(it)
   enddo
 
+  recl_size=kind(1.0)*(nx+1)*(nz+1)
   
-  
-  do it = 0, nt
-     if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
+  do it = 0,nt,IT_DISPLAY
+
+     kernelP = 0.d0
+     
+     do it1 = 0,nt,IT_DISPLAY
+     
+        it2 = it1+it
+        
+        if(it2.gt.nt) cycle
+
         if(optimise) then
-           write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it1,isx1,isz1
         else
-           write(outfile,'("strain",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           write(outfile,'("strain",I5,".",I5,".",I5,".CON_dat") ') it1,isx1,isz1
         endif
         do j=1,24
            if(outfile(j:j).eq.' ') outfile(j:j)='0'
@@ -47,10 +55,32 @@ program frechetKernel
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
         read(1,rec=1) singleStrainForward
         
+        StrainForward(:,:) = singleStrainForward(:,:)
         
+  
         
-     endif
+        if(optimise) then
+           write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it2,isx2,isz2
+        else
+           write(outfile,'("strain",I5,".",I5,".",I5,".CON_dat") ') it2,isx2,isz2
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './strains/'//trim(modelname)//'/'//outfile
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        read(1,rec=1) singleStrainBack
+        
+        StrainBack(:,:) = singleStrainBack(:,:)
 
+        kernelP= kernelP+IT_DISPLAY*dble(dt)*(StrainForward*StrainBack)
+
+     enddo   
+     singleKernelP = kernelP
+
+     
+     
   enddo
 
 

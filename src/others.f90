@@ -177,7 +177,7 @@ subroutine calstruct( maxnx,maxnz,file2d, nx,nz,rho )
   double precision x,z,xmax,zmax,trho,coef1,coef2
   integer recl_size
   character*80 file2d
-  recl_size=kind(1.0)*(nx+1)*(nz+1)
+  recl_size=kind(1.e0)*(nx+1)*(nz+1)
   
   allocate(rrho(1:nx+1,1:nz+1))
   open (1,file=file2d,form='unformatted',access='direct',recl=recl_size)

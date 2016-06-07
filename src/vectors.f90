@@ -36,9 +36,9 @@ subroutine vectorAllocate
   allocate(ff65(maxnx+1,maxnz+1),ff78(maxnx+1,maxnz+1),ff87(maxnx+1,maxnz+1))
 
   allocate(rho(maxnx+1,maxnz+1))
-  allocate(lam(maxnz+1,maxnz+1),mu(maxnz+1,maxnz+1))
-  allocate(fx(maxnz+1,maxnz+1),fz(maxnz+1,maxnz+1))
-  allocate(vs(maxnz+1,maxnz+1),vp(maxnz+1,maxnz+1))
+  allocate(lam(maxnx+1,maxnz+1),mu(maxnx+1,maxnz+1))
+  allocate(fx(maxnx+1,maxnz+1),fz(maxnx+1,maxnz+1))
+  allocate(vs(maxnx+1,maxnz+1),vp(maxnx+1,maxnz+1))
   
   
   allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
@@ -85,7 +85,9 @@ subroutine vectorAllocateFrechet
   
   allocate(kernelP(1:nx+1,1:nz+1))
   allocate(kernelS(1:nx+1,1:nz+1))
-
+  allocate(singleKernelP(1:nx+1,1:nz+1))
+  allocate(singleKernelS(1:nx+1,1:nz+1))
+  
 
   allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
 

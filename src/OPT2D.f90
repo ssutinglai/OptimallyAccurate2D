@@ -153,16 +153,16 @@ program multipleSourcesOPT2D
      ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
      
      ! Initializing the data
-     call datainit( maxnz,maxnz,ux )
-     call datainit( maxnz,maxnz,uz )
-     call datainit( maxnz,maxnz,ux1 )
-     call datainit( maxnz,maxnz,uz1 )
-     call datainit( maxnz,maxnz,ux2 )
-     call datainit( maxnz,maxnz,uz2 )
+
+     ux=0.d0
+     uz=0.d0
+     ux1=0.d0
+     uz1=0.d0
+     ux2=0.d0
+     uz2=0.d0
+     work=0.d0
      
 
-     call datainit( maxnz,31,work )
-     
      
  
      ! R. Courant et K. O. Friedrichs et H. Lewy (1928)
@@ -172,17 +172,10 @@ program multipleSourcesOPT2D
      
      
 
-
-     
-     call datainit( maxnz,maxnz,fx)
-     call datainit( maxnz,maxnz,fz)
+     fx=0.d0
+     fz=0.d0
      
 
-     ! ist = dnint( 2 * tp / dt )
-     ! isx = nx / 2 + 1
-     ! isz = nz / 2 + 1
-     
-   
  
      
      t=0.d0
