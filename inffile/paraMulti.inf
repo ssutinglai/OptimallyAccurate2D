@@ -1,13 +1,15 @@
-gizainverse_nd
-../models/2d_gizainverse.vp
-../models/2d_gizainverse.vs
-../models/2d_gizainverse.rho
+start
+../models/2d_start.vp
+../models/2d_start.vs
+../models/2d_start.rho
 T optimise or conventional
 T video or not
 F writingStrain
 10 IT_DISPLAY
-100 2 1  iSourceStart, iSourceInverval, nSource
-70 30 7 iReceiverStart, iReceiverInterval, nReceiver
+10 10 1  iSourceStart, iSourceInverval, nSource
+1 izSourceStart
+10 10 7 iReceiverStart, iReceiverInterval, nReceiver
+1 izReceiverStart
 2000 399 199 nt nx nz
 2.d-3 2.d-2 2.d-2 dt,dx,dz
 6.5d0 2.d-1 f0, t0

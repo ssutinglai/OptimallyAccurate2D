@@ -18,10 +18,12 @@ module parameters
   ! writing strains
   logical :: writingStrain
   integer :: iReceiverStart,iReceiverInterval,nReceiver
+  integer :: izReceiverStart
   integer, allocatable :: nrx(:),nrz(:) ! Receiver positions
 
 
   integer :: iSourceStart,iSourceInterval,nSource
+  integer :: izSourceStart
   integer, allocatable, dimension(:) :: iisx, iisz
 
   integer :: iSource, iReceiver

@@ -14,7 +14,9 @@ subroutine paramMultiReader
   read(5,'(L1)') writingStrain
   read(5,*) IT_DISPLAY
   read(5,*) iSourceStart,iSourceInterval,nSource
+  read(5,*) izSourceStart
   read(5,*) iReceiverStart,iReceiverInterval,nReceiver
+  read(5,*) izReceiverStart
   read(5,*) nt,nx,nz
   read(5,*) dt,dx,dz
   read(5,*) f0, t0
@@ -58,17 +60,16 @@ subroutine ReceiverSourcePositions
 
   use parameters
   implicit none
-  
 
   
   do iReceiver = 1, nReceiver
      nrx(iReceiver)=(iReceiverStart-1)*times+1+iReceiverInterval*times*(iReceiver-1)
-     nrz(iReceiver)=(130-1)*times+1
+     nrz(iReceiver)=(izReceiverStart-1)*times+1
   enddo
   
   do iSource = 1, nSource
      iisx(iSource)=(iSourceStart-1)*times+1+iSourceInterval*times*(iSource-1)
-     iisz(iSource)=(100-1)*times+1
+     iisz(iSource)=(izSourceStart-1)*times+1
      write(filename, '(I5,".",I5,".inf")') iisx(iSource),iisz(iSource)
      do j=1, 12
         if(filename(j:j).eq.' ') filename(j:j)='0'
