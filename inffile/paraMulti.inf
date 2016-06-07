@@ -1,8 +1,8 @@
-start2
+start
 ../models/2d_start.vp
 ../models/2d_start.vs
 ../models/2d_start.rho
-F optimise or conventional
+T optimise or conventional
 T video or not
 T writingStrain
 10 IT_DISPLAY
@@ -10,7 +10,7 @@ T writingStrain
 1 izSourceStart
 20 20 20 iReceiverStart, iReceiverInterval, nReceiver
 1 izReceiverStart
-1000 399 199 nt nx nz
-1.d-3 1.d-2 1.d-2 dt,dx,dz
-6.5d0 2.d-1 f0, t0
+2000 399 199 nt nx nz
+2.d-3 2.d-2 2.d-2 dt,dx,dz
+6.d0 2.d-1 f0, t0
 

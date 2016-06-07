@@ -138,3 +138,12 @@ module parameters
   
 
 end module parameters
+
+
+module paramFrechet
+  
+  implicit none
+  real, allocatable, dimension(:,:) :: singleStrainForward,singleStrainBack
+  double precision, allocatable, dimension (:,:) :: strainForward,strainBack
+
+end module paramFrechet

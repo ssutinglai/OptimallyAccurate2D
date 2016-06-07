@@ -26,7 +26,7 @@ contains
   
   subroutine write_snapshots_header(x_start, x_end, z_start, z_end,sn)
     ! subroutine to create a header file that contains information
-    ! about the dimension of the binary direct access files snapshots_s01.txx,... saved by
+    ! on the dimension of the binary direct access files snapshots_s01.txx,... saved by
     ! the write_full_fields subroutine
     
     ! the header file is saved as a namelist
