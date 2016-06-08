@@ -27,14 +27,14 @@ program generator
 
 !************************************************************************
 ! Model initialization	
- NX_TOTAL = (400-1)*times+1
- NZ_TOTAL = (200-1)*times+1
+ NX_TOTAL = (601-1)*times+1
+ NZ_TOTAL = (161-1)*times+1
 
 !*** Thikness, Vp, Vs *******************************************		
 
- layer_thikness(1)=70;vp(1)=1500;vs(1)=1000;
- layer_thikness(2)=140;vp(2)=3000;vs(2)=1700;
- layer_thikness(3)=200;vp(3)=2000;vs(3)=1170;
+ layer_thikness(1)=71;vp(1)=1500;vs(1)=1000;
+ layer_thikness(2)=91;vp(2)=3000;vs(2)=1700;
+ layer_thikness(3)=161;vp(3)=2000;vs(3)=1170;
 ! layer_thikness(4)=180;vp(4)=2700;vs(4)=1700;
 ! layer_thikness(5)=200;vp(5)=3000;vs(5)=1900;
 
@@ -164,9 +164,9 @@ program generator
 
 !****************************************************************	   
  
- open (1,file='./2d_3layer.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_3layer.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_3layer.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='../models/2d_guy.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='../models/2d_guy.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='../models/2d_guy.rho',form='unformatted',access='direct',recl=recl_size)
 
  if(0.eq.0) then
     tmp=1
