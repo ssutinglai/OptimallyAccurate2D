@@ -42,6 +42,7 @@ program multipleSourcesOPT2D
   ! calculate lamda and mu
   call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
   
+  
   !write(12,*) rho
   !write(13,*) vp
   !write(14,*) vs

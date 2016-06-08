@@ -34,7 +34,7 @@ program generator
 
  layer_thikness(1)=71;vp(1)=1500;vs(1)=1000;
  layer_thikness(2)=91;vp(2)=3000;vs(2)=1700;
- layer_thikness(3)=161;vp(3)=2000;vs(3)=1170;
+ layer_thikness(3)=162;vp(3)=2000;vs(3)=1170;
 ! layer_thikness(4)=180;vp(4)=2700;vs(4)=1700;
 ! layer_thikness(5)=200;vp(5)=3000;vs(5)=1900;
 
@@ -54,7 +54,7 @@ program generator
  allocate (fullvp (NX_TOTAL, NZ_TOTAL) )
  allocate (fullvs (NX_TOTAL, NZ_TOTAL) )
  allocate (fullrho(NX_TOTAL, NZ_TOTAL) )
- allocate(tmpM(NZ_TOTAL,NX_TOTAL))
+ !allocate(tmpM(NZ_TOTAL,NX_TOTAL))
  if(0.eq.1) then
  open(1,file='./models/model_cp_400x200.txt',form='formatted')
  open(2,file='./models/model_cs_400x200.txt',form='formatted')
