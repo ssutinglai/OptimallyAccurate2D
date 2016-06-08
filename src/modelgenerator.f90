@@ -7,7 +7,7 @@ program generator
 
  integer, parameter :: times = 1
 
- integer, parameter                             :: nbre_layers = 5
+ integer, parameter                             :: nbre_layers = 3
  integer, dimension(nbre_layers)                :: layer_thikness
  real(kind=prec), dimension(nbre_layers)        :: vp
  real(kind=prec), dimension(nbre_layers)        :: vs
@@ -32,9 +32,9 @@ program generator
 
 !*** Thikness, Vp, Vs *******************************************		
 
-! layer_thikness(1)=40;vp(1)=2200;vs(1)=1400;
-! layer_thikness(2)=90;vp(2)=2300;vs(2)=1450;
-! layer_thikness(3)=140;vp(3)=2500;vs(3)=1550;
+ layer_thikness(1)=70;vp(1)=1500;vs(1)=1000;
+ layer_thikness(2)=140;vp(2)=3000;vs(2)=1700;
+ layer_thikness(3)=200;vp(3)=2000;vs(3)=1170;
 ! layer_thikness(4)=180;vp(4)=2700;vs(4)=1700;
 ! layer_thikness(5)=200;vp(5)=3000;vs(5)=1900;
 
@@ -80,7 +80,7 @@ program generator
  endif
 
 
- if(1.eq.0) then
+ if(0.eq.1) then
 
  dx = 2.d-2
 
@@ -140,7 +140,7 @@ program generator
 
 
 
- if(1.eq.1) then
+ if(0.eq.1) then
     dx=2.d-2
     fullvp(:,:) = 2200.e0
     fullvs(:,:) = 1400.e0
@@ -164,21 +164,22 @@ program generator
 
 !****************************************************************	   
  
- open (1,file='./2d_maru.vp',form='unformatted',access='direct',recl=recl_size)
- open (2,file='./2d_maru.vs',form='unformatted',access='direct',recl=recl_size) 
- open (3,file='./2d_maru.rho',form='unformatted',access='direct',recl=recl_size)
+ open (1,file='./2d_3layer.vp',form='unformatted',access='direct',recl=recl_size)
+ open (2,file='./2d_3layer.vs',form='unformatted',access='direct',recl=recl_size) 
+ open (3,file='./2d_3layer.rho',form='unformatted',access='direct',recl=recl_size)
 
- !tmp=1
- !do j=1, NZ_TOTAL
- !  level=tmp
- !  if (j .gt. layer_thikness(level)) level=level+1
- !  tmp=level
- !  do i=1, NX_TOTAL
- !    fullvp(i,j) = vp(level)
- !    fullvs(i,j) = vs(level)
- !  enddo
- !enddo
-
+ if(0.eq.0) then
+    tmp=1
+    do j=1, NZ_TOTAL
+       level=tmp
+       if (j .gt. layer_thikness(level)) level=level+1
+       tmp=level
+       do i=1, NX_TOTAL
+          fullvp(i,j) = vp(level)
+          fullvs(i,j) = vs(level)
+       enddo
+    enddo
+ endif
  write(1,rec=1) fullvp(:,:)
  write(2,rec=1) fullvs(:,:)
 
