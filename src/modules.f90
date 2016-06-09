@@ -129,7 +129,7 @@ module parameters
   ! for waveform inversion
   
   
-  real(kind(0e0)), allocatable, dimension(:,:):: singleStrainDiagonal,tmpsingleStrain
+  real(kind(0e0)), allocatable, dimension(:,:):: singleStrainDiagonal,singleStrainShear,tmpsingleStrain
 
   
   character(340) :: commandline

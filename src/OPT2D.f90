@@ -279,13 +279,13 @@ program multipleSourcesOPT2D
            singleStrainDiagonal=0.e0
            tmpsingleStrain=0.e0
            call calStrainDiagonal(nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
-          
+           call calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrainShear)
 
 
            if(optimise) then
-              write(outfile,'("strain",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+              write(outfile,'("strainD",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
            else
-              write(outfile,'("strain",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+              write(outfile,'("strainD",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
            endif
            do j=1,24
               if(outfile(j:j).eq.' ') outfile(j:j)='0'
@@ -298,6 +298,30 @@ program multipleSourcesOPT2D
                 singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
            write(1,rec=1)  tmpsingleStrain
            close(1,status='keep')
+
+
+           
+           if(optimise) then
+              write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           else
+              write(outfile,'("strainS",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+           endif
+           do j=1,24
+              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+           enddo
+           
+           outfile = './strains/'//trim(modelname)//'/'//outfile
+           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+
+           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
+                singleStrainShear(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+           write(1,rec=1)  tmpsingleStrain
+           close(1,status='keep')
+
+
+
+
+           
         endif
 
 
@@ -396,10 +420,10 @@ program multipleSourcesOPT2D
            if(outfile(j:j).eq.' ') outfile(j:j)='0'
         enddo
         
-        outfile = './videos/'//trim(modelname)//'/'//outfile
+        outfile = './videos/'//trim(modelname)//'/'//trim(outfile)
         
         
-        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//" -vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\" "//outfile
+        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//" -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2' "//trim(outfile)
        
         call system(commandline)
      
