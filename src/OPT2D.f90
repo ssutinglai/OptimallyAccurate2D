@@ -423,7 +423,7 @@ program multipleSourcesOPT2D
         outfile = './videos/'//trim(modelname)//'/'//trim(outfile)
         
         
-        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p "//" -vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2' "//trim(outfile)
+        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"//"2)*2:trunc(ih/2"//")*2' "//trim(outfile)
        
         call system(commandline)
      
