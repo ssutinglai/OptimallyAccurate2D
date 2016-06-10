@@ -25,5 +25,5 @@ $(program): $(objs)
 
 .PHONY: clean
 clean:
-	rm $(program) $(program2) $(objs) $(objs2) *.optrpt  
+	rm $(program) $(program2) $(objs) $(objs2) $(objs3) *.optrpt  
 
