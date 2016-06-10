@@ -197,11 +197,11 @@ subroutine create_color_kernel(image_data_2D,NX,NY,it,ISOURCE,JSOURCE,ix_rec,iy_
   !       use the "convert" command from ImageMagick http://www.imagemagick.org
   if(field_number == 1) then
      write(file_name,"('image',i6.6,'_Kx.pnm')") it
-     write(system_command1, "('convert image',i6.6,'_Kx.pnm ',a,'/imageKx',i6.6,'.png')") trim(folder),it,it
+     write(system_command1, "('convert image',i6.6,'_Kx.pnm ',a,'/imageKx',i6.6,'.png')") it,trim(folder),it
      write(system_command2, "('rm image',i6.6,'_Kx.pnm')") it
   else if(field_number == 2) then
      write(file_name,"('image',i6.6,'_Kz.pnm')") it
-     write(system_command1,"('convert image',i6.6,'_Kz.pnm ',a,'/imageKz',i6.6,'.png')") trim(folder),it,it
+     write(system_command1,"('convert image',i6.6,'_Kz.pnm ',a,'/imageKz',i6.6,'.png')") it,trim(folder),it
      write(system_command2,"('rm image',i6.6,'_Kz.pnm')") it
   endif
   
