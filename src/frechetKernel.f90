@@ -186,7 +186,7 @@ program frechetKernel
 
       
      commandline="ffmpeg -framerate 5 -pattern_type glob -i 'kernelPsnapshots/*.png' "
-     commandline=trim(commandline)//"-c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"
+     commandline=trim(commandline)//" -c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"
      commandline=trim(commandline)//"2)*2:trunc(ih/2"//")*2' "
      commandline=trim(commandline)//" "//trim(outfile)
      print *, commandline
@@ -212,7 +212,7 @@ program frechetKernel
 
       
      commandline="ffmpeg -framerate 5 -pattern_type glob -i 'kernelSsnapshots/*.png' "
-     commandline="-c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"
+     commandline=trim(commandline)//" -c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"
      commandline=trim(commandline)//"2)*2:trunc(ih/2"//")*2' "
      commandline=trim(commandline)//" "//trim(outfile)
      print *, commandline
