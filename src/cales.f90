@@ -127,9 +127,52 @@ subroutine cales( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
              * (  3.d0 ) / ( 1728.d0 * dxdz )
         f20(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
              * (  5.d0 ) / ( 1728.d0 * dxdz )
+
         
      enddo
   enddo
   
+  open(8,file='MultiOperators.out',status='new')
+
+  ix=nx
+  iz=nz
+  
+  write (8,*)'e1', e1(ix,iz)
+  write (8,*)'e2', e2(ix,iz)
+  write (8,*)'e3', e3(ix,iz)
+  write (8,*)'e4', e4(ix,iz)
+  write (8,*)'e5', e5(ix,iz)
+  write (8,*)'e6', e6(ix,iz)
+  write (8,*)'e7', e7(ix,iz)
+  write (8,*)'e8', e8(ix,iz)
+  write (8,*)'e13', e13(ix,iz)
+  write (8,*)'e14', e14(ix,iz)
+  write (8,*)'e15', e15(ix,iz)
+  write (8,*)'e16', e16(ix,iz)
+  write (8,*)'e17', e17(ix,iz)
+  write (8,*)'e18', e18(ix,iz)
+  write (8,*)'e19', e19(ix,iz)
+  write (8,*)'e20', e20(ix,iz)
+
+  write (8,*)'f1', f1(ix,iz)
+  write (8,*)'f2', f2(ix,iz)
+  write (8,*)'f3', f3(ix,iz)
+  write (8,*)'f4', f4(ix,iz)
+  write (8,*)'f5', f5(ix,iz)
+  write (8,*)'f6', f6(ix,iz)
+  write (8,*)'f7', f7(ix,iz)
+  write (8,*)'f8', f8(ix,iz)
+  write (8,*)'f13', f13(ix,iz)
+  write (8,*)'f14', f14(ix,iz)
+  write (8,*)'f15', f15(ix,iz)
+  write (8,*)'f16', f16(ix,iz)
+  write (8,*)'f17', f17(ix,iz)
+  write (8,*)'f18', f18(ix,iz)
+  write (8,*)'f19', f19(ix,iz)
+  write (8,*)'f20', f20(ix,iz)
+  
+  close(8,status='keep')
+
+  stop
   return
 end subroutine cales
