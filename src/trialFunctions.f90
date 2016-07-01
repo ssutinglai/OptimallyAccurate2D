@@ -132,6 +132,9 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
      enddo
   endif
 
+
+  
+
   do jx=-ngrid, ngrid
         do jz=-ngrid, ngrid
            
