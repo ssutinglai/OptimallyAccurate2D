@@ -92,31 +92,16 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
         phiz(ix) = phix(ix)
         phizderiv(ix) =phixderiv(ix)
         
+          
+
+        open(unit=8,file="phix.dat",form="formatted"&
+             ,status="replace",action="write")
+        
+        write(8,*)'phix', phix(ix,iz)
+        
+        close(8)
         
         
-        do iz=-ngrid*ndis, ngrid*ndis
-           x=xm+dble(ix/ndis)*dx
-           z=zm+dble(iz/ndis)*dz
-           xx=(x-xm)/dx
-           zz=(z-zm)/dz
-           !phi(ix,iz)=sin(pi*xx)*sin(pi*zz)/(pi*pi*xx*zz)
-           !phix(ix,iz)=sin(pi*xx)/pi*xx
-           !phiz(ix,iz)=sin(pi*zz)/pi*zz
-           !phixderiv(ix,iz)=pi*cos(pi*xx)/(pi*xx) - sin(pi*xx)/(pi*xx*xx)
-           !phizderiv(ix,iz)=pi*cos(pi*zz)/(pi*zz) - sin(pi*zz)/(pi*zz*zz)
-
-           
-
-           
-
-           open(unit=8,file="phix.dat",form="formatted"&
-           ,status="replace",action="write")
-           
-           write(8,*)'phix', phix(ix,iz)
-           
-           close(8)
-           
-        enddo
      enddo
      
      
@@ -127,31 +112,27 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
      ! B-splines (for the moment only for 3 points so it's not correct for 5-, 7- point schemes)
 
      do ix=-ngrid*ndis,0
-        do iz=-ngrid*ndis,0
-           x=xm+dble(ix/ndis)*dx
-           z=zm+dble(iz/ndis)*dz
-           !phi(ix,iz)=(x+dx)*(z+dz)/dx*dz
-           phix(ix,iz)=(x+dx)/dx
-           phiz(ix,iz)=(z+dz)/dz
-           phixderiv=1/dx
-           phizderiv=1/dz
-        end do
-     end do
+        
+        x=dble(ix/ndis)*dx
+        phix(ix) = (x+dx)/dx
+        phiz(ix) = phix(ix)
+        phixderiv(ix) = 1.d0/dx
+        phizderiv(ix) = phixderiv(ix)
+        
+     enddo
      
      do ix=0,ngrid*ndis
-        do iz=0,ngrid*ndis
-           x=xm+dble(ix/ndis)*dx
-           z=zm+(iz/ndis)*dz
-           !phi(ix,iz)=(-x+dx)*(-z+dz)/dx*dz
-           phix(ix,iz)=(-x+dx)/dx
-           phiz(ix,iz)=(-z+dz)/dz
-           phixderiv(ix,iz)=-1/dx
-           phizderiv(ix,iz)=-1/dz
-        end do
-     end do
+      
+        x=dble(ix/ndis)*dx
+        phix(ix) = (-x+dx)/dx
+        phiz(ix) = phix(ix)
+        phixderiv(ix) = -1.d0/dx
+        phizderiv(ix) = phixderiv(ix)
+        
+     enddo
   endif
 
-     do jx=-ngrid, ngrid
+  do jx=-ngrid, ngrid
         do jz=-ngrid, ngrid
            
            H1(m,n)=(phix(jx,jz)*phix(jx,jz))+ &
