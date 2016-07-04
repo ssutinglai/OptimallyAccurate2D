@@ -11,7 +11,7 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
   double precision x,xx,z,zz
   !double precision rho(nx+1,nz+1),lam(nx+1,nz+1),mu(nx+1,nz+1)
   double precision, allocatable :: lam(:,:),mu(:,:),rho(:,:)
-  double precision dx,dz,dt
+  double precision dx,dz,dt,smalldx,smalldz
   double precision dx2,dz2,dxdz,dt2
   double precision, allocatable :: phix(:),phiz(:) ! non-zero values for phix, phiz
   double precision, allocatable :: phixderiv(:),phizderiv(:) ! and theirs derivatives
@@ -29,6 +29,11 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
   ngrid = (npTF-1)/2
   ndis = 100
 
+
+  smalldx = dx/dble(ndis)
+  smalldz = dz/dble(ndis)
+
+
   mxmin = -npTF+1
   mxmax = npTF-1
 
@@ -40,8 +45,8 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
   allocate(phixderiv(-ngrid*ndis:ngrid*ndis))
   allocate(phizderiv(-ngrid*ndis:ngrid*ndis))
   allocate(lam(-ngrid*ndis:ngrid*ndis,-ngrid*ndis:ngrid*ndis))
-  allocate(H1(1,1))
-  allocate(H2(1,1))
+  allocate(H1(mxmin:mxmax,mzmin:mzmax))
+  allocate(H2(mxmin:mxmax,mzmin:mzmax))
   
 
   lam =1.d0
@@ -55,12 +60,12 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
   !zm = 0.d0
 
 
-  ! I put mx, mz to be the centre (0,0)
+  ! I put nx, nz to be the centre (0,0)
 
-  mx = 0
-  mz = 0
+  nx = 0
+  nz = 0
 
-  ! then nx, nz have mxmin:mxmax and mzmin:mzmax
+  ! then mx, mz have mxmin:mxmax and mzmin:mzmax
 
 
   ! Initialising vectors
@@ -132,23 +137,26 @@ program SincInterpolation !( nx,nz,rho,lam,mu,dx,dz,dt )
      enddo
   endif
 
-
   
 
-  do jx=-ngrid, ngrid
-        do jz=-ngrid, ngrid
-           
-           H1(m,n)=(phix(jx,jz)*phix(jx,jz))+ &
-                (phiz(jx,jz)*phiz(jx,jz))
-           
-           
-           H2(m,n)=lam(jx,jz)*(phixderiv(jx,jz)+phizderiv(jx,jz))&
-               *(phixderiv(jx,jz)+phizderiv(jx,jz))
+  nx = 0
+  nz = 0
 
-           print *,'jx,jz',jx,jz,'H1', H1(m,n), 'H2', H2(m,n)
-           
-        end do
-     end do
+
+  do mx = mxmin,mxmax
+     do mz = mzmin,mzmax
+        
+        H1(mx,mz) = 0.d0
+        
+        do ix = -ngrid*ndis,ngrid*ndis
+           if(((ix-ndis).ge.-ngrid*ndis).and.((ix-ndis).le.ngrid*ndis))
+           H1(mx,mz) = H1(mx,mz) + phix(ix-ndis)*phix(ix)*
+        enddo
+     enddo
+  enddo
+
+
+     
      
 
 
