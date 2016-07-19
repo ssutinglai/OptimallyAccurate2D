@@ -21,6 +21,9 @@ program multipleSourcesOPT2D
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
 
+  ! RM va mettre 10 pour l/rmargins
+
+
   call paramMultiReader
   
   call vectorAllocate
