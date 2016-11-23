@@ -40,7 +40,7 @@ FFLAGS=  -llapack  -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv 
 #FC = mpif90
 FFLAGS = -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check -llapack -w
 
-FFLAGS= -w -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check 
+FFLAGS= -l lapack -w -g  -std=gnu  -fimplicit-none -frange-check -O2 -pedantic -pedantic-errors -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wunderflow -fbounds-check 
 
 #FFLAGS = -llapack   
 

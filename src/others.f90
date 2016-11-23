@@ -27,7 +27,7 @@ subroutine paramMultiReader
   dt=dt/dble(times)
   dx=dx/dble(times)
   dz=dz/dble(times)
-  
+ 
   maxnt = nt
   maxnx = nx+(lmargin(1)+rmargin(1))
   maxnz = nz+(lmargin(2)+rmargin(2))

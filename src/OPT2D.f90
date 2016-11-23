@@ -55,6 +55,8 @@ program multipleSourcesOPT2D
 
 
   ! Smoothed version of CONV/OPT operators
+ 
+  print *, "nx,nz",nx, nz,maxnx,maxnz
 
   call cales( nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
@@ -188,7 +190,7 @@ program multipleSourcesOPT2D
        
         call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         t=t+dt
-        !write(13,*) t, fx(isx,isz),fz(isx,isz)
+        write(13,*) t, fx(isx,isz),fz(isx,isz)
         
      enddo
      !print *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0

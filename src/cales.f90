@@ -10,7 +10,7 @@ subroutine cales( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
   double precision rho(nx+1,nz+1),lam(nx+1,nz+1),mu(nx+1,nz+1)
   double precision dt,dx,dz
   double precision  e1(nx+1,nz+1), e2(nx+1,nz+1), e3(nx+1,nz+1)
-  double precision  e4(nx+1,nz+1), e5(nx+1,nx+1), e6(nx+1,nz+1)
+  double precision  e4(nx+1,nz+1), e5(nx+1,nz+1), e6(nx+1,nz+1)
   double precision  e7(nx+1,nz+1), e8(nx+1,nz+1)
   double precision e13(nx+1,nz+1),e14(nx+1,nz+1),e15(nx+1,nz+1)
   double precision e16(nx+1,nz+1),e17(nx+1,nz+1),e18(nx+1,nz+1)
@@ -23,10 +23,10 @@ subroutine cales( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, e7, e8,&
   double precision f19(nx+1,nz+1),f20(nx+1,nz+1)
   integer ix,iz
   double precision dt2,dx2,dz2,dxdz
-
   ! for smoothed part of the model :
   !  we use Zahradnik operators and optimally accurate operators
 
+  print *,nx,nz 
   
   dt2 = dt * dt
   dx2 = dx * dx
