@@ -1,5 +1,10 @@
 program smooth
 
+! generate smooth model of Marmousi as well as rho models 
+!   Initially coded by Shihao Yuan (IPGP)
+!   Modified by Nobuaki Fuji, Jan 2017, IPGP 
+
+
  implicit none 
 !local variables:
  integer, parameter             :: prec = kind (1.0) 
@@ -8,11 +13,16 @@ program smooth
  integer                        :: NX_TOTAL, NZ_TOTAL
  real(kind=prec), allocatable   :: fullvp(:,:)
  real(kind=prec), allocatable   :: fullvs(:,:)
+ real(kind=prec), allocatable   :: fullrho(:,:)
  integer                        :: recl_size
  real                           :: pi,sigma
  real                           :: G_sm,G_sm_tmp,fullvp_tmp,fullvs_tmp
+ real                           :: GardnerAlpha, GardnerBeta
 !*********************************************************************
  pi = 4.*atan(1.)
+
+GardnerAlpha = 0.31
+GardnerBeta = 0.25
 
 ! Model initialization	
  NX_TOTAL = 300
@@ -21,7 +31,7 @@ program smooth
  recl_size=prec*NX_TOTAL*NZ_TOTAL
  
  topend = 1
- botend = 22
+ botend = 100
  lefend = 1
  rigend = 300
 
@@ -35,6 +45,7 @@ program smooth
 ! allocate vp,vs
  allocate (fullvp (NX_TOTAL, NZ_TOTAL) )
  allocate (fullvs (NX_TOTAL, NZ_TOTAL) )
+ allocate (fullrho(NX_TOTAL, NZ_TOTAL) )
 
 !*******************************************************************
 ! initiliaze data
@@ -43,9 +54,17 @@ program smooth
  open (3,file='./marmousi_vp_sm',access='direct',form='unformatted',recl=recl_size)
  open (4,file='./marmousi_vs_sm',access='direct',form='unformatted',recl=recl_size)
 
+ open (13,file='./marmousi_rho',form='unformatted',access='direct',recl=recl_size)
+ open (23,file='./marmousi_rho_sm',form='unformatted',access='direct',recl=recl_size)
+
 
  read(1,rec=1) fullvp(:,:)
  read(2,rec=1) fullvs(:,:)
+
+ fullrho=GardnerAlpha*fullvp**GardnerBeta*1.e3
+
+ write(13,rec=1) fullrho(:,:)
+ close(13)
 
 
 !*******************************************************************
@@ -96,6 +115,12 @@ program smooth
 
  write(3,rec=1) fullvp(:,:)
  write(4,rec=1) fullvs(:,:)
+
+ fullrho=GardnerAlpha*fullvp**GardnerBeta*1.e3
+ 
+ write(23,rec=1) fullrho(:,:)
+ 
+ close(23)
 
  close (1,status='keep')
  close (2,status='keep')
