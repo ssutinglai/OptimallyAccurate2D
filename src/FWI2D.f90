@@ -16,6 +16,9 @@ program multipleSourcesFWI2D
   use paramFWI
   implicit none
 
+  integer :: iteraitonIndex
+
+
   ! Cerjan boundary
   lmargin(1)=NPOINTS_PML
   rmargin(1)=NPOINTS_PML
@@ -55,11 +58,35 @@ program multipleSourcesFWI2D
   call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
 
 
-  !first forward modelling
-  
-  call forwardmodelling
+  ! first forward modelling
 
-  !call backpropagation
+  call forwardmodelling
+     
+  iterationIndex=1
+  
+  if(iterationIndex<numberIteration) then
+     iterationIndex=iterationIndex+1
+     call backpropagation
+     
+     !call gradientCalculation
+
+     ! construct perturbed model with a small steplength
+
+     ! call calstruct etc.  
+
+     ! call forwardmodelling
+     
+     ! call steplength
+
+     ! call calstruct etc.
+     
+     ! call forwardmodelling
+
+  endif
+     
+
+     
+     
   
 
 end program multipleSourcesFWI2D
