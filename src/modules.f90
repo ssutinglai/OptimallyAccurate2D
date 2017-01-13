@@ -36,7 +36,7 @@ module parameters
   ! parameters for the gridding
   double precision dt,dx,dz
   ! parameters for the wavefield
-  integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size
+  integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size,recl_size_syn
   ! Attention ! nx and nz are modified with absorbing boundaries
   double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
   double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
@@ -63,7 +63,7 @@ module parameters
   
   ! parameter for the receiver
   integer :: ir,j
-  real, allocatable, dimension(:,:) :: synx,synz
+  real(kind(0e0)), allocatable, dimension(:,:) :: synx,synz
   real, allocatable, dimension(:) :: time
   character(200) :: outfile
  
@@ -167,5 +167,5 @@ module paramFWI
   ! extentions:  if 9999 we do not take the component
   integer :: numberIteration
   double precision :: steplengthVp, steplengthVs
-
+  real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
 end module paramFWI

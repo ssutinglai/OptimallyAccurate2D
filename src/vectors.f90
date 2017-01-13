@@ -62,6 +62,14 @@ subroutine vectorAllocate
 end subroutine vectorAllocate
 
 
+subroutine vectorAllocateFWI
+  use parameters
+  use paramFWI
+  implicit none
+  
+  allocate(obsx(0:maxnt,1:nReceiver),obsz(0:maxnt,1:nReceiver)) ! observed
+end subroutine vectorAllocateFWI
+
 subroutine vectorAllocateFrechet
   use paramFrechet
   use parameters
