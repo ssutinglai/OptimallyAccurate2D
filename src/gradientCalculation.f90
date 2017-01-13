@@ -171,8 +171,10 @@ subroutine gradientCalculation
   enddo
   
   tmpfolder="gradientlPsnapshots"
-  call create_color_kernel(kernelP,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+  call create_color_kernel(kernelP,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
+       iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
   tmpfolder="gradientSsnapshots"
-  call create_color_kernel(kernelS,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+  call create_color_kernel(kernelS,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
+       iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
   
 end subroutine gradientCalculation

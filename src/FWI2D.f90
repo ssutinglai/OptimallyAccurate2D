@@ -74,6 +74,10 @@ program multipleSourcesFWI2D
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
      call forwardmodelling
 
+     synx(:,:) = obsx(:,:)-synx(:,:)
+     synz(:,:) = obsz(:,:)-synz(:,:)
+
+     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
      
      
      ! call steplength
