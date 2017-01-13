@@ -175,6 +175,10 @@ subroutine paramFWIReader
   call system(commandline)
   commandline="mkdir kernelSsnapshots"
   call system(commandline)
+  commandline="mkdir gradientPsnapshots" ! we need kernelsnapshots folders too
+  call system(commandline)
+  commandline="mkdir gradientSsnapshots"
+  call system(commandline)
   commandline="mkdir videos"
   call system(commandline)
   commandline="mkdir synthetics/"//trim(modelname)

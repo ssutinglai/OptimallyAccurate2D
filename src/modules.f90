@@ -165,7 +165,7 @@ module paramFWI
   character(180) :: obsdir
   character(20) :: extentionOBSx,extentionOBSz
   ! extentions:  if 9999 we do not take the component
-  integer :: numberIteration
+  integer :: iterationIndex,numberIteration
   double precision :: steplengthVp, steplengthVs
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
   real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz

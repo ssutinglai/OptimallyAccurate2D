@@ -16,8 +16,6 @@ program multipleSourcesFWI2D
   use paramFWI
   implicit none
 
-  integer :: iteraitonIndex
-
 
   ! Cerjan boundary
   lmargin(1)=NPOINTS_PML
