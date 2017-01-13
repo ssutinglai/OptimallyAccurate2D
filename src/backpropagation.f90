@@ -3,7 +3,10 @@ subroutine backpropagation
   use paramFWI
   implicit none
 
-
+  
+  ! record size
+  recl_size=(nx+1)*(nz+1)*kind(0e0)
+  recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
   
   
   ! Smoothed version of CONV/OPT operators
@@ -97,6 +100,53 @@ subroutine backpropagation
 
 
   do iSource = 1, nSource
+
+     ! Here in this routine, I do not calculate for the sources themselves I back propagate delta d
+     ! 
+
+     ! Reading OBS data
+
+
+     if(trim(extentionOBSx).ne."9999") then 
+        write(outfile,'(I5,".",I5,".") ')  &
+             isx-lmargin(1),isz-lmargin(2)
+        
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSx)
+        
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+        read(1,rec=1) synx(0:maxnt,1:nReceiver)
+        close(1)
+   
+     endif
+
+     if(trim(extentionOBSz).ne."9999") then
+     
+        
+        write(outfile,'(I5,".",I5,".") ') &
+             isx-lmargin(1),isz-lmargin(2)
+        
+        
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSz)
+        
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+        read(1,rec=1) synz(0:maxnt,1:nReceiver)
+        close(1)
+        
+     endif
+
+     ! Reading OBS data done
+     
+
+
+
     
      isx=iisx(iSource)+lmargin(1)
      isz=iisz(iSource)+lmargin(2)
@@ -105,8 +155,7 @@ subroutine backpropagation
     
 
      ! for video (without boundary)
-     recl_size=(nx+1)*(nz+1)*kind(0e0)
-     recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
+
      
      ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
      
@@ -388,60 +437,6 @@ subroutine backpropagation
      
      
 
-  
-  
-     do ir = 1,nReceiver
-        if(optimise) then
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        endif
-        
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
-        
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        write(1,rec=1) synx(0:maxnt,1:nReceiver)
-        close(1)
-        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-        !write(1,rec=1) synx(0:nt,ir)
-        !close(1,status='keep')
-
-        
-        if(optimise) then
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        endif
-        
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
-        
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        !open(1, file=outfile,status='unknown',form='formatted')
-        !do it=0,nt
-        !   write (1,*) time(it), synz(it,ir)
-        !enddo
-        !close(1)
-
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        write(1,rec=1) synz(0:maxnt,1:nReceiver)
-        close(1)
-        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-        !write(1,rec=1) synz(0:nt,ir)
-        !close(1,status='keep')
-
-
-        
-     enddo
      
   enddo
 end subroutine backpropagation

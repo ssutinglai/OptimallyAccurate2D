@@ -22,7 +22,7 @@ program multipleSourcesFWI2D
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
   
-  call paramFWI
+  call paramFWIReader
 
   call vectorAllocate
   
@@ -59,7 +59,7 @@ program multipleSourcesFWI2D
   
   call forwardmodelling
 
-  call backpropagation
+  !call backpropagation
   
 
 end program multipleSourcesFWI2D

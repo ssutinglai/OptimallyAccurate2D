@@ -119,9 +119,9 @@ subroutine paramFrechetReader
 end subroutine paramFrechetReader
 
 
-subroutine paramFWI
+subroutine paramFWIReader
   use parameters
-  use paramFrechet
+  use paramFWI
   implicit none
   character (180) dummy
   ! Reading Inf File
@@ -185,7 +185,7 @@ subroutine paramFWI
   call system(commandline)
   commandline="mkdir strains/"//trim(modelname)
   call system(commandline)
-end subroutine paramFWI
+end subroutine paramFWIReader
 
 
 
