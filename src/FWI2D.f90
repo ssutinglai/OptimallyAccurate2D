@@ -1,4 +1,4 @@
-program multipleSourcesOPT2D
+program multipleSourcesFWI2D
 
   ! Computation of the synthetic seismograms in the time domain
   ! using the optimally accurate operators.
@@ -21,11 +21,10 @@ program multipleSourcesOPT2D
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
 
-  ! RM va mettre 10 pour l/rmargins
-
-
   call paramMultiReader
   
+  call 
+
   call vectorAllocate
   
   call disconConfig ! discontinuity configuration
@@ -55,8 +54,6 @@ program multipleSourcesOPT2D
 
 
   ! Smoothed version of CONV/OPT operators
- 
-  print *, "nx,nz",nx, nz,maxnx,maxnz
 
   call cales( nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
@@ -190,7 +187,7 @@ program multipleSourcesOPT2D
        
         call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
         t=t+dt
-        write(13,*) t, fx(isx,isz),fz(isx,isz)
+        !write(13,*) t, fx(isx,isz),fz(isx,isz)
         
      enddo
      !print *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0
@@ -428,10 +425,8 @@ program multipleSourcesOPT2D
         outfile = './videos/'//trim(modelname)//'/'//trim(outfile)
         
         
-        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"
-        commandline=trim(commandline)//"2)*2:trunc(ih/2"//")*2' "
-        commandline=trim(commandline)//" "//trim(outfile)
-        print *, commandline
+        commandline="ffmpeg -framerate 5 -pattern_type glob -i 'snapshots/*.png' -c:v libx264 -pix_fmt yuv420p -vf 'scale=trunc(iw/"//"2)*2:trunc(ih/2"//")*2' "//trim(outfile)
+       
         call system(commandline)
      
      endif
@@ -496,7 +491,7 @@ program multipleSourcesOPT2D
 
 
 
-end program multipleSourcesOPT2D
+end program multipleSourcesFWI2D
 
 
 
