@@ -390,58 +390,58 @@ subroutine forwardmodelling
 
   
   
-     do ir = 1,nReceiver
-        if(optimise) then
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UX") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        endif
-        
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
-        
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        write(1,rec=1) synx(0:maxnt,1:nReceiver)
-        close(1)
-        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-        !write(1,rec=1) synx(0:nt,ir)
-        !close(1,status='keep')
-
-        
-        if(optimise) then
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".OPT_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        else
-           write(outfile,'(I5,".",I5,".",I5,".",I5,".CON_UZ") ') nrx(ir)-lmargin(1),nrz(ir)-lmargin(2), &
-                isx-lmargin(1),isz-lmargin(2)
-        endif
-        
-        do j=1,24
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
-        
-        outfile = './synthetics/'//trim(modelname)//'/'//outfile
-        !open(1, file=outfile,status='unknown',form='formatted')
-        !do it=0,nt
-        !   write (1,*) time(it), synz(it,ir)
-        !enddo
-        !close(1)
-
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        write(1,rec=1) synz(0:maxnt,1:nReceiver)
-        close(1)
-        !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+  
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".OPT_UX") ')  &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".CON_UX") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
+     
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     write(1,rec=1) synx(0:maxnt,1:nReceiver)
+     close(1)
+     !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
+     !write(1,rec=1) synx(0:nt,ir)
+     !close(1,status='keep')
+     
+     
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".OPT_UZ") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".CON_UZ") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
+     
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
+     !open(1, file=outfile,status='unknown',form='formatted')
+     !do it=0,nt
+     !   write (1,*) time(it), synz(it,ir)
+     !enddo
+     !close(1)
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     write(1,rec=1) synz(0:maxnt,1:nReceiver)
+     close(1)
+     !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
         !write(1,rec=1) synz(0:nt,ir)
         !close(1,status='keep')
 
 
         
-     enddo
+     
      
   enddo
 end subroutine forwardmodelling
