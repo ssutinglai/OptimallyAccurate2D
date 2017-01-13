@@ -14,13 +14,13 @@ subroutine gradientCalculation
 
 
   use parameters
-  use paramFrechet
+  use paramFWI
   implicit none
   character(100) :: tmpfolder
   
-  call paramFrechetReader
-  call vectorAllocateFrechet
-  call ReceiverSourcePositions
+  !call paramFrechetReader
+  !call vectorAllocateFrechet
+  !call ReceiverSourcePositions
   
 
   
@@ -162,12 +162,7 @@ subroutine gradientCalculation
            
         enddo
         
-        
-        
-        if(videoornot) then
-         
-        endif
-        
+      
      enddo
   
      

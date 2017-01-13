@@ -66,13 +66,15 @@ program multipleSourcesFWI2D
      iterationIndex=iterationIndex+1
      call backpropagation
      
-     !call gradientCalculation
+     call gradientCalculation
 
-     ! construct perturbed model with a small steplength
+     vp(:,:) = vp(:,:) + 1.d-2 * steplengthVp * kernelP(:,:)
+     vs(:,:) = vs(:,:) + 1.d-2 * steplengthVs * kernelS(:,:)
+     call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
+     call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
+     call forwardmodelling
 
-     ! call calstruct etc.  
-
-     ! call forwardmodelling
+     
      
      ! call steplength
 
