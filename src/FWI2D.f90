@@ -13,6 +13,7 @@ program multipleSourcesFWI2D
   !                                          cleaning : 2016.6. N. Fuji   
 
   use parameters
+  use paramFWI
   implicit none
 
   ! Cerjan boundary
@@ -20,10 +21,8 @@ program multipleSourcesFWI2D
   rmargin(1)=NPOINTS_PML
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
-
-  call paramMultiReader
   
-  call 
+  call paramFWI
 
   call vectorAllocate
   
@@ -140,6 +139,11 @@ program multipleSourcesFWI2D
      nrz(ir)=nrz(ir)+lmargin(2)
   enddo
   
+
+
+
+  
+
 
   do iSource = 1, nSource
     

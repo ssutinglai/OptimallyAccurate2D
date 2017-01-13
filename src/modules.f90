@@ -151,3 +151,21 @@ module paramFrechet
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
   
 end module paramFrechet
+
+
+module paramFWI
+  
+  implicit none
+  !integer :: i1Source, i2Source ! 2 sources for cross correlations
+  !integer :: isx1,isx2,isz1,isz2,it1,it2
+  real, allocatable, dimension(:,:) :: singleStrainForward,singleStrainBack
+  real, allocatable, dimension(:,:) :: singleKernelP,singleKernelS
+  double precision, allocatable, dimension (:,:) :: strainForward,strainBack
+  double precision, allocatable, dimension (:,:) :: kernelP,kernelS
+  character(180) :: obsdir
+  character(20) :: extentionOBSx,extentionOBSz
+  ! extentions:  if 9999 we do not take the component
+  integer :: numberIteration
+  double precision :: steplengthVp, steplengthVs
+
+end module paramFWI
