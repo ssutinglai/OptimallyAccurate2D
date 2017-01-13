@@ -132,7 +132,7 @@ module parameters
   real(kind(0e0)), allocatable, dimension(:,:):: singleStrainDiagonal,singleStrainShear,tmpsingleStrain
 
   
-  character(340) :: commandline
+  character(440) :: commandline
   
 
   
@@ -168,4 +168,5 @@ module paramFWI
   integer :: numberIteration
   double precision :: steplengthVp, steplengthVs
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
+  real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz
 end module paramFWI

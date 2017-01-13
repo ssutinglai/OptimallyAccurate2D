@@ -68,6 +68,7 @@ subroutine vectorAllocateFWI
   implicit none
   
   allocate(obsx(0:maxnt,1:nReceiver),obsz(0:maxnt,1:nReceiver)) ! observed
+  allocate(delx(0:maxnt,1:nReceiver),delz(0:maxnt,1:nReceiver)) ! difference
 end subroutine vectorAllocateFWI
 
 subroutine vectorAllocateFrechet

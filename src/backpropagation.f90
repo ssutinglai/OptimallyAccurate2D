@@ -101,6 +101,15 @@ subroutine backpropagation
 
   do iSource = 1, nSource
 
+    
+     isx=iisx(iSource)+lmargin(1)
+     isz=iisz(iSource)+lmargin(2)
+     
+     ist=nt/4
+    
+
+
+
      ! Here in this routine, I do not calculate for the sources themselves I back propagate delta d
      ! 
 
@@ -118,7 +127,7 @@ subroutine backpropagation
         outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSx)
         
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        read(1,rec=1) synx(0:maxnt,1:nReceiver)
+        read(1,rec=1) obsx(0:maxnt,1:nReceiver)
         close(1)
    
      endif
@@ -137,22 +146,65 @@ subroutine backpropagation
         outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSz)
         
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        read(1,rec=1) synz(0:maxnt,1:nReceiver)
+        read(1,rec=1) obsz(0:maxnt,1:nReceiver)
         close(1)
         
      endif
 
      ! Reading OBS data done
+
+
+     ! Reading SYN data
+
+  
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".OPT_UX") ')  &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".CON_UX") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
+     
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     read(1,rec=1) synx(0:maxnt,1:nReceiver)
+     close(1)
+
+     
+     
+     if(optimise) then
+        write(outfile,'(I5,".",I5,".OPT_UZ") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     else
+        write(outfile,'(I5,".",I5,".CON_UZ") ') &
+             isx-lmargin(1),isz-lmargin(2)
+     endif
+     
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './synthetics/'//trim(modelname)//'/'//outfile
+   
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     read(1,rec=1) synz(0:maxnt,1:nReceiver)
+     close(1)
+   
+     ! Reading SYN data done
      
 
+     ! taking waveform difference
+     delx(:,:)=obsx(:,:)-synx(:,:)
+     delz(:,:)=obsz(:,:)-synz(:,:)
 
 
-    
-     isx=iisx(iSource)+lmargin(1)
-     isz=iisz(iSource)+lmargin(2)
-     
-     ist=nt/4
-    
+
 
      ! for video (without boundary)
 
@@ -175,6 +227,7 @@ subroutine backpropagation
      ! R. Courant et K. O. Friedrichs et H. Lewy (1928)
      cp=maxval(vp)
      Courant_number = cp * dt * sqrt(1.d0/dx**2 + 1.d0/dz**2)
+     print *, 'backpropagating'
      print *, 'Courant number is', Courant_number
      
      
@@ -187,23 +240,7 @@ subroutine backpropagation
      
      t=0.d0
      time(0)=t
-     do it=0,nt
-       
-        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
-        t=t+dt
-        !write(13,*) t, fx(isx,isz),fz(isx,isz)
-        
-     enddo
-     !print *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0
-     !stop
 
-     
-     t = 0.d0
-     !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
-     do ir = 1,nReceiver
-        synx(0,ir)=ux(nrx(ir),nrz(ir))
-        synz(0,ir)=uz(nrx(ir),nrz(ir))
-     enddo
 
      
 
@@ -257,10 +294,7 @@ subroutine backpropagation
         t = t + dt
         time(it)=t
         !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
-        do ir = 1,nReceiver
-           synx(it,ir)=ux(nrx(ir),nrz(ir))
-           synz(it,ir)=uz(nrx(ir),nrz(ir))
-        enddo
+       
         
      
         
@@ -334,33 +368,7 @@ subroutine backpropagation
         
         !write(*,*) it, ' of ', nt
         if(mod(it,IT_DISPLAY) == 0)then
-           !
-           !head=0
-           !head(58) = nx
-           !head(59) = dz * 1E3
-           !snapux=0.e0
-           !snapuz=0.e0
-           !snapux(1:nx,1:nz) = ux(1:nx,1:nz)
-           !snapuz(1:nx,1:nz) = uz(1:nx,1:nz)
-           !write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUx.su'
-           !open(21,file=routine,access='stream')
-           !do j = 1,nx,1
-           !   write(21) head,(real(snapux(k,j)),k=1,nz)
-           !enddo
-           !close(21)
-           !write(routine,'(a12,i5.5,a9)') './snapshots/',it,'snapUz.su'
-           !open(21,file=routine,access='stream')
-           !do j = 1,nx,1
-           !   write(21) head,(real(snapuz(k,j)),k=1,nz)
-           !enddo
-           !close(21)
-           
-           
-           
-           !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,0, &
-           !     dummylog,dummylog,dummylog,dummylog,1)
-           !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
-           !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
+          
            if(videoornot) then
               call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
                    nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
@@ -369,47 +377,12 @@ subroutine backpropagation
               
            endif
            
-           !if(optimise) then
-           !   write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-           !else
-           !   write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-           !endif
-           !do j=1,24
-           !   if(outfile(j:j).eq.' ') outfile(j:j)='0'
-           !enddo
-           
-           !outfile = './synthetics/'//trim(modelname)//'/'//outfile
-           !open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-           !video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
-           !     ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-           !write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
-           !close(1,status='keep')
-           
-           
-           
-           !if(optimise) then
-           !   write(outfile,'("video",I5,".",I5,".",I5,".OPT_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-           !else
-           !   write(outfile,'("video",I5,".",I5,".",I5,".CON_UX") ') it,isx-lmargin(1),isz-lmargin(2)
-           !endif
-           !do j=1,24
-           !   if(outfile(j:j).eq.' ') outfile(j:j)='0'
-           !enddo
-           
-           !outfile = './synthetics/'//trim(modelname)//'/'//outfile
-           !open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-           !video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))= &
-           !     ux(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-           !write(1,rec=1)  video(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2))
-           !close(1,status='keep')
+         
            
         endif
 
         
-        
-        !call compNRBC2(ux(1:nx+1,1:nz+1),ux1(1:nx+1,1:nz+1),ux2(1:nx+1,1:nz+1), &
-        !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
-        
+      
      enddo
 
      !write(18,*) singleStrainDiagonal(:,:)
