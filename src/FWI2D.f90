@@ -67,6 +67,17 @@ program multipleSourcesFWI2D
      call backpropagation
      
      call gradientCalculation
+     
+     write(outfile,'("./iteratedModels/",I5,".vpgrad")'),iterationIndex
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) kernelP
+     close(1)
+
+ 
+     write(outfile,'("./iteratedModels/",I5,".vsgrad")'),iterationIndex
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) kernelS
+     close(1)
 
      vp(:,:) = vp(:,:) + steplengthVp * kernelP(:,:)
      vs(:,:) = vs(:,:) + steplengthVs * kernelS(:,:)
@@ -82,14 +93,27 @@ program multipleSourcesFWI2D
      numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
      denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
 
-     alphaVp = numeratorG/denominator*steplengthVp
-     alphaVs = numeratorG/denominator*steplengthVs
+     alphaVp = numeratorG/denominatorG*steplengthVp
+     alphaVs = numeratorG/denominatorG*steplengthVs
 
 
      ! new model construction
      
      vp(:,:) = vp(:,:) + (alphaVp-steplengthVp) * kernelP(:,:)
      vs(:,:) = vs(:,:) + (alphaVs-steplengthVs) * kernelS(:,:)
+
+
+     write(outfile,'("./iteratedModels/",I5,".vpmodel")'),iterationIndex
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) vp
+     close(1)
+
+ 
+     write(outfile,'("./iteratedModels/",I5,".vsmodel")'),iterationIndex
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) vs
+     close(1)
+
 
      call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)

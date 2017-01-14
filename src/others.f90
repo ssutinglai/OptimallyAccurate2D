@@ -166,7 +166,9 @@ subroutine paramFWIReader
   
  
   call system('mkdir ./inffile')
-   
+
+  commandline="mkdir ./iteratedModels" 
+  call system(commandline)
   commandline="mkdir synthetics"
   call system(commandline)
   commandline="mkdir snapshots"
