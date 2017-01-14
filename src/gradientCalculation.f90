@@ -108,7 +108,8 @@ subroutine gradientCalculation
            do iz = 1,nz+1
               do ix = 1,nx+1
                  kernelP(ix,iz)=kernelP(ix,iz) &
-                      +2.d0*rho(ix,iz)*vp(ix,iz)*IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)
+                !      +2.d0*rho(ix,iz)*vp(ix,iz)*IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)
+                        +IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)
               enddo
            enddo
 

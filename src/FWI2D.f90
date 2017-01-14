@@ -85,7 +85,7 @@ program multipleSourcesFWI2D
      kernelS=0.d0
 
      call gradientCalculation
-
+     
 
      recl_size=kind(1.e0)*(nx+1)*(nz+1)
      
@@ -102,6 +102,9 @@ program multipleSourcesFWI2D
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
      write(1,rec=1) singleStrainForward
      close(1)
+
+     print *, "finished gradient"
+
 
      vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + steplengthVp * kernelP(1:nx+1,1:nz+1)
      vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + steplengthVs * kernelS(1:nx+1,1:nz+1)
