@@ -68,8 +68,8 @@ program multipleSourcesFWI2D
      
      call gradientCalculation
 
-     vp(:,:) = vp(:,:) + 1.d-2 * steplengthVp * kernelP(:,:)
-     vs(:,:) = vs(:,:) + 1.d-2 * steplengthVs * kernelS(:,:)
+     vp(:,:) = vp(:,:) + steplengthVp * kernelP(:,:)
+     vs(:,:) = vs(:,:) + steplengthVs * kernelS(:,:)
      call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
      call forwardmodelling
@@ -77,14 +77,25 @@ program multipleSourcesFWI2D
      synx(:,:) = obsx(:,:)-synx(:,:)
      synz(:,:) = obsz(:,:)-synz(:,:)
 
-     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
-     
-     
-     ! call steplength
+     ! here, syn is no more syn !!!
 
-     ! call calstruct etc.
+     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
+     denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
+
+     alphaVp = numeratorG/denominator*steplengthVp
+     alphaVs = numeratorG/denominator*steplengthVs
+
+
+     ! new model construction
      
-     ! call forwardmodelling
+     vp(:,:) = vp(:,:) + (alphaVp-steplengthVp) * kernelP(:,:)
+     vs(:,:) = vs(:,:) + (alphaVs-steplengthVs) * kernelS(:,:)
+
+     call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
+     call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
+     call forwardmodelling
+     
+     
 
   endif
      

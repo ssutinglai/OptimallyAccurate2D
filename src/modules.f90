@@ -166,7 +166,9 @@ module paramFWI
   character(20) :: extentionOBSx,extentionOBSz
   ! extentions:  if 9999 we do not take the component
   integer :: iterationIndex,numberIteration
+  double precision :: numeratorG, denominatorG
   double precision :: steplengthVp, steplengthVs
+  double precision :: alphaVp, alphaVs ! these are real steplengths
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
   real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz
 end module paramFWI
