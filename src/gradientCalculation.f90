@@ -23,14 +23,17 @@ subroutine gradientCalculation
   !call ReceiverSourcePositions
   
 
+
+ 
   
   kernelP = 0.d0
   kernelS = 0.d0
   
-
+  
   do iSource = 1,nSource
      i1Source = iSource
      i2Source = iSource
+     
 
      
      isx1 = iisx(i1Source)
@@ -38,11 +41,14 @@ subroutine gradientCalculation
      isx2 = iisx(i2Source)
      isz2 = iisz(i2Source)
      
+
      do it = 0, nt
         time(it)=dt*dble(it)
      enddo
-     
+ 
+
      recl_size=kind(1.e0)*(nx+1)*(nz+1)
+     !print *, recl_size
      
      do it = 0,nt,IT_DISPLAY
         
@@ -170,11 +176,11 @@ subroutine gradientCalculation
      
   enddo
   
-  tmpfolder="gradientlPsnapshots"
-  call create_color_kernel(kernelP,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
-       iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
-  tmpfolder="gradientSsnapshots"
-  call create_color_kernel(kernelS,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
-       iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+  !tmpfolder="gradientlPsnapshots"
+  !call create_color_kernel(kernelP,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
+  !     iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+  !tmpfolder="gradientSsnapshots"
+  !call create_color_kernel(kernelS,nx+1,nz+1,iterationIndex,isx1,isz1,iisx(i2Source:i2Source), &
+  !     iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
   
 end subroutine gradientCalculation

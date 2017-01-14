@@ -2,13 +2,12 @@ subroutine backpropagation
   use parameters
   use paramFWI
   implicit none
-
+  double precision :: normaliseX(1:nReceiver), normaliseZ(1:nReceiver)
   
   ! record size
-  recl_size=(nx+1)*(nz+1)*kind(0e0)
+  recl_size=(nx+1-rmargin(1)-lmargin(1))*(nz+1-rmargin(2)-lmargin(2))*kind(0e0)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
-  
-  
+
   ! Smoothed version of CONV/OPT operators
 
   call cales( nx,nz,rho,lam,mu,dt,dx,dz, &
@@ -91,13 +90,6 @@ subroutine backpropagation
   call compNRBCpre(weightBC(1:nx+1,1:nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
   
 
-  do ir= 1, nReceiver
-     nrx(ir)=nrx(ir)+lmargin(1)
-     nrz(ir)=nrz(ir)+lmargin(2)
-  enddo
-  
-
-
 
   do iSource = 1, nSource
 
@@ -120,12 +112,16 @@ subroutine backpropagation
         write(outfile,'(I5,".",I5,".") ')  &
              isx-lmargin(1),isz-lmargin(2)
         
-        do j=1,24
+        do j=1,12
            if(outfile(j:j).eq.' ') outfile(j:j)='0'
         enddo
         
-        outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSx)
-        
+      
+ 
+        outfile = trim(outfile)//trim(extentionOBSx)       
+        outfile = trim(obsdir)//'/'//trim(outfile)
+       
+       
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
         read(1,rec=1) obsx(0:maxnt,1:nReceiver)
         close(1)
@@ -139,11 +135,12 @@ subroutine backpropagation
              isx-lmargin(1),isz-lmargin(2)
         
         
-        do j=1,24
+        do j=1,12
            if(outfile(j:j).eq.' ') outfile(j:j)='0'
         enddo
         
-        outfile = trim(obsdir)//'/'//trim(outfile)//trim(extentionOBSz)
+        outfile = trim(outfile)//trim(extentionOBSz)
+        outfile = trim(obsdir)//'/'//trim(outfile)
         
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
         read(1,rec=1) obsz(0:maxnt,1:nReceiver)
@@ -165,7 +162,7 @@ subroutine backpropagation
              isx-lmargin(1),isz-lmargin(2)
      endif
      
-     do j=1,24
+     do j=1,12
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
@@ -185,7 +182,7 @@ subroutine backpropagation
              isx-lmargin(1),isz-lmargin(2)
      endif
      
-     do j=1,24
+     do j=1,12
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
@@ -204,6 +201,25 @@ subroutine backpropagation
      delz(:,:)=obsz(:,:)-synz(:,:)
 
 
+     do ir=1,nReceiver
+        normaliseX(ir)=maxval(abs(delx(0:maxnt/2,ir)))
+        normaliseZ(ir)=maxval(abs(delz(0:maxnt/2,ir)))
+        
+        !print *, normaliseX,normaliseZ
+     enddo
+
+     !stop
+    ! do it=1,nt
+    ! write(13,*) synz(it,5)
+    ! enddo
+    ! do it=1,nt
+    !   write(14,*) obsz(it,5)
+    !enddo
+
+    !do it=1,nt
+    !   write(15,*) delz(it,5)
+    !enddo
+    ! stop
 
 
      ! for video (without boundary)
@@ -230,13 +246,7 @@ subroutine backpropagation
      print *, 'backpropagating'
      print *, 'Courant number is', Courant_number
      
-     
 
-     fx=0.d0
-     fz=0.d0
-     
-
- 
      
      t=0.d0
      time(0)=t
@@ -256,9 +266,16 @@ subroutine backpropagation
 
         ! adjoint sources
         do ir=1,nReceiver
-           fx(nrx(ir),nrz(ir)) = delx(it,ir)
-           fz(nrx(ir),nrz(ir)) = delz(it,ir)           
+        
+           fx(nrx(ir),nrz(ir)) = delx(it,ir)/normaliseZ(ir)
+           fz(nrx(ir),nrz(ir)) = delz(it,ir)/normaliseZ(ir)         
+
+           !print *, fz(nrx(ir),nrz(ir)), nrx(ir),nrz(ir)
         enddo
+       
+        !do ir=1,nReceiver
+        !   print *, fz(nrx(ir),nrz(ir)),nrx(ir),nrz(ir)
+        !enddo
 
 
         !else

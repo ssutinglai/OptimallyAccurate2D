@@ -3,6 +3,10 @@ subroutine forwardmodelling
   use paramFWI
   implicit none
 
+  
+  ! record size
+  recl_size=(nx+1-rmargin(1)-lmargin(1))*(nz+1-rmargin(2)-lmargin(2))*kind(0e0)
+  recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
 
 
   
@@ -88,11 +92,6 @@ subroutine forwardmodelling
   call compNRBCpre(weightBC(1:nx+1,1:nz+1),CerjanRate,lmargin,rmargin,nx+1,nz+1)
   
 
-  do ir= 1, nReceiver
-     nrx(ir)=nrx(ir)+lmargin(1)
-     nrz(ir)=nrz(ir)+lmargin(2)
-  enddo
-  
 
 
 
@@ -104,9 +103,7 @@ subroutine forwardmodelling
      ist=nt/4
     
 
-     ! for video (without boundary)
-     recl_size=(nx+1)*(nz+1)*kind(0e0)
-     recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
+
      
      ALPHA_MAX_PML = 2.d0*PI*(f0/2.d0) ! from Festa and Vilotte
      
@@ -394,21 +391,40 @@ subroutine forwardmodelling
 
   
   
-  
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UX") ')  &
-             isx-lmargin(1),isz-lmargin(2)
+     if(iterationIndex.eq.0) then
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UX") ')  &
+                isx-lmargin(1),isz-lmargin(2)
+        else
+           write(outfile,'(I5,".",I5,".CON_UX") ') &
+                isx-lmargin(1),isz-lmargin(2)
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
      else
-        write(outfile,'(I5,".",I5,".CON_UX") ') &
-             isx-lmargin(1),isz-lmargin(2)
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UX.it",I3.3) ')  &
+                isx-lmargin(1),isz-lmargin(2),iterationIndex
+        else
+           write(outfile,'(I5,".",I5,".CON_UX,it",I3.3) ') &
+                isx-lmargin(1),isz-lmargin(2),iterationIndex
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        
      endif
-     
-     do j=1,24
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
-     
+        
+        
+
+
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
      write(1,rec=1) synx(0:maxnt,1:nReceiver)
      close(1)
@@ -416,20 +432,41 @@ subroutine forwardmodelling
      !write(1,rec=1) synx(0:nt,ir)
      !close(1,status='keep')
      
-     
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UZ") ') &
-             isx-lmargin(1),isz-lmargin(2)
+     if(iterationIndex.eq.0) then
+        
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UZ") ') &
+                isx-lmargin(1),isz-lmargin(2)
+        else
+           write(outfile,'(I5,".",I5,".CON_UZ") ') &
+                isx-lmargin(1),isz-lmargin(2)
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        
      else
-        write(outfile,'(I5,".",I5,".CON_UZ") ') &
-             isx-lmargin(1),isz-lmargin(2)
+
+          
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UZ.it",I3.3) ') &
+                isx-lmargin(1),isz-lmargin(2),iterationIndex
+        else
+           write(outfile,'(I5,".",I5,".CON_UZ.it",I3.3) ') &
+                isx-lmargin(1),isz-lmargin(2),iterationIndex
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
      endif
-     
-     do j=1,24
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        
+
      !open(1, file=outfile,status='unknown',form='formatted')
      !do it=0,nt
      !   write (1,*) time(it), synz(it,ir)

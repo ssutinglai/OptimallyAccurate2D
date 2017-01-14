@@ -55,35 +55,68 @@ program multipleSourcesFWI2D
 
   call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
 
+  
+  do ir= 1, nReceiver
+     nrx(ir)=nrx(ir)+lmargin(1)
+     nrz(ir)=nrz(ir)+lmargin(2)
+  enddo
+  
+
+
 
   ! first forward modelling
+    
+  iterationIndex=0
 
   call forwardmodelling
-     
-  iterationIndex=1
   
   if(iterationIndex<numberIteration) then
      iterationIndex=iterationIndex+1
      call backpropagation
+  
+     !print *, nx, maxnx, maxnz,nz
+
+     nx=nx-rmargin(1)-lmargin(1)
+     nz=nz-rmargin(1)-lmargin(1)
      
+     kernelP=0.d0
+     kernelS=0.d0
+
      call gradientCalculation
+
+
+     recl_size=kind(1.e0)*(nx+1)*(nz+1)
      
-     write(outfile,'("./iteratedModels/",I5,".vpgrad")'),iterationIndex
+     singleStrainForward(:,:)=kernelP(:,:)
+
+     write(outfile,'("./iteratedModels/",I3.3,".vpgrad")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) kernelP
+     write(1,rec=1) singleStrainForward
      close(1)
 
+     singleStrainForward(:,:)=kernelS(:,:)
  
-     write(outfile,'("./iteratedModels/",I5,".vsgrad")'),iterationIndex
+     write(outfile,'("./iteratedModels/",I3.3,".vsgrad")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) kernelS
+     write(1,rec=1) singleStrainForward
      close(1)
 
-     vp(:,:) = vp(:,:) + steplengthVp * kernelP(:,:)
-     vs(:,:) = vs(:,:) + steplengthVs * kernelS(:,:)
+     vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + steplengthVp * kernelP(1:nx+1,1:nz+1)
+     vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + steplengthVs * kernelS(1:nx+1,1:nz+1)
      call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
+     print *, "small perturbation"
+
+     synx=0.e0
+     synz=0.e0
+
      call forwardmodelling
+
+     numeratorG = 0.d0
+     denominatorG = 0.d0
+
+
+     
 
      synx(:,:) = obsx(:,:)-synx(:,:)
      synz(:,:) = obsz(:,:)-synz(:,:)
@@ -93,25 +126,38 @@ program multipleSourcesFWI2D
      numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
      denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
 
+     print *, "num, dem", numeratorG, denominatorG
+
      alphaVp = numeratorG/denominatorG*steplengthVp
      alphaVs = numeratorG/denominatorG*steplengthVs
-
+     
+     print *, "alphaVp/Vs = ",  alphaVp,alphaVs
 
      ! new model construction
+
+
+     nx=nx-rmargin(1)-lmargin(1)
+     nz=nz-rmargin(1)-lmargin(1)
      
-     vp(:,:) = vp(:,:) + (alphaVp-steplengthVp) * kernelP(:,:)
-     vs(:,:) = vs(:,:) + (alphaVs-steplengthVs) * kernelS(:,:)
+     vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + (alphaVp-steplengthVp) * kernelP(1:nx+1,1:nz+1)
+     vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + (alphaVs-steplengthVs) * kernelS(1:nx+1,1:nz+1)
 
 
-     write(outfile,'("./iteratedModels/",I5,".vpmodel")'),iterationIndex
+     recl_size=kind(1.e0)*(nx+1)*(nz+1)
+
+     singleStrainForward(:,:)=vp(1:nx+1,1:nz+1)
+     
+     write(outfile,'("./iteratedModels/",I3.3,".vpmodel")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) vp
+     write(1,rec=1) singleStrainForward
      close(1)
 
  
-     write(outfile,'("./iteratedModels/",I5,".vsmodel")'),iterationIndex
+     singleStrainForward(:,:)=vs(1:nx+1,1:nz+1)
+
+     write(outfile,'("./iteratedModels/",I3.3,".vsmodel")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) vs
+     write(1,rec=1) singleStrainForward
      close(1)
 
 

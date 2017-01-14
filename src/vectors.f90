@@ -68,6 +68,18 @@ subroutine vectorAllocateFWI
   implicit none
   allocate(obsx(0:maxnt,1:nReceiver),obsz(0:maxnt,1:nReceiver)) ! observed
   allocate(delx(0:maxnt,1:nReceiver),delz(0:maxnt,1:nReceiver)) ! difference
+  allocate(singleStrainForward(1:nx+1,1:nz+1))
+  allocate(singleStrainBack(1:nx+1,1:nz+1))
+  allocate(strainForward(1:nx+1,1:nz+1))
+  allocate(strainBack(1:nx+1,1:nz+1))
+
+  allocate(kernelP(1:nx+1,1:nz+1))
+  allocate(kernelS(1:nx+1,1:nz+1))
+  allocate(singleKernelP(1:nx+1,1:nz+1))
+  allocate(singleKernelS(1:nx+1,1:nz+1))
+
+
+
 end subroutine vectorAllocateFWI
 
 subroutine vectorAllocateFrechet
