@@ -67,6 +67,8 @@ program multipleSourcesFWI2D
   ! first forward modelling
     
   iterationIndex=0
+  
+  print *, "first forward"
 
   call forwardmodelling
   
