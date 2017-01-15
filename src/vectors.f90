@@ -78,8 +78,6 @@ subroutine vectorAllocateFWI
   allocate(singleKernelP(1:nx+1,1:nz+1))
   allocate(singleKernelS(1:nx+1,1:nz+1))
 
-  allocate(kernelPtotal(1:nx+1,1:nz+1))
-  allocate(kernelStotal(1:nx+1,1:nz+1))
   
 
 end subroutine vectorAllocateFWI
@@ -110,8 +108,8 @@ subroutine vectorAllocateFrechet
   allocate(kernelS(1:nx+1,1:nz+1))
   allocate(singleKernelP(1:nx+1,1:nz+1))
   allocate(singleKernelS(1:nx+1,1:nz+1))
-  
-
+  allocate(kernelPtotal(1:nx+1,1:nz+1))
+  allocate(kernelStotal(1:nx+1,1:nz+1))
   allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
 
   allocate(video(maxnx+1,maxnz+1))
