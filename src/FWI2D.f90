@@ -72,7 +72,8 @@ program multipleSourcesFWI2D
 
   call forwardmodelling
   
-  if(iterationIndex<numberIteration) then
+
+  do while (iterationIndex<numberIteration) 
      iterationIndex=iterationIndex+1
      call backpropagation
   
@@ -128,7 +129,7 @@ program multipleSourcesFWI2D
 
      ! here, syn is no more syn !!!
 
-     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delx(:,:))
+     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delz(:,:))
      denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
 
      print *, "num, dem", numeratorG, denominatorG
@@ -172,7 +173,7 @@ program multipleSourcesFWI2D
      
      
 
-  endif
+  enddo
      
 
      
