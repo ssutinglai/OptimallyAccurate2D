@@ -21,6 +21,11 @@ program frechetKernel
   call paramFrechetReader
   call vectorAllocateFrechet
   call ReceiverSourcePositions
+
+  call calstruct( maxnx,maxnz,rhofile,nx,nz,rho )
+  call calstruct( maxnx,maxnz,vpfile, nx,nz,vp )
+  call calstruct( maxnx,maxnz,vsfile, nx,nz,vs )
+
   
   isx1 = iisx(i1Source)
   isz1 = iisz(i1Source)
@@ -91,7 +96,7 @@ program frechetKernel
         
         do iz = 1,nz+1
            do ix = 1,nx+1
-              kernelP(ix,iz)=kernelP(ix,iz)+IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)
+              kernelP(ix,iz)=kernelP(ix,iz)+IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)*2.d0*rho(ix,iz)*vp(ix,iz)
            enddo
         enddo
 
@@ -141,7 +146,7 @@ program frechetKernel
         
         do iz = 1,nz+1
            do ix = 1,nx+1
-              kernelS(ix,iz)=kernelS(ix,iz)+IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)
+              kernelS(ix,iz)=kernelS(ix,iz)+IT_DISPLAY*dble(dt)*StrainForward(ix,iz)*StrainBack(ix,iz)*2.d0*rho(ix,iz)*vs(ix,iz)
            enddo
         enddo
 

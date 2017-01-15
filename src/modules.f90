@@ -149,7 +149,9 @@ module paramFrechet
   real, allocatable, dimension(:,:) :: singleKernelP,singleKernelS
   double precision, allocatable, dimension (:,:) :: strainForward,strainBack
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
-  
+  double precision, allocatable, dimension (:,:) :: kernelPtotal,kernelStotal
+
+
 end module paramFrechet
 
 

@@ -78,7 +78,9 @@ subroutine vectorAllocateFWI
   allocate(singleKernelP(1:nx+1,1:nz+1))
   allocate(singleKernelS(1:nx+1,1:nz+1))
 
-
+  allocate(kernelPtotal(1:nx+1,1:nz+1))
+  allocate(kernelStotal(1:nx+1,1:nz+1))
+  
 
 end subroutine vectorAllocateFWI
 
