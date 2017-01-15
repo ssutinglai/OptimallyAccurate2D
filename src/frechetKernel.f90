@@ -38,6 +38,10 @@ program frechetKernel
 
   recl_size=kind(1.e0)*(nx+1)*(nz+1)
   
+  kernelPtotal = 0.d0
+  kernelStotal = 0.d0
+
+
   do it = 0,nt,IT_DISPLAY
 
      kernelP = 0.d0
@@ -171,8 +175,22 @@ program frechetKernel
         call create_color_kernel(kernelS,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
      endif
      
+     kernelPtotal = kernelPtotal + kernelP
+     kernelStotal = kernelStotal + kernelS
+
+
   enddo
   
+  it = it+1
+   
+  if(videoornot) then
+     tmpfolder="kernelPsnapshots"
+     call create_color_kernel(kernelPtotal,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+     tmpfolder="kernelSsnapshots"
+     call create_color_kernel(kernelStotal,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+  endif
+  
+
   if(videoornot) then
      
      if(optimise) then
