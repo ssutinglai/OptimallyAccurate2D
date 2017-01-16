@@ -106,6 +106,19 @@ subroutine paramFrechetReader
   call system(commandline)
   commandline="mkdir kernelSsnapshots"
   call system(commandline)
+  
+  commandline="mkdir kernelPbinaries" ! we need kernelsP/Sbinaries folders too
+  call system(commandline)
+  commandline="mkdir kernelSbinaries"
+  call system(commandline)
+
+
+  commandline="mkdir kernelPbinaries/"//trim(modelname) ! we need kernelsP/Sbinaries folders too
+  call system(commandline)
+  commandline="mkdir kernelSbinaries/"//trim(modelname)
+  call system(commandline)
+
+
   commandline="mkdir videos"
   call system(commandline)
   commandline="mkdir synthetics/"//trim(modelname)
@@ -116,6 +129,10 @@ subroutine paramFrechetReader
   call system(commandline)
   commandline="mkdir strains/"//trim(modelname)
   call system(commandline)
+
+
+
+
 end subroutine paramFrechetReader
 
 

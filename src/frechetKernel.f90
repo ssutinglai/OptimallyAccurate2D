@@ -175,6 +175,46 @@ program frechetKernel
         call create_color_kernel(kernelS,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
      endif
      
+
+     if(optimise) then
+        write(outfile,'("binfrechetP",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".OPT") ') isx1,isz1,isx2,isz2,it
+     else
+        write(outfile,'("binfrechetP",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".CON") ') isx1,isz1,isx2,isz2,it
+     endif
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './kernelPbinaries/'//trim(modelname)//'/'//trim(outfile)
+
+     singleStrainForward(1:nx+1,1:nz+1) = kernelP(1:nx+1,1:nz+1)
+
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) singleStrainFoward
+     close(1)
+
+
+
+     if(optimise) then
+        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".OPT") ') isx1,isz1,isx2,isz2,it
+     else
+        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".CON") ') isx1,isz1,isx2,isz2,it
+     endif
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './kernelSbinaries/'//trim(modelname)//'/'//trim(outfile)
+     
+     singleStrainForward(1:nx+1,1:nz+1) = kernelS(1:nx+1,1:nz+1)
+
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     write(1,rec=1) singleStrainFoward
+     close(1)
+
+
+     
+
      kernelPtotal = kernelPtotal + kernelP
      kernelStotal = kernelStotal + kernelS
 
@@ -190,6 +230,47 @@ program frechetKernel
      call create_color_kernel(kernelStotal,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
   endif
   
+
+
+  
+  if(optimise) then
+     write(outfile,'("binfrechetP",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".OPT") ') isx1,isz1,isx2,isz2,it
+  else
+     write(outfile,'("binfrechetP",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".CON") ') isx1,isz1,isx2,isz2,it
+  endif
+  do j=1,24
+     if(outfile(j:j).eq.' ') outfile(j:j)='0'
+  enddo
+  
+  outfile = './kernelPbinaries/'//trim(modelname)//'/'//trim(outfile)
+  
+  singleStrainForward(1:nx+1,1:nz+1) = kernelPtotal(1:nx+1,1:nz+1)
+  
+  open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+  write(1,rec=1) singleStrainFoward
+  close(1)
+  
+  
+  
+  if(optimise) then
+     write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".OPT") ') isx1,isz1,isx2,isz2,it
+  else
+     write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".CON") ') isx1,isz1,isx2,isz2,it
+  endif
+  do j=1,24
+     if(outfile(j:j).eq.' ') outfile(j:j)='0'
+  enddo
+  
+  outfile = './kernelSbinaries/'//trim(modelname)//'/'//trim(outfile)
+  
+  singleStrainForward(1:nx+1,1:nz+1) = kernelStotal(1:nx+1,1:nz+1)
+  
+  open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+  write(1,rec=1) singleStrainFoward
+  close(1)
+  
+
+
 
   if(videoornot) then
      
