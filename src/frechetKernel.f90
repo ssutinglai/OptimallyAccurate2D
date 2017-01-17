@@ -196,9 +196,9 @@ program frechetKernel
 
 
      if(optimise) then
-        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".OPT") ') isx1,isz1,isx2,isz2,it
+        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I5.5,".OPT") ') isx1,isz1,isx2,isz2,it
      else
-        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I3.3,".CON") ') isx1,isz1,isx2,isz2,it
+        write(outfile,'("binfrechetS",".",I3.3,".",I3.3,".",I3.3,".",I3.3,".",I5.5,".CON") ') isx1,isz1,isx2,isz2,it
      endif
      do j=1,24
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
