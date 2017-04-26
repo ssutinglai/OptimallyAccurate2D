@@ -11,6 +11,8 @@ program multipleSourcesFWI2D
   !                                         colorbars : 2016.5. K. Okubo
   !  
   !                                          cleaning : 2016.6. N. Fuji   
+  !                                waveform inversion : 2017.1. N. Fuji
+  !
 
   use parameters
   use paramFWI
@@ -45,11 +47,6 @@ program multipleSourcesFWI2D
 
   ! calculate lamda and mu
   call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
-  
-  
-  !write(12,*) rho
-  !write(13,*) vp
-  !write(14,*) vs
 
   ! structuring absorbing boundary
 

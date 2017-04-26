@@ -267,8 +267,8 @@ subroutine backpropagation
         ! adjoint sources
         do ir=1,nReceiver
         
-           fx(nrx(ir),nrz(ir)) = delx(it,ir)/normaliseZ(ir)
-           fz(nrx(ir),nrz(ir)) = delz(it,ir)/normaliseZ(ir)         
+           fx(nrx(ir),nrz(ir)) = delx(it,ir)!/normaliseZ(ir)
+           fz(nrx(ir),nrz(ir)) = delz(it,ir)!/normaliseZ(ir)         
 
            !print *, fz(nrx(ir),nrz(ir)), nrx(ir),nrz(ir)
         enddo
