@@ -64,25 +64,37 @@ program multipleSourcesFWI2D
   ! first forward modelling
     
   iterationIndex=0
-  
-  print *, "first forward"
 
   call forwardmodelling
+
+  ! FFT and deconvolution with Ricker wavelet
+
   
 
+  ! NF assumes that sources and receivers are placed at the same points
+  
+  
   do while (iterationIndex<numberIteration) 
      iterationIndex=iterationIndex+1
-     call backpropagation
-  
-     !print *, nx, maxnx, maxnz,nz
-
+     
      nx=nx-rmargin(1)-lmargin(1)
      nz=nz-rmargin(1)-lmargin(1)
+
+     call approximatedHessian
+
+
+     ! NF will use approximated Hessian (full) matrix here so NF should replace backpropagation by 
+     !    Hessian calculation
+     
+     
+     !print *, nx, maxnx, maxnz,nz
+
+
      
      kernelP=0.d0
      kernelS=0.d0
 
-     call gradientCalculation
+     
      
 
      recl_size=kind(1.e0)*(nx+1)*(nz+1)

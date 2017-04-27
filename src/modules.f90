@@ -173,4 +173,11 @@ module paramFWI
   double precision :: alphaVp, alphaVs ! these are real steplengths
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
   real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz
+
+
+  ! for FourierAll
+  double complex, allocatable :: strainFieldP(:,:,:), strainFieldS(:,:,:)
+  integer :: nFreq
+  integer :: recl_size_strain
+
 end module paramFWI
