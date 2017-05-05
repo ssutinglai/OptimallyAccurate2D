@@ -176,8 +176,12 @@ module paramFWI
 
 
   ! for FourierAll
-  double complex, allocatable :: strainFieldP(:,:,:), strainFieldS(:,:,:)
+  double complex, allocatable :: strainFieldD(:,:,:), strainFieldS(:,:,:)
   integer :: nFreq
   integer :: recl_size_strain
+  double precision :: tlen
+  double complex, allocatable :: synFieldX(:,:),synFieldZ(:,:)
+  
+  
 
 end module paramFWI

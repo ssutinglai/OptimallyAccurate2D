@@ -14,11 +14,13 @@ objs2 = modelgenerator4Anais.o
 #objs2 = modelgenerator.o
 objs3 = frechetKernel.o modules.o others.o vectors.o videos.o 
 objs4 = forwardmodelling.o backpropagation.o gradientCalculation.o modules.o others.o vectors.o disconConfig.o seismicSources.o videos.o   cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o FWI2D.o
-objs5 = forwardmodelling.o backpropagation.o gradientCalculation.o modules.o others.o vectors.o disconConfig.o seismicSources.o videos.o   cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o FWI2D.o
+objs5 = fourier.o forwardmodelling.o backpropagation.o gradientCalculation.o modules.o others.o vectors.o disconConfig.o seismicSources.o videos.o   cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o FWI2D.o
 
-all : $(program) $(program2) $(program3) $(program4)
+all : $(program) $(program2) $(program3) $(program4) $(program5)
 .SUFFIXES: .o .f90
 
+$(program5): $(objs5)
+	$(FC) -o $@ $(objs5) $(FFLAGS)
 $(program4): $(objs4)
 	$(FC) -o $@ $(objs4) $(FFLAGS)
 $(program0): $(objs0)

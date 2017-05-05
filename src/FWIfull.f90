@@ -12,7 +12,7 @@ program multipleSourcesFWI2D
   !  
   !                                          cleaning : 2016.6. N. Fuji   
   !                                waveform inversion : 2017.1. N. Fuji
-  !
+  !                                          Hessian  : 2017.5. N. Fuji
 
   use parameters
   use paramFWI
@@ -65,11 +65,20 @@ program multipleSourcesFWI2D
     
   iterationIndex=0
 
+  ! force to write strains
+
+  writingStrain = .true.
+
   call forwardmodelling
 
   ! FFT and deconvolution with Ricker wavelet
 
-  
+  do iSource = 1, nSource
+     isx = iisx(iSource)
+     isz = iisz(iSource)
+     call FourierAll
+  enddo
+
 
   ! NF assumes that sources and receivers are placed at the same points
   
