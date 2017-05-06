@@ -72,13 +72,9 @@ program multipleSourcesFWI2D
   call forwardmodelling
 
   ! FFT and deconvolution with Ricker wavelet
-
-  do iSource = 1, nSource
-     isx = iisx(iSource)
-     isz = iisz(iSource)
-     call FourierAll
-  enddo
-
+  ! It allocates also Frechet derivatives
+  
+  call FourierAll
 
   ! NF assumes that sources and receivers are placed at the same points
   
@@ -87,10 +83,18 @@ program multipleSourcesFWI2D
      iterationIndex=iterationIndex+1
      
      nx=nx-rmargin(1)-lmargin(1)
-     nz=nz-rmargin(1)-lmargin(1)
+     nz=nz-rmargin(2)-lmargin(2)
 
+
+     ! kernelP/S are A^T \delta d
+     
+
+     kernelP=0.d0
+     kernelS=0.d0
+ 
      call approximatedHessian
 
+     call FourierDeallocate
 
      ! NF will use approximated Hessian (full) matrix here so NF should replace backpropagation by 
      !    Hessian calculation
@@ -100,8 +104,6 @@ program multipleSourcesFWI2D
 
 
      
-     kernelP=0.d0
-     kernelS=0.d0
 
      
      

@@ -77,7 +77,7 @@ program multipleSourcesFWI2D
      !print *, nx, maxnx, maxnz,nz
 
      nx=nx-rmargin(1)-lmargin(1)
-     nz=nz-rmargin(1)-lmargin(1)
+     nz=nz-rmargin(2)-lmargin(2)
      
      kernelP=0.d0
      kernelS=0.d0

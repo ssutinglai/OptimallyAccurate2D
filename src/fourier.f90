@@ -1,11 +1,23 @@
+subroutine FourierDeallocate
+  use paramFWI
+
+  deallocate(strainFieldD)
+  deallocate(strainFieldS)
+  deallocate(synFieldX)
+  deallocate(synFieldZ)
+  return
+end subroutine FourierDeallocate
+
+
+
 subroutine FourierAll
   use parameters
   use paramFWI
   implicit none
   integer :: iFreq
-  double precision :: angfreq0, angfreq
-  double precision, allocatable :: sourceFreq(:)
-
+  double precision :: angfreq0
+  double precision, allocatable :: angfreq(:)
+  double complex, allocatable :: sourceFreq(:)
   ! determination of frequency numbers
   
   nFreq = 1
@@ -19,20 +31,31 @@ subroutine FourierAll
   
 
   ! record size
-  recl_size=(nx+1-rmargin(1)-lmargin(1))*(nz+1-rmargin(2)-lmargin(2))*kind(0e0)
-  recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
-  recl_size_strain=recl_size*2*nFreq*kind(cmplx(0e0))
+  !recl_size=(nx+1-rmargin(1)-lmargin(1))*(nz+1-rmargin(2)-lmargin(2))*kind(0e0)
+  !recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
+  !recl_size_strain=recl_size*2*nFreq*kind(cmplx(0e0))
 
 
   allocate(sourceFreq(0:nFreq-1))
+  allocate(angfreq(0:nFreq-1))
+
+  ! Ricker wavelet in frequency domain
+    
+  do iFreq=0,nFreq-1
+     angfreq(iFreq)=2.d0*pi/tlen*dble(iFreq)
+     sourceFreq(iFreq)=2.d0*angfreq(iFreq)**2/sqrt(pi)/angfreq0**3* &
+          exp(-(angfreq(iFreq)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq))) 
+     
+  enddo
+     
 
   allocate(strainFieldD(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2)))
+       1:nz+1-rmargin(2)-lmargin(2),1:nSource))
   allocate(strainFieldS(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2)))
+       1:nz+1-rmargin(2)-lmargin(2),1:nSource))
 
-  allocate(synFieldX(0:2*nFreq-1,1:nReceiver))
-  allocate(synFieldZ(0:2*nFreq-1,1:nReceiver))
+  allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
+  allocate(synFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
   
   
   strainFieldD=cmplx(0.d0)
@@ -41,161 +64,169 @@ subroutine FourierAll
   synFieldZ=cmplx(0.d0)
 
 
-  do it=0,nt,IT_DISPLAY
-     tmpsingleStrain=0.e0     
-     if(optimise) then
-        write(outfile,'("strainD",I5,".",I5,".",I5,".OPT_dat") ') it,isx,isz
-     else
-        write(outfile,'("strainD",I5,".",I5,".",I5,".CON_dat") ') it,isx,isz
-     endif
-     do j=1,24
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     read(1,rec=1)  tmpsingleStrain
-     close(1,status='keep')
+  do iSource = 1,nSource
+     isx = iisx(iSource)
+     isx = iisz(iSource)
 
-     strainFieldD(it,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2)) &
-       = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2))
-
-
-     tmpsingleStrain=0.e0     
-     if(optimise) then
-        write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx,isz
-     else
-        write(outfile,'("strainS",I5,".",I5,".",I5,".CON_dat") ') it,isx,isz
-     endif
-     do j=1,24
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     read(1,rec=1)  tmpsingleStrain
-     close(1,status='keep')
-
-
-     strainFieldS(it,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2)) &
-       = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2))
-     
-  enddo
-  
-  
-  
-  if(iterationIndex.eq.0) then
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UX") ') isx,isz
-     else
-        write(outfile,'(I5,".",I5,".CON_UX") ') isx,isz
-     endif
-     
-     do j=1,12
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
-  else
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UX.it",I3.3) ') isx,isz,iterationIndex
-     else
-        write(outfile,'(I5,".",I5,".CON_UX,it",I3.3) ') isx,isz,iterationIndex
-     endif
-     
-     do j=1,12
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
-     
-  endif
-
-  synx=0.e0
-
-  open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-  read(1,rec=1) synx(0:maxnt,1:nReceiver)
-  close(1)
-  
-
-  synFieldX(0:maxnt,1:nReceiver)=synx(0:maxnt,1:nReceiver)
-
-
-    
-  if(iterationIndex.eq.0) then
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UZ") ') isx,isz
-     else
-        write(outfile,'(I5,".",I5,".CON_UZ") ') isx,isz
-     endif
-     
-     do j=1,12
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
-  else
-     if(optimise) then
-        write(outfile,'(I5,".",I5,".OPT_UZ.it",I3.3) ') isx,isz,iterationIndex
-     else
-        write(outfile,'(I5,".",I5,".CON_UZ,it",I3.3) ') isx,isz,iterationIndex
-     endif
-     
-     do j=1,12
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './synthetics/'//trim(modelname)//'/'//outfile
-     
-  endif
-
-  synz=0.e0
-
-  open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-  read(1,rec=1) synz(0:maxnt,1:nReceiver)
-  close(1)
-  
-
-  synFieldZ(0:maxnt,1:nReceiver)=synz(0:maxnt,1:nReceiver)
-
-  angfreq0  = 2.d0*pi*f0
-
-
-  do iFreq=0,nFreq-1
-   
-     sourceFreq(iFreq) = 2.d0*
-     
-  enddo
-  
-
-  do iz=1,nz+1-rmargin(2)-lmargin(2)
-     do ix=1,nx+1-rmargin(1)-lmargin(1)
-        call FFT_double(nFreq,strainFieldD(0:2*nFreq-1,ix,iz),tlen)
-        call FFT_double(nFreq,strainFieldS(0:2*nFreq-1,ix,iz),tlen)
+     do it=0,nt,IT_DISPLAY
+        tmpsingleStrain=0.e0     
+        if(optimise) then
+           write(outfile,'("strainD",I5,".",I5,".",I5,".OPT_dat") ') it,isx,isz
+        else
+           write(outfile,'("strainD",I5,".",I5,".",I5,".CON_dat") ') it,isx,isz
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
         
-        do iFreq = 0,nFreq-1
-           strainFieldD(iFreq,ix,iz)=strainFieldD(iFreq,ix,iz)/
-           
-
+        outfile = './strains/'//trim(modelname)//'/'//outfile
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        read(1,rec=1)  tmpsingleStrain
+        close(1,status='keep')
+        
+        strainFieldD(it,1:nx+1-rmargin(1)-lmargin(1), &
+             1:nz+1-rmargin(2)-lmargin(2),iSource) &
+             = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
+             1:nz+1-rmargin(2)-lmargin(2))
+        
+        
+        tmpsingleStrain=0.e0     
+        if(optimise) then
+           write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx,isz
+        else
+           write(outfile,'("strainS",I5,".",I5,".",I5,".CON_dat") ') it,isx,isz
+        endif
+        do j=1,24
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './strains/'//trim(modelname)//'/'//outfile
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+        read(1,rec=1)  tmpsingleStrain
+        close(1,status='keep')
+        
+        
+        strainFieldS(it,1:nx+1-rmargin(1)-lmargin(1), &
+             1:nz+1-rmargin(2)-lmargin(2),iSource) &
+             = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
+             1:nz+1-rmargin(2)-lmargin(2))
+        
      enddo
+     
+     
+     
+     if(iterationIndex.eq.0) then
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UX") ') isx,isz
+        else
+           write(outfile,'(I5,".",I5,".CON_UX") ') isx,isz
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+     else
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UX.it",I3.3) ') isx,isz,iterationIndex
+        else
+           write(outfile,'(I5,".",I5,".CON_UX,it",I3.3) ') isx,isz,iterationIndex
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        
+     endif
+     
+     synx=0.e0
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     read(1,rec=1) synx(0:maxnt,1:nReceiver)
+     close(1)
+     
+     
+     synFieldX(0:maxnt,1:nReceiver,iSource)=synx(0:maxnt,1:nReceiver)
+     
+     
+     
+     if(iterationIndex.eq.0) then
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UZ") ') isx,isz
+        else
+           write(outfile,'(I5,".",I5,".CON_UZ") ') isx,isz
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+     else
+        if(optimise) then
+           write(outfile,'(I5,".",I5,".OPT_UZ.it",I3.3) ') isx,isz,iterationIndex
+        else
+           write(outfile,'(I5,".",I5,".CON_UZ,it",I3.3) ') isx,isz,iterationIndex
+        endif
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+        
+     endif
+     
+     synz=0.e0
+     
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+     read(1,rec=1) synz(0:maxnt,1:nReceiver)
+     close(1)
+     
+     
+     synFieldZ(0:maxnt,1:nReceiver,iSource)=synz(0:maxnt,1:nReceiver)
+     
+     angfreq0  = 2.d0*pi*f0
+     
+     
+     ! Deconvolution of Ricker wavelet in frequency
+   
+     
+     do iz=1,nz+1-rmargin(2)-lmargin(2)
+        do ix=1,nx+1-rmargin(1)-lmargin(1)
+           call FFT_double(nFreq,strainFieldD(0:2*nFreq-1,ix,iz,iSource),tlen)
+           call FFT_double(nFreq,strainFieldS(0:2*nFreq-1,ix,iz,iSource),tlen)
+           
+           do iFreq = 0,nFreq-1
+              strainFieldD(iFreq,ix,iz,iSource)=strainFieldD(iFreq,ix,iz,iSource)/sourceFreq(iFreq)
+              strainFieldS(iFreq,ix,iz,iSource)=strainFieldS(iFreq,ix,iz,iSource)/sourceFreq(iFreq)
+           enddo
+           
+        enddo
+     enddo
+     
+     do iReceiver=1,nReceiver
+        call FFT_double(nFreq,synFieldX(0:2*nFreq-1,iReceiver,iSource),tlen)
+        call FFT_double(nFreq,synFieldZ(0:2*nFreq-1,iReceiver,iSource),tlen)
+        do iFreq = 0,nFreq-1
+           synFieldX(iFreq,iReceiver,iSource)=synFieldX(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
+           synFieldZ(iFreq,iReceiver,iSource)=synFieldZ(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
+        enddo
+     enddo
+     
+     
+     
   enddo
-
-  do iReceiver=1,nReceiver
-     call FFT_double(nFreq,synFieldX(0:2*nFreq-1,iReceiver),tlen)
-     call FFT_double(nFreq,synFieldZ(0:2*nFreq-1,iReceiver),tlen)
-  enddo
-
-  
 
   deallocate(sourceFreq)
-  deallocate(strainFieldD)
-  deallocate(strainFieldS)
-  deallocate(synFieldX)
-  deallocate(synFieldZ)
+  deallocate(angfreq)
+  !deallocate(strainFieldD)
+  !deallocate(strainFieldS)
+  !deallocate(synFieldX)
+  !deallocate(synFieldZ)
 
 end subroutine FourierAll
 
@@ -212,19 +243,10 @@ subroutine FFT_double(nFreq,cvec,tlen)
   real(kind(0d0)), parameter :: pi = 3.141592653589793d0
   real(kind(0d0)) :: tlen,samplingHz
   
- 
-
   samplingHz = dble(2*nFreq)/tlen
  
-  
-  
-  
-  
   call cdft(4*nFreq,cos(pi/(2*nFreq)),-sin(pi/(2*nFreq)), cvec(0:2*nFreq-1))
      
-  
- 
-  
   return
 end subroutine FFT_double
 

@@ -208,6 +208,8 @@ subroutine paramFWIReader
   call system(commandline)
   commandline="mkdir strains/"//trim(modelname)
   call system(commandline)
+  commandline="mkdir poubelle/"
+
 end subroutine paramFWIReader
 
 
