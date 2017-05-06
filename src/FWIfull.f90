@@ -74,6 +74,7 @@ program multipleSourcesFWI2D
   ! FFT and deconvolution with Ricker wavelet
   ! It allocates also Frechet derivatives
   
+
   call FourierAll
 
   ! NF assumes that sources and receivers are placed at the same points

@@ -73,6 +73,8 @@ subroutine approximatedHessian
      
      do iTypeParam=1,2
      
+
+
         do jxz=1,(nx+1)*(nz+1)
            jz=(jxz-1)/(nx+1)+1
            jx=mod(jxz-1,nx+1)+1

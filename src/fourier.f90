@@ -56,7 +56,10 @@ subroutine FourierAll
 
   allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
   allocate(synFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
-  
+  allocate(obsFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
+  allocate(obsFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
+
+
   
   strainFieldD=cmplx(0.d0)
   strainFieldS=cmplx(0.d0)
@@ -115,6 +118,59 @@ subroutine FourierAll
      
      
      
+
+     if(iterationIndex.eq.0) then
+
+             ! Reading OBS data
+
+
+     if(trim(extentionOBSx).ne."9999") then 
+        write(outfile,'(I5,".",I5,".") ')  &
+             isx-lmargin(1),isz-lmargin(2)
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+      
+ 
+        outfile = trim(outfile)//trim(extentionOBSx)       
+        outfile = trim(obsdir)//'/'//trim(outfile)
+       
+       
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+        read(1,rec=1) obsx(0:maxnt,1:nReceiver)
+        close(1)
+   
+     endif
+
+     if(trim(extentionOBSz).ne."9999") then
+     
+        
+        write(outfile,'(I5,".",I5,".") ') &
+             isx-lmargin(1),isz-lmargin(2)
+        
+        
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+        
+        outfile = trim(outfile)//trim(extentionOBSz)
+        outfile = trim(obsdir)//'/'//trim(outfile)
+        
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+        read(1,rec=1) obsz(0:maxnt,1:nReceiver)
+        close(1)
+        
+     endif
+
+     ! Reading OBS data done
+
+
+
+     endif
+
+
      if(iterationIndex.eq.0) then
         if(optimise) then
            write(outfile,'(I5,".",I5,".OPT_UX") ') isx,isz
