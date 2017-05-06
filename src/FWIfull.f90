@@ -81,10 +81,6 @@ program multipleSourcesFWI2D
   
   do while (iterationIndex<numberIteration) 
      iterationIndex=iterationIndex+1
-     
-     nx=nx-rmargin(1)-lmargin(1)
-     nz=nz-rmargin(2)-lmargin(2)
-
 
      ! kernelP/S are A^T \delta d
      

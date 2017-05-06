@@ -164,6 +164,8 @@ module paramFWI
   real, allocatable, dimension(:,:) :: singleKernelP,singleKernelS
   double precision, allocatable, dimension (:,:) :: strainForward,strainBack
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
+  double precision, allocatable, dimension (:,:) :: ata
+  double precision, allocatable, dimension (:) :: atd
   character(180) :: obsdir
   character(20) :: extentionOBSx,extentionOBSz
   ! extentions:  if 9999 we do not take the component
