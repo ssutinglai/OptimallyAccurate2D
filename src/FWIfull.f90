@@ -93,11 +93,7 @@ program multipleSourcesFWI2D
 
      call FourierDeallocate
 
-     ! NF will use approximated Hessian (full) matrix here so NF should replace backpropagation by 
-     !    Hessian calculation
-     
-     
-     !print *, nx, maxnx, maxnz,nz
+  
 
 
      

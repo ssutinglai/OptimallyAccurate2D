@@ -121,51 +121,57 @@ subroutine FourierAll
 
      if(iterationIndex.eq.0) then
 
-             ! Reading OBS data
-
-
-     if(trim(extentionOBSx).ne."9999") then 
-        write(outfile,'(I5,".",I5,".") ')  &
-             isx-lmargin(1),isz-lmargin(2)
+        ! Reading OBS data
         
-        do j=1,12
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
         
+        if(trim(extentionOBSx).ne."9999") then 
+           write(outfile,'(I5,".",I5,".") ')  &
+                isx-lmargin(1),isz-lmargin(2)
+           
+           do j=1,12
+              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+           enddo
+           
+           
+           
+           outfile = trim(outfile)//trim(extentionOBSx)       
+           outfile = trim(obsdir)//'/'//trim(outfile)
+           
+           
+           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+           read(1,rec=1) obsx(0:maxnt,1:nReceiver)
+           close(1)
+           
+        endif
+
+        if(trim(extentionOBSz).ne."9999") then
+           
+           
+           write(outfile,'(I5,".",I5,".") ') &
+                isx-lmargin(1),isz-lmargin(2)
+           
+           
+           do j=1,12
+              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+           enddo
+           
+           outfile = trim(outfile)//trim(extentionOBSz)
+           outfile = trim(obsdir)//'/'//trim(outfile)
+           
+           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+           read(1,rec=1) obsz(0:maxnt,1:nReceiver)
+           close(1)
+           
+        endif
+        
+        ! Reading OBS data done
+        
+         
+        obsFieldX(0:maxnt,1:nReceiver,iSource)=obsx(0:maxnt,1:nReceiver)
       
- 
-        outfile = trim(outfile)//trim(extentionOBSx)       
-        outfile = trim(obsdir)//'/'//trim(outfile)
-       
-       
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        read(1,rec=1) obsx(0:maxnt,1:nReceiver)
-        close(1)
-   
-     endif
-
-     if(trim(extentionOBSz).ne."9999") then
+        obsFieldZ(0:maxnt,1:nReceiver,iSource)=obsz(0:maxnt,1:nReceiver)
      
         
-        write(outfile,'(I5,".",I5,".") ') &
-             isx-lmargin(1),isz-lmargin(2)
-        
-        
-        do j=1,12
-           if(outfile(j:j).eq.' ') outfile(j:j)='0'
-        enddo
-        
-        outfile = trim(outfile)//trim(extentionOBSz)
-        outfile = trim(obsdir)//'/'//trim(outfile)
-        
-        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
-        read(1,rec=1) obsz(0:maxnt,1:nReceiver)
-        close(1)
-        
-     endif
-
-     ! Reading OBS data done
-
 
 
      endif
@@ -273,7 +279,19 @@ subroutine FourierAll
         enddo
      enddo
      
-     
+     if(iterationIndex.eq.0) then
+        do iReceiver=1,nReceiver
+           call FFT_double(nFreq,obsFieldX(0:2*nFreq-1,iReceiver,iSource),tlen)
+           call FFT_double(nFreq,obsFieldZ(0:2*nFreq-1,iReceiver,iSource),tlen)
+           do iFreq = 0,nFreq-1
+              obsFieldX(iFreq,iReceiver,iSource)=obsFieldX(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
+              obsFieldZ(iFreq,iReceiver,iSource)=obsFieldZ(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
+           enddo
+     enddo
+
+
+
+     endif
      
   enddo
 

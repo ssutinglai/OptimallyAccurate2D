@@ -183,7 +183,7 @@ module paramFWI
   integer :: recl_size_strain
   double precision :: tlen
   double complex, allocatable :: synFieldX(:,:,:),synFieldZ(:,:,:)
-  
+  double complex, allocatable :: obsFieldX(:,:,:),obsFieldZ(:,:,:) 
   
 
 end module paramFWI
