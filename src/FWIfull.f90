@@ -91,12 +91,15 @@ program multipleSourcesFWI2D
  
      call approximatedHessian
 
+     ! Here we have already ata and atd (i.e. we can do anything we want!)
+
      call FourierDeallocate
 
      
+     ! NF should use CG inversion scheme from old libraries
      
 
-
+     call invbyCG
 
      
 
