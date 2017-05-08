@@ -175,7 +175,7 @@ module paramFWI
   double precision :: alphaVp, alphaVs ! these are real steplengths
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
   real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz
-
+  double precision, parameter :: alphaAIC = 10.d0
 
   ! for FourierAll
   double complex, allocatable :: strainFieldD(:,:,:,:), strainFieldS(:,:,:,:)
