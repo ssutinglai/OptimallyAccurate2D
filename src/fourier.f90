@@ -84,13 +84,11 @@ subroutine FourierAll
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        read(1,rec=1)  tmpsingleStrain
+        read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        strainFieldD(it,1:nx+1-rmargin(1)-lmargin(1), &
-             1:nz+1-rmargin(2)-lmargin(2),iSource) &
-             = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
-             1:nz+1-rmargin(2)-lmargin(2))
+        strainFieldD(it,1:boxnx+1,1:boxnz+1,iSource) &
+             = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
         
         tmpsingleStrain=0.e0     
@@ -105,14 +103,11 @@ subroutine FourierAll
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-        read(1,rec=1)  tmpsingleStrain
+        read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        
-        strainFieldS(it,1:nx+1-rmargin(1)-lmargin(1), &
-             1:nz+1-rmargin(2)-lmargin(2),iSource) &
-             = tmpsingleStrain(1:nx+1-rmargin(1)-lmargin(1), &
-             1:nz+1-rmargin(2)-lmargin(2))
+        strainFieldS(it,1:boxnx+1,1:boxnz+1,iSource) &
+             = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
      enddo
      

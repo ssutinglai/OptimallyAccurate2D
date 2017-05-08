@@ -18,8 +18,9 @@ subroutine approximatedHessian
   use paramFWI
   !use paramFrechet
   implicit none
+
   double complex :: tmpfrechet(0:nFreq-1,1:2,1:nReceiver,1:nSource,&
-       1:nx-rmargin(1)-lmargin(1),1:nz+1-rmargin(2)-lmargin(2))
+       1:nx+1-rmargin(1)-lmargin(1),1:nz+1-rmargin(2)-lmargin(2))
   double complex :: deltad(0:nFreq-1,1:nReceiver,1:nSource) ! for vertical components for the moment
   integer :: iTypeParam,jTypeParam ! 1 for Vp and 2 for Vs
   integer :: iFreq
@@ -67,9 +68,9 @@ subroutine approximatedHessian
   atd=0.d0
 
 
-  do ixz=1,(nx+1)*(nz+1)
-     iz=(ixz-1)/(nx+1)+1
-     ix=mod(ixz-1,nx+1)+1
+  do ixz=1,(boxnx+1)*(boxnz+1)
+     iz=(ixz-1)/(boxnx+1)+1
+     ix=mod(ixz-1,boxnx+1)+1
      
      do iTypeParam=1,2
 
@@ -89,9 +90,9 @@ subroutine approximatedHessian
         enddo
     
 
-        do jxz=1,(nx+1)*(nz+1)
-           jz=(jxz-1)/(nx+1)+1
-           jx=mod(jxz-1,nx+1)+1
+        do jxz=1,(boxnx+1)*(boxnz+1)
+           jz=(jxz-1)/(boxnx+1)+1
+           jx=mod(jxz-1,boxnx+1)+1
 
            do jTypeParam=1,2
              

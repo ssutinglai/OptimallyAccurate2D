@@ -4,16 +4,17 @@ subroutine invbyCG
   implicit none
 
   double complex :: a, b, tmp_r2
-  integer :: ii,jj
-  double complex :: x(1:(nx+1)*(nz+1)*2)
-  double complex :: r(1:(nx+1)*(nz+1)*2)
-  double complex :: w(1:(nx+1)*(nz+1)*2)
-  double complex :: z(1:(nx+1)*(nz+1)*2)
-  double complex :: x0(1:(nx+1)*(nz+1)*2)
+  integer :: ii,jj,ixz
+
+  double complex :: x(1:(boxnx+1)*(boxnz+1)*2)
+  double complex :: r(1:(boxnx+1)*(boxnz+1)*2)
+  double complex :: w(1:(boxnx+1)*(boxnz+1)*2)
+  double complex :: z(1:(boxnx+1)*(boxnz+1)*2)
+  double complex :: x0(1:(boxnx+1)*(boxnz+1)*2)
  
   character(3) :: num
   double precision :: ND
-  double precision :: AIC(0:(nx+1)*(nz+1)*2)
+  double precision :: AIC(0:(boxnx+1)*(boxnz+1)*2)
   logical :: doCG
 
   doCG=.true.
@@ -55,10 +56,16 @@ subroutine invbyCG
         x0 = x ! x0 to be updated
      endif
   enddo
-
-
-  atd=x0
   
+
+  do ixz=1,(boxnx+1)*(boxnz+1)
+     iz=(ixz-1)/(boxnx+1)+1
+     ix=mod(ixz-1,boxnx+1)+1
+     kernelP(ix,iz)=dble(x0(2*(ixz-1)+1))
+     kernelS(ix,iz)=dble(x0(2*(ixz-1)+2))
+  enddo
+
+
 
   return
   

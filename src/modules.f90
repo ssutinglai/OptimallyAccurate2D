@@ -37,6 +37,9 @@ module parameters
   double precision dt,dx,dz
   ! parameters for the wavefield
   integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size,recl_size_syn
+  ! paramters for the physical domain
+  integer boxnx,boxnz
+  
   ! Attention ! nx and nz are modified with absorbing boundaries
   double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
   double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
