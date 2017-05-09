@@ -116,7 +116,7 @@ subroutine FourierAll
      
      
      
-
+     
      if(iterationIndex.eq.0) then
 
         ! Reading OBS data
@@ -293,6 +293,7 @@ subroutine FourierAll
      
   enddo
 
+  print *, "FFT done"
   deallocate(sourceFreq)
   deallocate(angfreq)
   !deallocate(strainFieldD)

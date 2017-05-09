@@ -101,6 +101,8 @@ program multipleSourcesFWI2D
      kernelP=0.d0
      kernelS=0.d0
  
+     
+
      call approximatedHessian
 
      ! Here we have already ata and atd (i.e. we can do anything we want!)
@@ -130,6 +132,8 @@ program multipleSourcesFWI2D
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
      write(1,rec=1) singleStrainForward
      close(1)
+
+     
 
      
 

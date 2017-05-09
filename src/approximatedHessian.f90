@@ -19,109 +19,93 @@ subroutine approximatedHessian
   !use paramFrechet
   implicit none
 
-  double complex :: tmpfrechet(0:nFreq-1,1:2,1:nReceiver,1:nSource,&
-       1:nx+1-rmargin(1)-lmargin(1),1:nz+1-rmargin(2)-lmargin(2))
+  !double complex :: tmpfrechet(0:nFreq-1,1:2,1:nReceiver,1:nSource,&
+  !     1:nx+1-rmargin(1)-lmargin(1),1:nz+1-rmargin(2)-lmargin(2))
   double complex :: deltad(0:nFreq-1,1:nReceiver,1:nSource) ! for vertical components for the moment
   integer :: iTypeParam,jTypeParam ! 1 for Vp and 2 for Vs
   integer :: iFreq
   integer :: ixz
   integer :: jxz,jx,jz
+  double complex :: tmpfrechet1,tmpfrechet2
 
-  tmpfrechet=cmplx(0.d0)
+  tmpfrechet1=cmplx(0.d0)
+  tmpfrechet2=cmplx(0.d0)
   deltad=cmplx(0.d0)
-
-  do iSource=1,nSource
-     do iReceiver=1,nReceiver
-        do iFreq=0,nFreq-1
-           deltad(iFreq,iReceiver,iSource)= &               
-                obsFieldZ(iFreq,iReceiver,iSource)-synFieldZ(iFreq,iReceiver,iSource)
-        enddo
-     enddo
-  enddo
-
-
-  do iz=lmargin(2)+1,nz+1-rmargin(2)
-     do ix=lmargin(1)+1,nx+1-rmargin(1)
-        do iSource=1,nSource
-           do iReceiver=1,nReceiver
-              do iFreq=0,nFreq-1 
-
-                 tmpfrechet(iFreq,1,iReceiver,iSource,ix-lmargin(1),iz-lmargin(2))= &
-                      !tmpfrechet(iFreq,1,iReceiver,iSource,ix-lmargin(1),iz-lmargin(2))+ &
-                      2.d0*rho(ix,iz)*vp(ix,iz)* &
-                      strainFieldD(iFreq,ix-lmargin(1),iz-lmargin(2),iSource)* &
-                      conjg(strainFieldD(iFreq,ix-lmargin(1),iz-lmargin(2),iReceiver))
-                 
-                 
-                 tmpfrechet(iFreq,2,iReceiver,iSource,ix-lmargin(1),iz-lmargin(2))= &
-                      !tmpfrechet(iFreq,1,iReceiver,iSource,ix-lmargin(1),iz-lmargin(2))+ &
-                      2.d0*rho(ix,iz)*vs(ix,iz)* &
-                      strainFieldS(iFreq,ix-lmargin(1),iz-lmargin(2),iSource)* &
-                      conjg(strainFieldS(iFreq,ix-lmargin(1),iz-lmargin(2),iReceiver))
-              enddo
-           enddo
-        enddo
-     enddo
-  enddo
-
+  
   ata=0.d0
   atd=0.d0
+
+
+
+
+  print *, "start approximated Hessian"
 
 
   do ixz=1,(boxnx+1)*(boxnz+1)
      iz=(ixz-1)/(boxnx+1)+1
      ix=mod(ixz-1,boxnx+1)+1
      
-     do iTypeParam=1,2
-
-        
-
-        do iSource=1,nSource
-           do iReceiver=1,nReceiver
-              do iFreq=0,nFreq-1
+     
+     do iSource=1,nSource
+        do iReceiver=1,nReceiver
+           do iFreq=0,nFreq-1
+              do iTypeParam=1,2
+                 call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)
                  atd(2*(ixz-1)+iTypeParam)= &
                       atd(2*(ixz-1)+iTypeParam)+ &
-                      conjg(tmpfrechet(iFreq,iTypeParam,iReceiver,iSource,ix,iz))* &                     
+                      conjg(tmpfrechet1)* &                     
                       deltad(iFreq,iReceiver,iSource)
-
-
-              enddo
-           enddo
-        enddo
-    
-
-        do jxz=1,(boxnx+1)*(boxnz+1)
-           jz=(jxz-1)/(boxnx+1)+1
-           jx=mod(jxz-1,boxnx+1)+1
-
-           do jTypeParam=1,2
-             
-              do iSource=1,nSource
-                 do iReceiver=1,nReceiver
-                    do iFreq=0,nFreq-1
+                 do jxz=1,(boxnx+1)*(boxnz+1)
+                    jz=(jxz-1)/(boxnx+1)+1
+                    jx=mod(jxz-1,boxnx+1)+1
+                    
+                    do jTypeParam=1,2
+                       
+                       call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
+                       
+                       
                        ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)= &
                             ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)+ &
-                            conjg(tmpfrechet(iFreq,iTypeParam,iReceiver,iSource,ix,iz))* &
-                            tmpfrechet(iFreq,jTypeParam,iReceiver,iSource,jx,jz)
-
-                    enddo
-                 enddo
-              enddo
+                            conjg(tmpfrechet1)*tmpfrechet2
               
+                    enddo
+                    
+                 enddo
 
+              enddo
            enddo
-
         enddo
-
-
      enddo
-
   enddo
   
-
+  print *, "end Hessian calculation"
   
 
   return
 
 end subroutine approximatedHessian
 
+subroutine frechet1point(iFreq,iTypeParam,indexx,indexz,tmpfrechet)
+  use parameters
+  use paramFWI
+  implicit none
+  integer :: iFreq, iTypeParam,indexx,indexz
+  double complex :: tmpfrechet
+
+
+  if(iTypeParam.eq.1) then
+
+     tmpfrechet= &
+          2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vp(indexx+lmargin(1),indexz+lmargin(2))* &
+          strainFieldD(iFreq,indexx,indexz,iSource)* &
+          conjg(strainFieldD(iFreq,indexx,indexz,iReceiver))
+     
+  elseif(iTypeParam.eq.2) then
+  
+     tmpfrechet= &
+          2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vs(indexx+lmargin(1),indexz+lmargin(2))* &
+          strainFieldS(iFreq,indexx,indexz,iSource)* &
+          conjg(strainFieldS(iFreq,indexx,indexz,iReceiver))
+  endif
+  
+end subroutine frechet1point
