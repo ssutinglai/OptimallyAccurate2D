@@ -21,6 +21,7 @@ subroutine FourierAll
   ! determination of frequency numbers
   
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
+  recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
 
   nFreq = 1
   
