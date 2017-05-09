@@ -20,6 +20,8 @@ subroutine FourierAll
   double complex, allocatable :: sourceFreq(:)
   ! determination of frequency numbers
   
+  recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
+
   nFreq = 1
   
   do while (nFreq < (maxnt+1))
@@ -69,7 +71,7 @@ subroutine FourierAll
 
   do iSource = 1,nSource
      isx = iisx(iSource)
-     isx = iisz(iSource)
+     isz = iisz(iSource)
 
      do it=0,nt,IT_DISPLAY
         tmpsingleStrain=0.e0     

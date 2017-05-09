@@ -69,6 +69,8 @@ program multipleSourcesFWI2D
 
   writingStrain = .true.
 
+
+
   call forwardmodelling
 
 
