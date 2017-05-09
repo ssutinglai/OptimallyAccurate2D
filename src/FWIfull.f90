@@ -71,7 +71,7 @@ program multipleSourcesFWI2D
 
 
 
-  call forwardmodelling
+  !call forwardmodelling
 
 
   
@@ -91,7 +91,10 @@ program multipleSourcesFWI2D
 
      ! FFT and deconvolution with Ricker wavelet
      ! It allocates also Frechet derivatives
-     call FourierAll
+  
+     ! NF should comment out
+     call FourierAllocate
+     ! call FourierAll
 
 
      ! kernelP/S are A^T \delta d

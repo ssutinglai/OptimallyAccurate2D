@@ -21,7 +21,7 @@ subroutine approximatedHessian
 
   !double complex :: tmpfrechet(0:nFreq-1,1:2,1:nReceiver,1:nSource,&
   !     1:nx+1-rmargin(1)-lmargin(1),1:nz+1-rmargin(2)-lmargin(2))
-  double complex :: deltad(0:nFreq-1,1:nReceiver,1:nSource) ! for vertical components for the moment
+  !double complex :: deltad(0:nFreq-1,1:nReceiver,1:nSource) ! for vertical components for the moment
   integer :: iTypeParam,jTypeParam ! 1 for Vp and 2 for Vs
   integer :: iFreq
   integer :: ixz
@@ -30,12 +30,15 @@ subroutine approximatedHessian
 
   tmpfrechet1=cmplx(0.d0)
   tmpfrechet2=cmplx(0.d0)
-  deltad=cmplx(0.d0)
+  !deltad=cmplx(0.d0)
   
   ata=0.d0
   atd=0.d0
 
 
+  open(unit=1,form="unformatted",file="./tmpbinary")
+  read(1) strainFieldS, strainFieldD, obsFieldZ,synFieldZ
+  close(1)
 
 
   print *, "start approximated Hessian"
@@ -53,8 +56,9 @@ subroutine approximatedHessian
                  call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)
                  atd(2*(ixz-1)+iTypeParam)= &
                       atd(2*(ixz-1)+iTypeParam)+ &
-                      conjg(tmpfrechet1)* &                     
-                      deltad(iFreq,iReceiver,iSource)
+                      conjg(tmpfrechet1)* &   
+                      (obsFieldZ(iFreq,iReceiver,iSource)-synFieldZ(iFreq,iReceiver,iSource))
+                      !deltad(iFreq,iReceiver,iSource)
                  do jxz=1,(boxnx+1)*(boxnz+1)
                     jz=(jxz-1)/(boxnx+1)+1
                     jx=mod(jxz-1,boxnx+1)+1

@@ -8,18 +8,12 @@ subroutine FourierDeallocate
   return
 end subroutine FourierDeallocate
 
-
-
-subroutine FourierAll
-  use parameters
+subroutine FourierAllocate
   use paramFWI
+  use parameters
   implicit none
-  integer :: iFreq
-  double precision :: angfreq0
-  double precision, allocatable :: angfreq(:)
-  double complex, allocatable :: sourceFreq(:)
-  ! determination of frequency numbers
-  
+
+    
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
 
@@ -29,28 +23,9 @@ subroutine FourierAll
      nFreq = nFreq*2
   enddo
   
-  tlen = dt*dble(nFreq)
-
-  
-
-  ! record size
-  !recl_size=(nx+1-rmargin(1)-lmargin(1))*(nz+1-rmargin(2)-lmargin(2))*kind(0e0)
-  !recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
-  !recl_size_strain=recl_size*2*nFreq*kind(cmplx(0e0))
 
 
-  allocate(sourceFreq(0:nFreq-1))
-  allocate(angfreq(0:nFreq-1))
-
-  ! Ricker wavelet in frequency domain
-    
-  do iFreq=0,nFreq-1
-     angfreq(iFreq)=2.d0*pi/tlen*dble(iFreq)
-     sourceFreq(iFreq)=2.d0*angfreq(iFreq)**2/sqrt(pi)/angfreq0**3* &
-          exp(-(angfreq(iFreq)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq))) 
-     
-  enddo
-     
+       
 
   allocate(strainFieldD(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
        1:nz+1-rmargin(2)-lmargin(2),1:nSource))
@@ -62,6 +37,32 @@ subroutine FourierAll
   allocate(obsFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
   allocate(obsFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
 
+  return
+end subroutine FourierAllocate
+
+subroutine FourierAll
+  use parameters
+  use paramFWI
+  implicit none
+  integer :: iFreq
+  double precision :: angfreq0
+  double precision, allocatable :: angfreq(:)
+  double complex, allocatable :: sourceFreq(:)
+  ! determination of frequency numbers
+
+  allocate(sourceFreq(0:nFreq-1))
+  allocate(angfreq(0:nFreq-1))
+
+  tlen = dt*dble(nFreq)
+
+  ! Ricker wavelet in frequency domain
+    
+  do iFreq=0,nFreq-1
+     angfreq(iFreq)=2.d0*pi/tlen*dble(iFreq)
+     sourceFreq(iFreq)=2.d0*angfreq(iFreq)**2/sqrt(pi)/angfreq0**3* &
+          exp(-(angfreq(iFreq)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq))) 
+     
+  enddo
 
   
   strainFieldD=cmplx(0.d0)
@@ -292,6 +293,10 @@ subroutine FourierAll
      endif
      
   enddo
+
+  open(unit=1,form="unformatted",file="./tmpbinary")
+  write(1) strainFieldS, strainFieldD, obsFieldZ,synFieldZ
+  close(1)
 
   print *, "FFT done"
   deallocate(sourceFreq)
