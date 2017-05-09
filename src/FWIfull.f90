@@ -86,7 +86,7 @@ program multipleSourcesFWI2D
 
 
   do while (iterationIndex<numberIteration) 
-     iterationIndex=iterationIndex+1
+
 
 
      ! FFT and deconvolution with Ricker wavelet
@@ -202,7 +202,7 @@ program multipleSourcesFWI2D
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
      call forwardmodelling
      
-     
+     iterationIndex=iterationIndex+1
 
   enddo
      

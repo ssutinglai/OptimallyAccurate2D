@@ -124,7 +124,7 @@ subroutine FourierAll
         
         if(trim(extentionOBSx).ne."9999") then 
            write(outfile,'(I5,".",I5,".") ')  &
-                isx-lmargin(1),isz-lmargin(2)
+                isx,isz
            
            do j=1,12
               if(outfile(j:j).eq.' ') outfile(j:j)='0'
@@ -146,7 +146,7 @@ subroutine FourierAll
            
            
            write(outfile,'(I5,".",I5,".") ') &
-                isx-lmargin(1),isz-lmargin(2)
+                isx,isz
            
            
            do j=1,12
