@@ -29,10 +29,8 @@ subroutine FourierAllocate
   allocate(singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz))
 
 
-  allocate(strainFieldD(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2),1:nSource))
-  allocate(strainFieldS(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
-       1:nz+1-rmargin(2)-lmargin(2),1:nSource))
+  allocate(strainFieldD(0:2*nFreq-1,1:boxnx,1:boxnz))
+  allocate(strainFieldS(0:2*nFreq-1,1:boxnx,1:boxnz))
 
 
   allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
@@ -79,7 +77,9 @@ subroutine FourierAll
 
      strainFieldD=cmplx(0.d0)
      strainFieldS=cmplx(0.d0)
-
+     singleStrainFieldD=cmplx(0.e0)
+     singleStrainFieldS=cmplx(0.e0)
+     
 
      do it=0,nt,IT_DISPLAY
         tmpsingleStrain=0.e0     
@@ -97,7 +97,7 @@ subroutine FourierAll
         read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        strainFieldD(it,1:boxnx+1,1:boxnz+1,iSource) &
+        strainFieldD(it,1:boxnx+1,1:boxnz+1) &
              = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
         
@@ -116,7 +116,7 @@ subroutine FourierAll
         read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        strainFieldS(it,1:boxnx+1,1:boxnz+1,iSource) &
+        strainFieldS(it,1:boxnx+1,1:boxnz+1) &
              = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
      enddo
@@ -264,12 +264,12 @@ subroutine FourierAll
      
      do iz=1,nz+1-rmargin(2)-lmargin(2)
         do ix=1,nx+1-rmargin(1)-lmargin(1)
-           call FFT_double(nFreq,strainFieldD(0:2*nFreq-1,ix,iz,iSource),tlen)
-           call FFT_double(nFreq,strainFieldS(0:2*nFreq-1,ix,iz,iSource),tlen)
+           call FFT_double(nFreq,strainFieldD(0:2*nFreq-1,ix,iz),tlen)
+           call FFT_double(nFreq,strainFieldS(0:2*nFreq-1,ix,iz),tlen)
            
            do iFreq = 0,nFreq-1
-              strainFieldD(iFreq,ix,iz,iSource)=strainFieldD(iFreq,ix,iz,iSource)/sourceFreq(iFreq)
-              strainFieldS(iFreq,ix,iz,iSource)=strainFieldS(iFreq,ix,iz,iSource)/sourceFreq(iFreq)
+              strainFieldD(iFreq,ix,iz)=strainFieldD(iFreq,ix,iz)/sourceFreq(iFreq)
+              strainFieldS(iFreq,ix,iz)=strainFieldS(iFreq,ix,iz)/sourceFreq(iFreq)
            enddo
            
         enddo
@@ -292,17 +292,48 @@ subroutine FourierAll
               obsFieldX(iFreq,iReceiver,iSource)=obsFieldX(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
               obsFieldZ(iFreq,iReceiver,iSource)=obsFieldZ(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
            enddo
-     enddo
+        enddo
 
 
 
      endif
-     
-  enddo
 
-  open(unit=1,form="unformatted",file="./tmpbinary")
-  write(1) strainFieldS, strainFieldD, obsFieldZ,synFieldZ
-  close(1)
+
+
+     !! Write 
+
+     singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
+     singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
+     if(optimise) then
+        write(outfile,'("FourierStrainD",".",I5,".",I5,".OPT_dat") ') isx,isz
+     else
+        write(outfile,'("FourierStrainD",".",I5,".",I5,".CON_dat") ') isx,isz
+     endif
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './strains/'//trim(modelname)//'/'//outfile
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     read(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     close(1,status='keep')
+
+
+      if(optimise) then
+        write(outfile,'("FourierStrainS",".",I5,".",I5,".OPT_dat") ') isx,isz
+     else
+        write(outfile,'("FourierStrainS",".",I5,".",I5,".CON_dat") ') isx,isz
+     endif
+     do j=1,24
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './strains/'//trim(modelname)//'/'//outfile
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+     read(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     close(1,status='keep')
+
+  enddo
 
   print *, "FFT done"
   deallocate(sourceFreq)
