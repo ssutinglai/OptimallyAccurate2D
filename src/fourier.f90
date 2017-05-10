@@ -25,12 +25,15 @@ subroutine FourierAllocate
   
 
 
-       
+  allocate(singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz))
+  allocate(singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz))
+
 
   allocate(strainFieldD(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
        1:nz+1-rmargin(2)-lmargin(2),1:nSource))
   allocate(strainFieldS(0:2*nFreq-1,1:nx+1-rmargin(1)-lmargin(1), &
        1:nz+1-rmargin(2)-lmargin(2),1:nSource))
+
 
   allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
   allocate(synFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
@@ -65,8 +68,7 @@ subroutine FourierAll
   enddo
 
   
-  strainFieldD=cmplx(0.d0)
-  strainFieldS=cmplx(0.d0)
+
   synFieldX=cmplx(0.d0)
   synFieldZ=cmplx(0.d0)
 
@@ -74,6 +76,10 @@ subroutine FourierAll
   do iSource = 1,nSource
      isx = iisx(iSource)
      isz = iisz(iSource)
+
+     strainFieldD=cmplx(0.d0)
+     strainFieldS=cmplx(0.d0)
+
 
      do it=0,nt,IT_DISPLAY
         tmpsingleStrain=0.e0     

@@ -69,7 +69,7 @@ program multipleSourcesFWI2D
 
   writingStrain = .true.
 
-
+  ! NF should uncomment below
 
   !call forwardmodelling
 
@@ -83,7 +83,7 @@ program multipleSourcesFWI2D
   
   boxnx=nx-rmargin(1)-lmargin(1)
   boxnz=nz-rmargin(2)-lmargin(2)
-
+  call FourierAllocate
 
   do while (iterationIndex<numberIteration) 
 
@@ -93,7 +93,7 @@ program multipleSourcesFWI2D
      ! It allocates also Frechet derivatives
   
      ! NF should comment out
-     call FourierAllocate
+
      ! call FourierAll
 
 

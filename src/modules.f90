@@ -181,7 +181,9 @@ module paramFWI
   double precision, parameter :: alphaAIC = 10.d0
 
   ! for FourierAll
-  double complex, allocatable :: strainFieldD(:,:,:,:), strainFieldS(:,:,:,:)
+  double complex, allocatable :: strainFieldD(:,:,:), strainFieldS(:,:,:)
+  complex(kind(0e0)), allocatable :: singleStrainFieldD(:,:,:)
+  complex(kind(0e0)), allocatable :: singleStrainFieldS(:,:,:)
   integer :: nFreq
   integer :: recl_size_strain
   double precision :: tlen

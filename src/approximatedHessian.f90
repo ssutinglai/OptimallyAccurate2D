@@ -35,7 +35,7 @@ subroutine approximatedHessian
   ata=0.d0
   atd=0.d0
 
-
+  print *, "read binaries"
   open(unit=1,form="unformatted",file="./tmpbinary")
   read(1) strainFieldS, strainFieldD, obsFieldZ,synFieldZ
   close(1)
