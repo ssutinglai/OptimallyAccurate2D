@@ -16,6 +16,7 @@ subroutine FourierAllocate
     
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
+ 
 
   nFreq = 1
   
@@ -23,14 +24,14 @@ subroutine FourierAllocate
      nFreq = nFreq*2
   enddo
   
+  recl_size_fft=2*kind(1.e0)*nFreq*(boxnx+1)*(boxnz+1)
+
+  allocate(singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1))
 
 
-  allocate(singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz))
-  allocate(singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz))
-
-
-  allocate(strainFieldD(0:2*nFreq-1,1:boxnx,1:boxnz))
-  allocate(strainFieldS(0:2*nFreq-1,1:boxnx,1:boxnz))
+  allocate(strainFieldD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(strainFieldS(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
 
 
   allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
@@ -309,13 +310,13 @@ subroutine FourierAll
      else
         write(outfile,'("FourierStrainD",".",I5,".",I5,".CON_dat") ') isx,isz
      endif
-     do j=1,24
+     do j=1,26
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
      outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     read(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
+     write(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
      close(1,status='keep')
 
 
@@ -324,13 +325,13 @@ subroutine FourierAll
      else
         write(outfile,'("FourierStrainS",".",I5,".",I5,".CON_dat") ') isx,isz
      endif
-     do j=1,24
+     do j=1,26
         if(outfile(j:j).eq.' ') outfile(j:j)='0'
      enddo
      
      outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     read(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
+     write(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
      close(1,status='keep')
 
   enddo
