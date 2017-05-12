@@ -182,6 +182,7 @@ module paramFWI
 
   ! for FourierAll
   double complex, allocatable :: strainFieldD(:,:,:), strainFieldS(:,:,:)
+  double complex, allocatable :: backStrainFieldD(:,:,:),backStrainFieldS(:,:,:)
   complex(kind(0e0)), allocatable :: singleStrainFieldD(:,:,:)
   complex(kind(0e0)), allocatable :: singleStrainFieldS(:,:,:)
   integer :: nFreq

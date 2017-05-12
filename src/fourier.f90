@@ -16,7 +16,7 @@ subroutine FourierAllocate
     
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
- 
+
 
   nFreq = 1
   
@@ -26,12 +26,15 @@ subroutine FourierAllocate
   
   recl_size_fft=2*kind(1.e0)*nFreq*(boxnx+1)*(boxnz+1)
 
+
   allocate(singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1))
 
 
   allocate(strainFieldD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(strainFieldS(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(backStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(backStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1))
 
 
   allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
