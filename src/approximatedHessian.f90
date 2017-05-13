@@ -140,7 +140,7 @@ subroutine approximatedHessian
 
                    
                     if(((ix-jx)*(ix-jx)+(iz-jz)*(iz-jz)).le.4) then
-                       print *,ix,iz,jx,jz
+                     
                        do jTypeParam=1,2
                           
                           call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
@@ -164,7 +164,9 @@ subroutine approximatedHessian
   
   print *, "end Hessian calculation"
   
-
+  open(unit=1,form="unformatted")
+  write(1) ata,atd
+  close(1)
   return
 
 end subroutine approximatedHessian
