@@ -125,8 +125,9 @@ subroutine approximatedHessian
            backStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
            
            
-           do iFreq=0,nFreq-1
+           do iFreq=0,nFreq-1, nFreq/nFreqStep
               do iTypeParam=1,2
+                
                  call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)
                  atd(2*(ixz-1)+iTypeParam)= &
                       atd(2*(ixz-1)+iTypeParam)+ &
@@ -136,18 +137,23 @@ subroutine approximatedHessian
                  do jxz=1,(boxnx+1)*(boxnz+1)
                     jz=(jxz-1)/(boxnx+1)+1
                     jx=mod(jxz-1,boxnx+1)+1
-                    
-                    do jTypeParam=1,2
+
+                   
+                    if(((ix-jx)*(ix-jx)+(iz-jz)*(iz-jz)).le.4) then
+                       print *,ix,iz,jx,jz
+                       do jTypeParam=1,2
+                          
+                          call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
+                          
+                          
+                          ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)= &
+                               ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)+ &
+                               conjg(tmpfrechet1)*tmpfrechet2
+                          
+                       enddo
                        
-                       call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
-                       
-                       
-                       ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)= &
-                            ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)+ &
-                            conjg(tmpfrechet1)*tmpfrechet2
-                       
-                    enddo
-                    
+                    endif
+
                  enddo
                  
               enddo

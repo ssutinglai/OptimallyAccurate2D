@@ -185,7 +185,8 @@ module paramFWI
   double complex, allocatable :: backStrainFieldD(:,:,:),backStrainFieldS(:,:,:)
   complex(kind(0e0)), allocatable :: singleStrainFieldD(:,:,:)
   complex(kind(0e0)), allocatable :: singleStrainFieldS(:,:,:)
-  integer :: nFreq
+  integer :: nFreq,nFreqStep
+  integer :: nnFreq = 16
   integer :: recl_size_fft
   double precision :: tlen
   double complex, allocatable :: synFieldX(:,:,:),synFieldZ(:,:,:)

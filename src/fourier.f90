@@ -19,28 +19,33 @@ subroutine FourierAllocate
 
 
   nFreq = 1
+ 
+
   
   do while (nFreq < (maxnt+1))
      nFreq = nFreq*2
   enddo
   
-  recl_size_fft=2*kind(1.e0)*nFreq*(boxnx+1)*(boxnz+1)
+  nFreqStep=nFreq/nnFreq
+  
+  recl_size_fft=2*kind(1.e0)*nnFreq*(boxnx+1)*(boxnz+1)
 
 
-  allocate(singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1))
-  allocate(singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(singleStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(singleStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
 
 
-  allocate(strainFieldD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
-  allocate(strainFieldS(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
-  allocate(backStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1))
-  allocate(backStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(strainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(strainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(backStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
+  allocate(backStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
 
 
-  allocate(synFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
-  allocate(synFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
-  allocate(obsFieldX(0:2*nFreq-1,1:nReceiver,1:nSource))
-  allocate(obsFieldZ(0:2*nFreq-1,1:nReceiver,1:nSource))
+
+  allocate(synFieldX(0:nnFreq-1,1:nReceiver,1:nSource))
+  allocate(synFieldZ(0:nnFreq-1,1:nReceiver,1:nSource))
+  allocate(obsFieldX(0:nnFreq-1,1:nReceiver,1:nSource))
+  allocate(obsFieldZ(0:nnFreq-1,1:nReceiver,1:nSource))
 
   return
 end subroutine FourierAllocate
@@ -53,19 +58,21 @@ subroutine FourierAll
   double precision :: angfreq0
   double precision, allocatable :: angfreq(:)
   double complex, allocatable :: sourceFreq(:)
+  double complex, allocatable :: tmptensorD(:,:,:),tmptensorS(:,:,:)
+  double complex, allocatable :: tmpSynX(:,:),tmpSynZ(:,:)
   ! determination of frequency numbers
 
-  allocate(sourceFreq(0:nFreq-1))
-  allocate(angfreq(0:nFreq-1))
-
+  allocate(sourceFreq(0:nnFreq-1))
+  allocate(angfreq(0:nnFreq-1))
   tlen = dt*dble(nFreq)
+  angfreq0  = 2.d0*pi*f0
 
   ! Ricker wavelet in frequency domain
     
-  do iFreq=0,nFreq-1
-     angfreq(iFreq)=2.d0*pi/tlen*dble(iFreq)
-     sourceFreq(iFreq)=2.d0*angfreq(iFreq)**2/sqrt(pi)/angfreq0**3* &
-          exp(-(angfreq(iFreq)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq))) 
+  do iFreq=0,nFreq-1,nFreqStep
+     angfreq(iFreq/nFreqStep)=2.d0*pi/tlen*dble(iFreq)
+     sourceFreq(iFreq/nFreqStep)=2.d0*angfreq(iFreq/nFreqStep)**2/sqrt(pi)/angfreq0**3* &
+          exp(-(angfreq(iFreq/nFreqStep)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq/nFreqStep))) 
      
   enddo
 
@@ -79,6 +86,12 @@ subroutine FourierAll
      isx = iisx(iSource)
      isz = iisz(iSource)
 
+     allocate(tmptensorD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
+     allocate(tmptensorS(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
+     
+     tmptensorD=cmplx(0.d0)
+     tmptensorS=cmplx(0.d0)
+     
      strainFieldD=cmplx(0.d0)
      strainFieldS=cmplx(0.d0)
      singleStrainFieldD=cmplx(0.e0)
@@ -101,7 +114,7 @@ subroutine FourierAll
         read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        strainFieldD(it,1:boxnx+1,1:boxnz+1) &
+        tmptensorD(it,1:boxnx+1,1:boxnz+1) &
              = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
         
@@ -120,16 +133,73 @@ subroutine FourierAll
         read(1,rec=1)  tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
-        strainFieldS(it,1:boxnx+1,1:boxnz+1) &
+        tmptensorS(it,1:boxnx+1,1:boxnz+1) &
              = tmpsingleStrain(1:boxnx+1,1:boxnz+1)
         
      enddo
      
      
+
+     ! Deconvolution of Ricker wavelet in frequency
      
+     
+     do iz=1,nz+1-rmargin(2)-lmargin(2)
+        do ix=1,nx+1-rmargin(1)-lmargin(1)
+           call FFT_double(nFreq,tmptensorD(0:2*nFreq-1,ix,iz),tlen)
+           call FFT_double(nFreq,tmptensorS(0:2*nFreq-1,ix,iz),tlen)
+           
+           do iFreq = 0,nnFreq-1,nFreqStep
+              strainFieldD(iFreq/nFreqStep,ix,iz)=tmptensorD(iFreq,ix,iz)/sourceFreq(iFreq/nFreqStep)
+              strainFieldS(iFreq/nFreqStep,ix,iz)=tmptensorS(iFreq,ix,iz)/sourceFreq(iFreq/nFreqStep)
+           enddo
+           
+        enddo
+     enddo
+     
+        
+     deallocate(tmptensorD)
+     deallocate(tmptensorS)
+
+     
+     !! Write strains
+
+     singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
+     singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
+     if(optimise) then
+        write(outfile,'("FourierStrainD",".",I5,".",I5,".OPT_dat") ') isx,isz
+     else
+        write(outfile,'("FourierStrainD",".",I5,".",I5,".CON_dat") ') isx,isz
+     endif
+     do j=1,26
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './strains/'//trim(modelname)//'/'//outfile
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
+     write(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     close(1,status='keep')
+
+
+      if(optimise) then
+        write(outfile,'("FourierStrainS",".",I5,".",I5,".OPT_dat") ') isx,isz
+     else
+        write(outfile,'("FourierStrainS",".",I5,".",I5,".CON_dat") ') isx,isz
+     endif
+     do j=1,26
+        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+     enddo
+     
+     outfile = './strains/'//trim(modelname)//'/'//outfile
+     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
+     write(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     close(1,status='keep')
+
+     
+     allocate(tmpSynX(0:2*nFreq-1,1:nReceiver))
+     allocate(tmpSynZ(0:2*nFreq-1,1:nReceiver))
      
      if(iterationIndex.eq.0) then
-
+        
         ! Reading OBS data
         
         
@@ -140,8 +210,6 @@ subroutine FourierAll
            do j=1,12
               if(outfile(j:j).eq.' ') outfile(j:j)='0'
            enddo
-           
-           
            
            outfile = trim(outfile)//trim(extentionOBSx)       
            outfile = trim(obsdir)//'/'//trim(outfile)
@@ -176,12 +244,22 @@ subroutine FourierAll
         ! Reading OBS data done
         
          
-        obsFieldX(0:maxnt,1:nReceiver,iSource)=obsx(0:maxnt,1:nReceiver)
+        tmpSynX(0:maxnt,1:nReceiver)=obsx(0:maxnt,1:nReceiver)
       
-        obsFieldZ(0:maxnt,1:nReceiver,iSource)=obsz(0:maxnt,1:nReceiver)
+        tmpSynZ(0:maxnt,1:nReceiver)=obsz(0:maxnt,1:nReceiver)
      
-        
+        do iReceiver=1,nReceiver
+           call FFT_double(nFreq,tmpSynX(0:2*nFreq-1,iReceiver),tlen)
+           call FFT_double(nFreq,tmpSynZ(0:2*nFreq-1,iReceiver),tlen)
+           do iFreq = 0,nFreq-1,nFreqStep
+              obsFieldX(iFreq/nFreqStep,iReceiver,iSource)= &
+                   tmpSynX(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
+              obsFieldZ(iFreq/nFreqStep,iReceiver,iSource)= &
+                   tmpSynZ(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
+           enddo
+        enddo
 
+        
 
      endif
 
@@ -220,7 +298,7 @@ subroutine FourierAll
      close(1)
      
      
-     synFieldX(0:maxnt,1:nReceiver,iSource)=synx(0:maxnt,1:nReceiver)
+     tmpSynX(0:maxnt,1:nReceiver)=synx(0:maxnt,1:nReceiver)
      
      
      
@@ -258,84 +336,25 @@ subroutine FourierAll
      close(1)
      
      
-     synFieldZ(0:maxnt,1:nReceiver,iSource)=synz(0:maxnt,1:nReceiver)
+     tmpSynZ(0:maxnt,1:nReceiver)=synz(0:maxnt,1:nReceiver)
      
-     angfreq0  = 2.d0*pi*f0
-     
+ 
      
      ! Deconvolution of Ricker wavelet in frequency
-   
-     
-     do iz=1,nz+1-rmargin(2)-lmargin(2)
-        do ix=1,nx+1-rmargin(1)-lmargin(1)
-           call FFT_double(nFreq,strainFieldD(0:2*nFreq-1,ix,iz),tlen)
-           call FFT_double(nFreq,strainFieldS(0:2*nFreq-1,ix,iz),tlen)
-           
-           do iFreq = 0,nFreq-1
-              strainFieldD(iFreq,ix,iz)=strainFieldD(iFreq,ix,iz)/sourceFreq(iFreq)
-              strainFieldS(iFreq,ix,iz)=strainFieldS(iFreq,ix,iz)/sourceFreq(iFreq)
-           enddo
-           
-        enddo
-     enddo
      
      do iReceiver=1,nReceiver
-        call FFT_double(nFreq,synFieldX(0:2*nFreq-1,iReceiver,iSource),tlen)
-        call FFT_double(nFreq,synFieldZ(0:2*nFreq-1,iReceiver,iSource),tlen)
-        do iFreq = 0,nFreq-1
-           synFieldX(iFreq,iReceiver,iSource)=synFieldX(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
-           synFieldZ(iFreq,iReceiver,iSource)=synFieldZ(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
+        call FFT_double(nFreq,tmpSynX(0:2*nFreq-1,iReceiver),tlen)
+        call FFT_double(nFreq,tmpSynZ(0:2*nFreq-1,iReceiver),tlen)
+        do iFreq = 0,nFreq-1,nFreqStep
+           synFieldX(iFreq/nFreqStep,iReceiver,iSource)= &
+                tmpSynX(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
+           synFieldZ(iFreq/nFreqStep,iReceiver,iSource)= &
+                tmpSynZ(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
         enddo
      enddo
-     
-     if(iterationIndex.eq.0) then
-        do iReceiver=1,nReceiver
-           call FFT_double(nFreq,obsFieldX(0:2*nFreq-1,iReceiver,iSource),tlen)
-           call FFT_double(nFreq,obsFieldZ(0:2*nFreq-1,iReceiver,iSource),tlen)
-           do iFreq = 0,nFreq-1
-              obsFieldX(iFreq,iReceiver,iSource)=obsFieldX(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
-              obsFieldZ(iFreq,iReceiver,iSource)=obsFieldZ(iFreq,iReceiver,iSource)/sourceFreq(iFreq)
-           enddo
-        enddo
-
-
-
-     endif
-
-
-
-     !! Write 
-
-     singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
-     singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
-     if(optimise) then
-        write(outfile,'("FourierStrainD",".",I5,".",I5,".OPT_dat") ') isx,isz
-     else
-        write(outfile,'("FourierStrainD",".",I5,".",I5,".CON_dat") ') isx,isz
-     endif
-     do j=1,26
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-     write(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
-     close(1,status='keep')
-
-
-      if(optimise) then
-        write(outfile,'("FourierStrainS",".",I5,".",I5,".OPT_dat") ') isx,isz
-     else
-        write(outfile,'("FourierStrainS",".",I5,".",I5,".CON_dat") ') isx,isz
-     endif
-     do j=1,26
-        if(outfile(j:j).eq.' ') outfile(j:j)='0'
-     enddo
-     
-     outfile = './strains/'//trim(modelname)//'/'//outfile
-     open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-     write(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
-     close(1,status='keep')
+   
+     deallocate(tmpSynX)
+     deallocate(tmpSynZ)
 
   enddo
 

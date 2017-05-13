@@ -71,7 +71,7 @@ program multipleSourcesFWI2D
 
   ! NF should uncomment below
 
-  call forwardmodelling
+  !call forwardmodelling
 
 
   
