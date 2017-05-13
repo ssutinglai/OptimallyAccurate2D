@@ -59,7 +59,7 @@ subroutine approximatedHessian
      
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-        read(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+        read(1,rec=1)  singleStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
 
 
@@ -74,14 +74,14 @@ subroutine approximatedHessian
         
         outfile = './strains/'//trim(modelname)//'/'//outfile
         open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-        read(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+        read(1,rec=1)  singleStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
         close(1,status='keep')
         
         strainFieldD=cmplx(0.d0)
         strainFieldS=cmplx(0.d0)
         
-        strainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
-        strainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
+        strainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)
+        strainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
 
         do iReceiver=1,nReceiver
            
@@ -98,7 +98,7 @@ subroutine approximatedHessian
            
            outfile = './strains/'//trim(modelname)//'/'//outfile
            open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-           read(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+           read(1,rec=1)  singleStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
            close(1,status='keep')
 
 
@@ -115,17 +115,17 @@ subroutine approximatedHessian
         
            outfile = './strains/'//trim(modelname)//'/'//outfile
            open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-           read(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+           read(1,rec=1)  singleStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
            close(1,status='keep')
            
            backStrainFieldD=cmplx(0.d0)
            backStrainFieldS=cmplx(0.d0)
         
-           backStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
-           backStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
+           backStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)
+           backStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
            
            
-           do iFreq=0,nFreq-1, nFreq/nFreqStep
+           do iFreq=0,nnFreq-1
               do iTypeParam=1,2
                 
                  call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)

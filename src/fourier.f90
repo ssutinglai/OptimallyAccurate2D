@@ -163,8 +163,8 @@ subroutine FourierAll
      
      !! Write strains
 
-     singleStrainFieldD(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldD(0:nFreq-1,1:boxnx,1:boxnz)
-     singleStrainFieldS(0:nFreq-1,1:boxnx,1:boxnz)=strainFieldS(0:nFreq-1,1:boxnx,1:boxnz)
+     singleStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)=strainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)
+     singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=strainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
      if(optimise) then
         write(outfile,'("FourierStrainD",".",I5,".",I5,".OPT_dat") ') isx,isz
      else
@@ -176,7 +176,7 @@ subroutine FourierAll
      
      outfile = './strains/'//trim(modelname)//'/'//outfile
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-     write(1,rec=1)  singleStrainFieldD(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     write(1,rec=1)  singleStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
      close(1,status='keep')
 
 
@@ -191,7 +191,7 @@ subroutine FourierAll
      
      outfile = './strains/'//trim(modelname)//'/'//outfile
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_fft)
-     write(1,rec=1)  singleStrainFieldS(0:nFreq-1,1:boxnx+1,1:boxnz+1)
+     write(1,rec=1)  singleStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1)
      close(1,status='keep')
 
      
