@@ -196,6 +196,6 @@ module paramFWI
   
 
   ! AtA calculation (neighbours) 
-  integer, parameter :: nNeighbours = 3 ! in 1D in grids, it should be an odd number 
+  integer, parameter :: nNeighbours = 5 ! in 1D in grids, it should be an odd number 
 
 end module paramFWI

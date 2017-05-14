@@ -34,7 +34,8 @@ subroutine invbyCG
 
   r = atd ! - matmul(ata,x0)
   w = -r
-  z = matmul(ata,w)
+  !z = matmul(ata,w)
+  call ataMatmul(w,z)
   a = dot_product(r,w) / dot_product(w,z)
   x = x0 +a*w
   b = 0
@@ -56,7 +57,8 @@ subroutine invbyCG
      r = r - a*z
      b = dot_product(r,z)/dot_product (w,z)
      w = -r + b*w
-     z = matmul(ata,w)
+     !z = matmul(ata,w)
+     call ataMatmul(w,z)
      a = dot_product(r,w)/dot_product(w,z)
      x = x+a*w
 
@@ -83,3 +85,43 @@ subroutine invbyCG
   
 end subroutine invbyCG
   
+
+
+subroutine ataMatmul(w,z)
+  ! ata is conjugate transpose
+  ! w is input; z is output
+  use paramFWI
+  use parameters
+  implicit none
+  integer :: ixz
+  integer :: jxz,jx,jz
+  integer :: jxzlocal
+  integer :: iTypeParam,jTypeParam ! 1 for Vp and 2 for Vs
+  ! matrix multiplication with a truncated ata
+  double complex :: w(1:(boxnx+1)*(boxnz+1)*2)
+  double complex :: z(1:(boxnx+1)*(boxnz+1)*2)
+
+  z=cmplx(0.d0)
+
+  do ixz=1,(boxnx+1)*(boxnz+1)
+     iz=(ixz-1)/(boxnx+1)+1
+     ix=mod(ixz-1,boxnx+1)+1     
+     do iTypeParam=1,2
+        do jz=max(iz-nNeighbours/2,1),min(iz+nNeighbours/2,boxnz+1)
+           do jx=max(ix-nNeighbours/2,1),min(ix+nNeighbours/2,boxnx+1)
+              jxz=(jz-1)*(boxnx+1)+jx
+              jxzlocal=(jz-iz+nNeighbours/2)*nNeighbours+(jx-ix+nNeighbours/2+1)
+              do jTypeParam=1,2
+                 z(2*(jxz-1)+jTypeParam)=&
+                      z(2*(jxz-1)+jTypeParam)+&
+                      ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)*&
+                      w(2*(ixz-1)+iTypeParam)
+              enddo
+           enddo
+        enddo
+     enddo
+  enddo
+                 
+              
+  return
+end subroutine ataMatmul

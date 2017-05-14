@@ -154,8 +154,9 @@ subroutine approximatedHessian
                           
                            ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)= &
                                 ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)+ &
-                                conjg(tmpfrechet1)*tmpfrechet2
-                           
+                                tmpfrechet1*conjg(tmpfrechet2)
+                           !! AtA here is the conjugate transpose !!
+
                         enddo
                         
                      enddo
