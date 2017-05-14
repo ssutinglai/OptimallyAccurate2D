@@ -94,7 +94,7 @@ program multipleSourcesFWI2D
   
      ! NF should comment out
 
-     call FourierAll
+     !call FourierAll
 
 
      ! kernelP/S are A^T \delta d
