@@ -15,6 +15,7 @@ subroutine invbyCG
   character(3) :: num
   double precision :: ND
   double precision :: AIC(0:(boxnx+1)*(boxnz+1)*2)
+  double precision :: VAR(0:(boxnx+1)*(boxnz+1)*2)
   logical :: doCG
 
   print *, "inversion by CG"
@@ -25,11 +26,12 @@ subroutine invbyCG
 
   
 
-
   doCG=.true.
   
-  AIC=cmplx(0.d0)
+  AIC=0.d0
+  VAR=0.d0
   
+
   x0 = 0.d0
 
   r = atd ! - matmul(ata,x0)
@@ -43,13 +45,14 @@ subroutine invbyCG
 
   ii=0
   ND = dble(nnFreq*nSource*nReceiver)/alphaAIC
-  AIC(ii) = ND*log(2.d0*pi)+ND*log(dot_product(conjg(r),r))+ND+2.d0*dble(ii+1)
+  VAR(ii) = dot_product(conjg(r),r)
+  AIC(ii) = ND*log(2.d0*pi)+ND*log(VAR(ii))+ND+2.d0*dble(ii+1)
   
   
 
   do while (doCG)
 
-     print *, ii
+    
      ii=ii+1
 
      
@@ -62,7 +65,11 @@ subroutine invbyCG
      a = dot_product(r,w)/dot_product(w,z)
      x = x+a*w
 
-     AIC(ii) = ND*log(2.d0*pi)+ND*log(dot_product(conjg(r),r))+ND+2.d0*dble(ii+1)
+     VAR(ii) = dot_product(conjg(r),r)
+     AIC(ii) = ND*log(2.d0*pi)+ND*log(VAR(ii))+ND+2.d0*dble(ii+1)
+     
+     write(13,*) ii, VAR(ii), AIC(ii)
+     
      if(AIC(ii)>AIC(ii-1)) then
         doCG=.false.
      else
@@ -71,7 +78,13 @@ subroutine invbyCG
   enddo
   
   print *, ii, " CG vectors were used"
+  open(1,form='formatted',file='aicvar.dat')
+  do jj=0,ii
+     write(1,*) jj,VAR(jj),AIC(jj)
+  enddo
+  close(1)
 
+  
   do ixz=1,(boxnx+1)*(boxnz+1)
      iz=(ixz-1)/(boxnx+1)+1
      ix=mod(ixz-1,boxnx+1)+1

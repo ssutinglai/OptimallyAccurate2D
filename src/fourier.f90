@@ -142,9 +142,11 @@ subroutine FourierAll
 
      ! Deconvolution of Ricker wavelet in frequency
      
-     
+     write(17,*) tmptensorD(:,1,1)
      do iz=1,nz+1-rmargin(2)-lmargin(2)
         do ix=1,nx+1-rmargin(1)-lmargin(1)
+
+          
            call FFT_double(nFreq,tmptensorD(0:2*nFreq-1,ix,iz),tlen)
            call FFT_double(nFreq,tmptensorS(0:2*nFreq-1,ix,iz),tlen)
            
@@ -155,6 +157,8 @@ subroutine FourierAll
            
         enddo
      enddo
+     write(18,*) tmptensorD(:,1,1)
+     stop
      
         
      deallocate(tmptensorD)

@@ -40,8 +40,9 @@ subroutine approximatedHessian
 
   print *, "start approximated Hessian"
 
-   synFieldZ(:,:,:)=obsFieldZ(:,:,:)-synFieldZ(:,:,:)
+  synFieldZ(:,:,:)=obsFieldZ(:,:,:)-synFieldZ(:,:,:)
 
+  !write(13,*) synFieldZ(:,1,1)
 
   !do ixz=1,(boxnx+1)*(boxnz+1)
   !   iz=(ixz-1)/(boxnx+1)+1
@@ -128,6 +129,8 @@ subroutine approximatedHessian
          backStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)
          backStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
            
+
+         !write(14,*) singleStrainFieldS(:,boxnx/2,boxnz/2)
         
          
          do ixz=1,(boxnx+1)*(boxnz+1)
