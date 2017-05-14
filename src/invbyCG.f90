@@ -17,13 +17,22 @@ subroutine invbyCG
   double precision :: AIC(0:(boxnx+1)*(boxnz+1)*2)
   logical :: doCG
 
+  print *, "inversion by CG"
+  open(unit=1,form="unformatted",file='ataatd')
+  read(1) ata,atd
+  close(1)
+  print *, "ata read"
+
+  
+
+
   doCG=.true.
   
-  AIC=0.d0
+  AIC=cmplx(0.d0)
   
   x0 = 0.d0
 
-  r = atd - matmul(ata,x0)
+  r = atd ! - matmul(ata,x0)
   w = -r
   z = matmul(ata,w)
   a = dot_product(r,w) / dot_product(w,z)
@@ -32,12 +41,14 @@ subroutine invbyCG
   
 
   ii=0
-  ND = dble(nFreq*nSource*nReceiver)/alphaAIC
+  ND = dble(nnFreq*nSource*nReceiver)/alphaAIC
   AIC(ii) = ND*log(2.d0*pi)+ND*log(dot_product(conjg(r),r))+ND+2.d0*dble(ii+1)
   
   
 
   do while (doCG)
+
+     print *, ii
      ii=ii+1
 
      
@@ -57,6 +68,7 @@ subroutine invbyCG
      endif
   enddo
   
+  print *, ii, " CG vectors were used"
 
   do ixz=1,(boxnx+1)*(boxnz+1)
      iz=(ixz-1)/(boxnx+1)+1

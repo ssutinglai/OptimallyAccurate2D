@@ -167,6 +167,8 @@ module paramFWI
   real, allocatable, dimension(:,:) :: singleKernelP,singleKernelS
   double precision, allocatable, dimension (:,:) :: strainForward,strainBack
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
+ 
+ 
   double precision, allocatable, dimension (:,:) :: ata
   double precision, allocatable, dimension (:) :: atd
   character(180) :: obsdir
@@ -192,5 +194,8 @@ module paramFWI
   double complex, allocatable :: synFieldX(:,:,:),synFieldZ(:,:,:)
   double complex, allocatable :: obsFieldX(:,:,:),obsFieldZ(:,:,:) 
   
+
+  ! AtA calculation (neighbours) 
+  integer, parameter :: nNeighbours = 3 ! in 1D in grids, it should be an odd number 
 
 end module paramFWI

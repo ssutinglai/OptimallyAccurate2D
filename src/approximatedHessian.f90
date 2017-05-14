@@ -26,6 +26,7 @@ subroutine approximatedHessian
   integer :: iFreq
   integer :: ixz
   integer :: jxz,jx,jz
+  integer :: jxzlocal
   double complex :: tmpfrechet1,tmpfrechet2
 
   tmpfrechet1=cmplx(0.d0)
@@ -128,7 +129,7 @@ subroutine approximatedHessian
          backStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
            
         
-                          
+         
          do ixz=1,(boxnx+1)*(boxnz+1)
             iz=(ixz-1)/(boxnx+1)+1
             ix=mod(ixz-1,boxnx+1)+1
@@ -137,30 +138,29 @@ subroutine approximatedHessian
                   call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)
                   atd(2*(ixz-1)+iTypeParam)= &
                        atd(2*(ixz-1)+iTypeParam)+ &
-                      conjg(tmpfrechet1)* &   
-                      synFieldZ(iFreq,iReceiver,iSource)
-                 
-                 do jxz=1,(boxnx+1)*(boxnz+1)
-                    jz=(jxz-1)/(boxnx+1)+1
-                    jx=mod(jxz-1,boxnx+1)+1
-                    
-                    
-                    if(((ix-jx)*(ix-jx)+(iz-jz)*(iz-jz)).le.9) then
-                       
-                       do jTypeParam=1,2
+                       conjg(tmpfrechet1)* &   
+                       synFieldZ(iFreq,iReceiver,iSource)
+                  
+                  do jz=max(iz-nNeighbours/2,1),min(iz+nNeighbours/2,boxnz+1)
+                     do jx=max(ix-nNeighbours/2,1),min(ix+nNeighbours/2,boxnx+1)
+                        jxz=(jz-1)*(boxnx+1)+jx
+                        jxzlocal=(jz-iz+nNeighbours/2)*nNeighbours+(jx-ix+nNeighbours/2+1)
+                        
+                        
+                        do jTypeParam=1,2
+                           
+                           call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
+                           
                           
-                          call frechet1point(iFreq,jTypeParam,jx,jz,tmpfrechet2)
-                          
-                          
-                          ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)= &
-                               ata(2*(ixz-1)+iTypeParam,2*(jxz-1)+jTypeParam)+ &
-                               conjg(tmpfrechet1)*tmpfrechet2
-                          
-                       enddo
-                       
-                    endif
-
-                 enddo
+                           ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)= &
+                                ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)+ &
+                                conjg(tmpfrechet1)*tmpfrechet2
+                           
+                        enddo
+                        
+                     enddo
+                     
+                  enddo
                  
               enddo
            enddo
