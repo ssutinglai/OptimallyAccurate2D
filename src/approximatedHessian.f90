@@ -127,12 +127,13 @@ subroutine approximatedHessian
          backStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldD(0:nnFreq-1,1:boxnx,1:boxnz)
          backStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)=singleStrainFieldS(0:nnFreq-1,1:boxnx,1:boxnz)
            
-         do iTypeParam=1,2
-            do iFreq=0,nnFreq-1                
-               do ixz=1,(boxnx+1)*(boxnz+1)
-                  iz=(ixz-1)/(boxnx+1)+1
-                  ix=mod(ixz-1,boxnx+1)+1
-                  
+        
+                          
+         do ixz=1,(boxnx+1)*(boxnz+1)
+            iz=(ixz-1)/(boxnx+1)+1
+            ix=mod(ixz-1,boxnx+1)+1
+            do iTypeParam=1,2
+               do iFreq=0,nnFreq-1 
                   call frechet1point(iFreq,iTypeParam,ix,iz,tmpfrechet1)
                   atd(2*(ixz-1)+iTypeParam)= &
                        atd(2*(ixz-1)+iTypeParam)+ &
@@ -144,7 +145,7 @@ subroutine approximatedHessian
                     jx=mod(jxz-1,boxnx+1)+1
                     
                     
-                    if(((ix-jx)*(ix-jx)+(iz-jz)*(iz-jz)).le.4) then
+                    if(((ix-jx)*(ix-jx)+(iz-jz)*(iz-jz)).le.9) then
                        
                        do jTypeParam=1,2
                           
