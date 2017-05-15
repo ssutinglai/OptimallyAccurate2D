@@ -14,18 +14,12 @@ subroutine FourierAllocate
   implicit none
   integer :: iFreq
     
-
-  
-
-
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
 
 
   nFreq = 1
  
-
-  
   do while (nFreq < (maxnt+1))
      nFreq = nFreq*2
   enddo
@@ -84,22 +78,16 @@ subroutine FourierAll
   angfreq0  = 2.d0*pi*f0
 
   ! Ricker wavelet in frequency domain
-  print *, tlen,angfreq0
-  do iFreq=0,nFreq-1,nFreqStep
-     angfreq(iFreq/nFreqStep)=pi/tlen*dble(iFreq)
-    
-     sourceFreq(iFreq/nFreqStep)=2.d0*angfreq(iFreq/nFreqStep)**2/sqrt(pi)/angfreq0**3* &
-          exp(-(angfreq(iFreq/nFreqStep)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq/nFreqStep))) 
-     write(13,*) real(sourceFreq(iFreq/nFreqStep)),imag(sourceFreq(iFreq/nFreqStep))
-  enddo
-  allocate(tmptensorD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
-  tmptensorD(0:nFreq-1,1,1)=sourceFreq(0:nFreq-1)
-  call IFFT_double(nFreq,tmptensorD(0:2*nFreq-1,1,1),tlen)
-  do iz=0,nFreq-1
-  write(18,*) real(tmptensorD(iz,1,1))
-  enddo
-  stop
 
+  do iFreq=0,nnFreq-1
+      
+     angfreq(iFreq)=pi/tlen*dble(nFreqSample(iFreq))
+    
+     sourceFreq(iFreq)=2.d0*angfreq(iFreq)**2/sqrt(pi)/angfreq0**3* &
+          exp(-(angfreq(iFreq)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq))) 
+     !write(13,*) real(sourceFreq(iFreq)),imag(sourceFreq(iFreq))
+  enddo
+  
 
   
 
@@ -180,9 +168,9 @@ subroutine FourierAll
            call FFT_double(nFreq,tmptensorD(0:2*nFreq-1,ix,iz),tlen)
            call FFT_double(nFreq,tmptensorS(0:2*nFreq-1,ix,iz),tlen)
            
-           do iFreq = 0,nnFreq-1,nFreqStep
-              strainFieldD(iFreq/nFreqStep,ix,iz)=tmptensorD(iFreq,ix,iz)/sourceFreq(iFreq/nFreqStep)
-              strainFieldS(iFreq/nFreqStep,ix,iz)=tmptensorS(iFreq,ix,iz)/sourceFreq(iFreq/nFreqStep)
+           do iFreq = 0,nnFreq-1
+              strainFieldD(iFreq,ix,iz)=tmptensorD(nFreqSample(iFreq),ix,iz)/sourceFreq(iFreq)
+              strainFieldS(iFreq,ix,iz)=tmptensorS(nFreqSample(iFreq),ix,iz)/sourceFreq(iFreq)
            enddo
            
         enddo
@@ -284,30 +272,13 @@ subroutine FourierAll
         do iReceiver=1,nReceiver
            call FFT_double(nFreq,tmpSynX(0:2*nFreq-1,iReceiver),tlen)
            call FFT_double(nFreq,tmpSynZ(0:2*nFreq-1,iReceiver),tlen)
-           do iFreq = 0,nFreq-1,nFreqStep
-              obsFieldX(iFreq/nFreqStep,iReceiver,iSource)= &
-                   tmpSynX(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
-              obsFieldZ(iFreq/nFreqStep,iReceiver,iSource)= &
-                   tmpSynZ(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
+           do iFreq = 0,nnFreq-1
+              obsFieldX(iFreq,iReceiver,iSource)= &
+                   tmpSynX(nFreqSample(iFreq),iReceiver)/sourceFreq(iFreq)
+              obsFieldZ(iFreq,iReceiver,iSource)= &
+                   tmpSynZ(nFreqSample(iFreq),iReceiver)/sourceFreq(iFreq)
            enddo
-        enddo
-
-        
-        ! faut enlever la-dessous
-        call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
-        do iz=0,nFreq-1
-           write(19,*) real(tmpSynZ(iz,1))
-        enddo
-        
-        tmpSynZ(0:2*nFreq-1,1)=cmplx(0.d0)
-        tmpSynZ(0:nFreq-1,1)=obsFieldZ(0:nFreq-1,1,1)
-        call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
-        do iz=0,nFreq-1
-           write(17,*) real(tmpSynZ(iz,1))
-        enddo
-           
-        
-        
+        enddo        
      endif
 
 
@@ -390,30 +361,35 @@ subroutine FourierAll
      ! Deconvolution of Ricker wavelet in frequency
      
      
-     do iz=0,nFreq-1
-     write(16,*) real(tmpSynZ(iz,1))
-     enddo
+     !do iz=0,nFreq-1
+     !write(16,*) real(tmpSynZ(iz,1))
+     !enddo
 
 
      do iReceiver=1,nReceiver
         call FFT_double(nFreq,tmpSynX(0:2*nFreq-1,iReceiver),tlen)
         call FFT_double(nFreq,tmpSynZ(0:2*nFreq-1,iReceiver),tlen)
-        do iFreq = 0,nFreq-1,nFreqStep
-           synFieldX(iFreq/nFreqStep,iReceiver,iSource)= &
-                tmpSynX(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
-           synFieldZ(iFreq/nFreqStep,iReceiver,iSource)= &
-                tmpSynZ(iFreq,iReceiver)/sourceFreq(iFreq/nFreqStep)
+        do iFreq = 0,nnFreq-1
+           synFieldX(iFreq,iReceiver,iSource)= &
+                tmpSynX(nFreqSample(iFreq),iReceiver)/sourceFreq(iFreq)
+           synFieldZ(iFreq,iReceiver,iSource)= &
+                tmpSynZ(nFreqSample(iFreq),iReceiver)/sourceFreq(iFreq)
         enddo
      enddo
    
 
+     !do iz=0,nnFreq-1
+     !write(17,*) synFieldZ(:,1,1)
+     !enddo
+     
 
-     call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
-     do iz=0,nFreq-1
-     write(18,*) real(tmpSynZ(iz,1))
-     enddo
 
-     stop
+     !call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
+     !do iz=0,nFreq-1
+     !write(18,*) real(tmpSynZ(iz,1))
+     !enddo
+
+     !stop
 
 
      
