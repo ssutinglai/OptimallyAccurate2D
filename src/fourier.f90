@@ -34,11 +34,8 @@ subroutine FourierAllocate
 
   ! to stablise the deconvolution
 
-  nFreqStart=int(f0*tlen)
-  nFreqStop=int(3.d0*f0*tlen)
-
-  print *, nFreqStart, nFreqStop
-  
+  nFreqStart=int(8.d-1*f0*tlen)
+  nFreqStop=int(3.2d0*f0*tlen)
 
   ! faut enlever !!
   !nnFreq=nFreq
@@ -46,23 +43,20 @@ subroutine FourierAllocate
   nFreqStep=(nFreqStop-nFreqStart)/nnFreq
   
   allocate(nFreqSample(0:nnFreq-1))
+
   do iFreq=0,nnFreq-1
      nFreqSample(iFreq)=nFreqStart+iFreq*nFreqStep
   enddo
 
   recl_size_fft=2*kind(1.e0)*nnFreq*(boxnx+1)*(boxnz+1)
 
-
   allocate(singleStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(singleStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
-
 
   allocate(strainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(strainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(backStrainFieldD(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
   allocate(backStrainFieldS(0:nnFreq-1,1:boxnx+1,1:boxnz+1))
-
-
 
   allocate(synFieldX(0:nnFreq-1,1:nReceiver,1:nSource))
   allocate(synFieldZ(0:nnFreq-1,1:nReceiver,1:nSource))
