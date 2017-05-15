@@ -12,8 +12,12 @@ subroutine FourierAllocate
   use paramFWI
   use parameters
   implicit none
-
+  integer :: iFreq
     
+
+  
+
+
   recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
   recl_size_syn=(maxnt+1)*(nReceiver+1)*kind(0e0)
 
@@ -26,8 +30,26 @@ subroutine FourierAllocate
      nFreq = nFreq*2
   enddo
   
-  nFreqStep=nFreq/nnFreq
+  tlen = dt*dble(nFreq)
+
+  ! to stablise the deconvolution
+
+  nFreqStart=int(f0*tlen)
+  nFreqStop=int(3.d0*f0*tlen)
+
+  print *, nFreqStart, nFreqStop
   
+
+  ! faut enlever !!
+  !nnFreq=nFreq
+
+  nFreqStep=(nFreqStop-nFreqStart)/nnFreq
+  
+  allocate(nFreqSample(0:nnFreq-1))
+  do iFreq=0,nnFreq-1
+     nFreqSample(iFreq)=nFreqStart+iFreq*nFreqStep
+  enddo
+
   recl_size_fft=2*kind(1.e0)*nnFreq*(boxnx+1)*(boxnz+1)
 
 
@@ -64,17 +86,26 @@ subroutine FourierAll
 
   allocate(sourceFreq(0:nnFreq-1))
   allocate(angfreq(0:nnFreq-1))
-  tlen = dt*dble(nFreq)
+
   angfreq0  = 2.d0*pi*f0
 
   ! Ricker wavelet in frequency domain
-    
+  print *, tlen,angfreq0
   do iFreq=0,nFreq-1,nFreqStep
-     angfreq(iFreq/nFreqStep)=2.d0*pi/tlen*dble(iFreq)
+     angfreq(iFreq/nFreqStep)=pi/tlen*dble(iFreq)
+    
      sourceFreq(iFreq/nFreqStep)=2.d0*angfreq(iFreq/nFreqStep)**2/sqrt(pi)/angfreq0**3* &
           exp(-(angfreq(iFreq/nFreqStep)/angfreq0)**2)*exp(cmplx(0.d0,-t0*angfreq(iFreq/nFreqStep))) 
-     
+     write(13,*) real(sourceFreq(iFreq/nFreqStep)),imag(sourceFreq(iFreq/nFreqStep))
   enddo
+  allocate(tmptensorD(0:2*nFreq-1,1:boxnx+1,1:boxnz+1))
+  tmptensorD(0:nFreq-1,1,1)=sourceFreq(0:nFreq-1)
+  call IFFT_double(nFreq,tmptensorD(0:2*nFreq-1,1,1),tlen)
+  do iz=0,nFreq-1
+  write(18,*) real(tmptensorD(iz,1,1))
+  enddo
+  stop
+
 
   
 
@@ -141,8 +172,13 @@ subroutine FourierAll
      
 
      ! Deconvolution of Ricker wavelet in frequency
-     
-     write(17,*) tmptensorD(:,1,1)
+
+
+     !do iz=0,maxnt
+     !write(17,*) real(tmptensorD(iz,1,1))
+     !enddo
+
+
      do iz=1,nz+1-rmargin(2)-lmargin(2)
         do ix=1,nx+1-rmargin(1)-lmargin(1)
 
@@ -157,9 +193,8 @@ subroutine FourierAll
            
         enddo
      enddo
-     write(18,*) tmptensorD(:,1,1)
-     stop
-     
+
+
         
      deallocate(tmptensorD)
      deallocate(tmptensorS)
@@ -184,7 +219,7 @@ subroutine FourierAll
      close(1,status='keep')
 
 
-      if(optimise) then
+     if(optimise) then
         write(outfile,'("FourierStrainS",".",I5,".",I5,".OPT_dat") ') isx,isz
      else
         write(outfile,'("FourierStrainS",".",I5,".",I5,".CON_dat") ') isx,isz
@@ -264,7 +299,21 @@ subroutine FourierAll
         enddo
 
         
-
+        ! faut enlever la-dessous
+        call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
+        do iz=0,nFreq-1
+           write(19,*) real(tmpSynZ(iz,1))
+        enddo
+        
+        tmpSynZ(0:2*nFreq-1,1)=cmplx(0.d0)
+        tmpSynZ(0:nFreq-1,1)=obsFieldZ(0:nFreq-1,1,1)
+        call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
+        do iz=0,nFreq-1
+           write(17,*) real(tmpSynZ(iz,1))
+        enddo
+           
+        
+        
      endif
 
 
@@ -346,6 +395,12 @@ subroutine FourierAll
      
      ! Deconvolution of Ricker wavelet in frequency
      
+     
+     do iz=0,nFreq-1
+     write(16,*) real(tmpSynZ(iz,1))
+     enddo
+
+
      do iReceiver=1,nReceiver
         call FFT_double(nFreq,tmpSynX(0:2*nFreq-1,iReceiver),tlen)
         call FFT_double(nFreq,tmpSynZ(0:2*nFreq-1,iReceiver),tlen)
@@ -357,6 +412,18 @@ subroutine FourierAll
         enddo
      enddo
    
+
+
+     call IFFT_double(nFreq,tmpSynZ(0:2*nFreq-1,1),tlen)
+     do iz=0,nFreq-1
+     write(18,*) real(tmpSynZ(iz,1))
+     enddo
+
+     stop
+
+
+     
+
      deallocate(tmpSynX)
      deallocate(tmpSynZ)
 
@@ -383,12 +450,14 @@ subroutine FFT_double(nFreq,cvec,tlen)
   complex(kind(0d0)) :: cvec(0:2*nFreq-1)
 
   real(kind(0d0)), parameter :: pi = 3.141592653589793d0
+  real(kind(0d0)), parameter :: sqrtpi2piinverse=8.979356106d-2
   real(kind(0d0)) :: tlen,samplingHz
   
   samplingHz = dble(2*nFreq)/tlen
  
   call cdft(4*nFreq,cos(pi/(2*nFreq)),-sin(pi/(2*nFreq)), cvec(0:2*nFreq-1))
-     
+
+  cvec(:)=cvec(:)/dble(2*nFreq)
   return
 end subroutine FFT_double
 
@@ -403,6 +472,7 @@ subroutine IFFT_double(nFreq,cvec,tlen)
   complex(kind(0d0)) :: cvec(0:2*nFreq-1)
 
   real(kind(0d0)), parameter :: pi = 3.141592653589793d0
+  real(kind(0d0)), parameter :: sqrtpi2piinverse=8.979356106d-2
   real(kind(0d0)) :: tlen,samplingHz
   
  
@@ -415,15 +485,10 @@ subroutine IFFT_double(nFreq,cvec,tlen)
      cvec(n1) = conjg(cvec(m1))
   enddo
   
-  
-  
-  
-  
   call cdft(4*nFreq,cos(pi/(2*nFreq)),sin(pi/(2*nFreq)), cvec(0:2*nFreq-1))
      
-  
- 
-  
+  !cvec(:)=cvec(:)*sqrtpi2piinverse*samplingHz
+
   return
 end subroutine IFFT_double
 

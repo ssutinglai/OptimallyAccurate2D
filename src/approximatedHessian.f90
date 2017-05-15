@@ -42,12 +42,12 @@ subroutine approximatedHessian
 
   synFieldZ(:,:,:)=obsFieldZ(:,:,:)-synFieldZ(:,:,:)
 
-  !write(13,*) synFieldZ(:,1,1)
+  
+  do ixz=0,nnFreq-1
+     write(13,*) synFieldZ(ixz,1,1)
+  enddo
+  stop
 
-  !do ixz=1,(boxnx+1)*(boxnz+1)
-  !   iz=(ixz-1)/(boxnx+1)+1
-  !   ix=mod(ixz-1,boxnx+1)+1
-     
      
    do iSource=1,nSource
       isx = iisx(iSource)
