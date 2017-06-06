@@ -190,7 +190,7 @@ program frechetKernel
      singleStrainForward(1:nx+1,1:nz+1) = kernelP(1:nx+1,1:nz+1)
 
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) singleStrainFoward
+     write(1,rec=1) singleStrainForward
      close(1)
 
 
@@ -209,7 +209,7 @@ program frechetKernel
      singleStrainForward(1:nx+1,1:nz+1) = kernelS(1:nx+1,1:nz+1)
 
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-     write(1,rec=1) singleStrainFoward
+     write(1,rec=1) singleStrainForward
      close(1)
 
 
@@ -224,10 +224,12 @@ program frechetKernel
   it = it+1
    
   if(videoornot) then
-     tmpfolder="kernelPsnapshots"
-     call create_color_kernel(kernelPtotal,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+     tmpfolder="kernelPsnapshots"    
+     call create_color_kernel(kernelPtotal,nx+1,nz+1,it,isx1,isz1, &
+          iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
      tmpfolder="kernelSsnapshots"
-     call create_color_kernel(kernelStotal,nx+1,nz+1,it,isx1,isz1,iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
+     call create_color_kernel(kernelStotal,nx+1,nz+1,it,isx1,isz1, &
+          iisx(i2Source:i2Source),iisz(i2Source:i2Source),1,2,5.d-9,tmpfolder)
   endif
   
 
@@ -247,7 +249,7 @@ program frechetKernel
   singleStrainForward(1:nx+1,1:nz+1) = kernelPtotal(1:nx+1,1:nz+1)
   
   open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-  write(1,rec=1) singleStrainFoward
+  write(1,rec=1) singleStrainForward
   close(1)
   
   
@@ -266,7 +268,7 @@ program frechetKernel
   singleStrainForward(1:nx+1,1:nz+1) = kernelStotal(1:nx+1,1:nz+1)
   
   open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-  write(1,rec=1) singleStrainFoward
+  write(1,rec=1) singleStrainForward
   close(1)
   
 

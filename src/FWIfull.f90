@@ -12,7 +12,7 @@ program multipleSourcesFWI2D
   !  
   !                                          cleaning : 2016.6. N. Fuji   
   !                                waveform inversion : 2017.1. N. Fuji
-  !
+  !                                          Hessian  : 2017.5. N. Fuji
 
   use parameters
   use paramFWI
@@ -64,28 +64,62 @@ program multipleSourcesFWI2D
   ! first forward modelling
     
   iterationIndex=0
-  
-  print *, "first forward"
+
+  ! force to write strains
+
+  writingStrain = .true.
+
+  ! NF should uncomment below
 
   call forwardmodelling
+
+
   
+
+ 
+
+  ! NF assumes that sources and receivers are placed at the same points
+
+  
+  boxnx=nx-rmargin(1)-lmargin(1)
+  boxnz=nz-rmargin(2)-lmargin(2)
+  call FourierAllocate
 
   do while (iterationIndex<numberIteration) 
-     iterationIndex=iterationIndex+1
-     call backpropagation
-  
-     !print *, nx, maxnx, maxnz,nz
 
-     nx=nx-rmargin(1)-lmargin(1)
-     nz=nz-rmargin(2)-lmargin(2)
+
+
+     ! FFT and deconvolution with Ricker wavelet
+     ! It allocates also Frechet derivatives
+  
+     ! NF should comment out
+
+     !call FourierAll
+
+     ! kernelP/S are A^T \delta d
      
+
+
      kernelP=0.d0
      kernelS=0.d0
-
-     call gradientCalculation
+ 
      
 
-     recl_size=kind(1.e0)*(nx+1)*(nz+1)
+     !call approximatedHessian
+     
+     ! Here we have already ata and atd (i.e. we can do anything we want!)
+     ! However, note that ata here is AtA conjugate transpose!!
+   
+
+     
+     ! NF should use CG inversion scheme from old libraries
+     
+
+     call invbyCG
+     
+     
+     recl_size=kind(1.e0)*(boxnx+1)*(boxnz+1)
+     
      
      singleStrainForward(:,:)=kernelP(:,:)
 
@@ -101,54 +135,58 @@ program multipleSourcesFWI2D
      write(1,rec=1) singleStrainForward
      close(1)
 
-     print *, "finished gradient"
-
-
-     vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + steplengthVp * kernelP(1:nx+1,1:nz+1)
-     vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + steplengthVs * kernelS(1:nx+1,1:nz+1)
-     call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
-     call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
-     print *, "small perturbation"
-
-     synx=0.e0
-     synz=0.e0
-
-     call forwardmodelling
-
-     numeratorG = 0.d0
-     denominatorG = 0.d0
-
+     
 
      
 
-     synx(:,:) = obsx(:,:)-synx(:,:)
-     synz(:,:) = obsz(:,:)-synz(:,:)
+     if(0.eq.1) then ! we do not use steplengths for the moment
+        vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + steplengthVp * kernelP(1:nx+1,1:nz+1)
+        vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + steplengthVs * kernelS(1:nx+1,1:nz+1)
+        call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
+        call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
+        print *, "small perturbation"
+        
 
-     ! here, syn is no more syn !!!
+        synx=0.e0
+        synz=0.e0
 
-     numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delz(:,:))
-     denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
-
-     print *, "num, dem", numeratorG, denominatorG
-
-     alphaVp = numeratorG/denominatorG*steplengthVp
-     alphaVs = numeratorG/denominatorG*steplengthVs
+        call forwardmodelling
+        
+        numeratorG = 0.d0
+        denominatorG = 0.d0
+        
+        
      
-     print *, "alphaVp/Vs = ",  alphaVp,alphaVs
+        
+        synx(:,:) = obsx(:,:)-synx(:,:)
+        synz(:,:) = obsz(:,:)-synz(:,:)
+        
+        ! here, syn is no more syn !!!
 
+        numeratorG = sum(synx(:,:)*delx(:,:))+sum(synz(:,:)*delz(:,:))
+        denominatorG = sum(synx(:,:)*synx(:,:))+sum(synz(:,:)*synz(:,:))
+
+        print *, "num, dem", numeratorG, denominatorG
+
+        alphaVp = numeratorG/denominatorG*steplengthVp
+        alphaVs = numeratorG/denominatorG*steplengthVs
+     
+        print *, "alphaVp/Vs = ",  alphaVp,alphaVs
+     
+
+     endif
+
+     
      ! new model construction
 
 
-     nx=nx-rmargin(1)-lmargin(1)
-     nz=nz-rmargin(1)-lmargin(1)
      
-     vp(1:nx+1,1:nz+1) = vp(1:nx+1,1:nz+1) + (alphaVp-steplengthVp) * kernelP(1:nx+1,1:nz+1)
-     vs(1:nx+1,1:nz+1) = vs(1:nx+1,1:nz+1) + (alphaVs-steplengthVs) * kernelS(1:nx+1,1:nz+1)
+     vp(1:boxnx+1,1:boxnz+1) = vp(1:boxnx+1,1:boxnz+1) + kernelP(1:boxnx+1,1:boxnz+1)
+     vs(1:boxnx+1,1:boxnz+1) = vs(1:boxnx+1,1:boxnz+1) + kernelS(1:boxnx+1,1:boxnz+1)
 
 
-     recl_size=kind(1.e0)*(nx+1)*(nz+1)
 
-     singleStrainForward(:,:)=vp(1:nx+1,1:nz+1)
+     singleStrainForward(:,:)=vp(1:boxnx+1,1:boxnz+1)
      
      write(outfile,'("./iteratedModels/",I3.3,".vpmodel")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
@@ -156,7 +194,7 @@ program multipleSourcesFWI2D
      close(1)
 
  
-     singleStrainForward(:,:)=vs(1:nx+1,1:nz+1)
+     singleStrainForward(:,:)=vs(1:boxnx+1,1:boxnz+1)
 
      write(outfile,'("./iteratedModels/",I3.3,".vsmodel")'),iterationIndex
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
@@ -164,14 +202,17 @@ program multipleSourcesFWI2D
      close(1)
 
 
+     nx=boxnx
+     nz=boxnz
      call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
      call calstructBC(maxnx, maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodisplacement,lmargin,rmargin)
      call forwardmodelling
      
-     
+     iterationIndex=iterationIndex+1
 
   enddo
-     
+
+  call FourierDeallocate
 
      
      

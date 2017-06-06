@@ -428,9 +428,7 @@ subroutine forwardmodelling
      open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
      write(1,rec=1) synx(0:maxnt,1:nReceiver)
      close(1)
-     !open(1,file=outfile,form='unformatted',access='direct',recl=kind(0e0)*(nt+1))
-     !write(1,rec=1) synx(0:nt,ir)
-     !close(1,status='keep')
+
      
      if(iterationIndex.eq.0) then
         

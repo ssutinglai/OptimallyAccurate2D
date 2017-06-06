@@ -37,6 +37,9 @@ module parameters
   double precision dt,dx,dz
   ! parameters for the wavefield
   integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size,recl_size_syn
+  ! paramters for the physical domain
+  integer boxnx,boxnz
+  
   ! Attention ! nx and nz are modified with absorbing boundaries
   double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
   double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
@@ -164,6 +167,10 @@ module paramFWI
   real, allocatable, dimension(:,:) :: singleKernelP,singleKernelS
   double precision, allocatable, dimension (:,:) :: strainForward,strainBack
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
+ 
+ 
+  double complex, allocatable, dimension (:,:) :: ata
+  double complex, allocatable, dimension (:) :: atd
   character(180) :: obsdir
   character(20) :: extentionOBSx,extentionOBSz
   ! extentions:  if 9999 we do not take the component
@@ -173,4 +180,23 @@ module paramFWI
   double precision :: alphaVp, alphaVs ! these are real steplengths
   real(kind(0e0)), allocatable, dimension(:,:) :: obsx,obsz
   real(kind(0e0)), allocatable, dimension(:,:) :: delx,delz
+  double precision, parameter :: alphaAIC = 10.d0
+
+  ! for FourierAll
+  double complex, allocatable :: strainFieldD(:,:,:), strainFieldS(:,:,:)
+  double complex, allocatable :: backStrainFieldD(:,:,:),backStrainFieldS(:,:,:)
+  complex(kind(0e0)), allocatable :: singleStrainFieldD(:,:,:)
+  complex(kind(0e0)), allocatable :: singleStrainFieldS(:,:,:)
+  integer :: nFreq,nFreqStep,nFreqStart,nFreqStop
+  integer :: nnFreq = 32
+  integer, allocatable :: nFreqSample(:)
+  integer :: recl_size_fft
+  double precision :: tlen
+  double complex, allocatable :: synFieldX(:,:,:),synFieldZ(:,:,:)
+  double complex, allocatable :: obsFieldX(:,:,:),obsFieldZ(:,:,:) 
+  
+
+  ! AtA calculation (neighbours) 
+  integer, parameter :: nNeighbours = 9 ! in 1D in grids, it should be an odd number 
+
 end module paramFWI
