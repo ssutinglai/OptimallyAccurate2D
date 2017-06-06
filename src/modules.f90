@@ -169,8 +169,8 @@ module paramFWI
   double precision, allocatable, dimension (:,:) :: kernelP,kernelS
  
  
-  double precision, allocatable, dimension (:,:) :: ata
-  double precision, allocatable, dimension (:) :: atd
+  double complex, allocatable, dimension (:,:) :: ata
+  double complex, allocatable, dimension (:) :: atd
   character(180) :: obsdir
   character(20) :: extentionOBSx,extentionOBSz
   ! extentions:  if 9999 we do not take the component
@@ -197,6 +197,6 @@ module paramFWI
   
 
   ! AtA calculation (neighbours) 
-  integer, parameter :: nNeighbours = 5 ! in 1D in grids, it should be an odd number 
+  integer, parameter :: nNeighbours = 9 ! in 1D in grids, it should be an odd number 
 
 end module paramFWI

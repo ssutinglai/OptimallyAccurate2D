@@ -10,7 +10,7 @@ program5 = $(BIN)/FWIfull.x
 include ../etc/config.h
 objs0 =   modules.o others.o vectors.o  seismicSources.o videos.o   cales.o  OPT2D_nodiscon.o
 objs =   modules.o others.o vectors.o disconConfig.o seismicSources.o videos.o   cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o OPT2D.o
-objs2 = modelgenerator4Anais.o
+objs2 = modelgeneratorCircle.o
 #objs2 = modelgenerator.o
 objs3 = frechetKernel.o modules.o others.o vectors.o videos.o 
 objs4 = forwardmodelling.o backpropagation.o gradientCalculation.o modules.o others.o vectors.o disconConfig.o seismicSources.o videos.o   cales.o cales_discon.o cales_free.o sub.inverse.o calmat.o FWI2D.o

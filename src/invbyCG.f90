@@ -24,7 +24,12 @@ subroutine invbyCG
   close(1)
   print *, "ata read"
 
+  !@ata=real(ata)
+  !atd=real(atd)
+
+  print *, ata(1:81,200:200)
   
+  !stop
 
   doCG=.true.
   
@@ -38,7 +43,7 @@ subroutine invbyCG
   w = -r
   !z = matmul(ata,w)
   call ataMatmul(w,z)
-  a = dot_product(r,w) / dot_product(w,z)
+  a = dot_product(conjg(r),w) / dot_product(conjg(w),z)
   x = x0 +a*w
   b = 0
   
@@ -51,18 +56,15 @@ subroutine invbyCG
   
 
   do while (doCG)
-
-    
+ 
      ii=ii+1
 
-     
-
      r = r - a*z
-     b = dot_product(r,z)/dot_product (w,z)
+     b = dot_product(conjg(r),z)/dot_product (conjg(w),z)
      w = -r + b*w
      !z = matmul(ata,w)
      call ataMatmul(w,z)
-     a = dot_product(r,w)/dot_product(w,z)
+     a = dot_product(conjg(r),w)/dot_product(conjg(w),z)
      x = x+a*w
 
      VAR(ii) = dot_product(conjg(r),r)
@@ -88,11 +90,12 @@ subroutine invbyCG
   do ixz=1,(boxnx+1)*(boxnz+1)
      iz=(ixz-1)/(boxnx+1)+1
      ix=mod(ixz-1,boxnx+1)+1
+   
      kernelP(ix,iz)=dble(x0(2*(ixz-1)+1))
      kernelS(ix,iz)=dble(x0(2*(ixz-1)+2))
   enddo
 
-
+  
 
   return
   
@@ -125,10 +128,10 @@ subroutine ataMatmul(w,z)
               jxz=(jz-1)*(boxnx+1)+jx
               jxzlocal=(jz-iz+nNeighbours/2)*nNeighbours+(jx-ix+nNeighbours/2+1)
               do jTypeParam=1,2
-                 z(2*(jxz-1)+jTypeParam)=&
-                      z(2*(jxz-1)+jTypeParam)+&
+                 z(2*(ixz-1)+iTypeParam)=&
+                      z(2*(ixz-1)+iTypeParam)+&
                       ata(2*(jxzlocal-1)+jTypeParam,2*(ixz-1)+iTypeParam)*&
-                      w(2*(ixz-1)+iTypeParam)
+                      conjg(w(2*(jxz-1)+jTypeParam))
               enddo
            enddo
         enddo

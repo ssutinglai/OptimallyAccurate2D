@@ -33,8 +33,8 @@ subroutine approximatedHessian
   tmpfrechet2=cmplx(0.d0)
   !deltad=cmplx(0.d0)
   
-  ata=0.d0
-  atd=0.d0
+  ata=cmplx(0.d0)
+  atd=cmplx(0.d0)
 
 
 
@@ -144,6 +144,7 @@ subroutine approximatedHessian
                      do jx=max(ix-nNeighbours/2,1),min(ix+nNeighbours/2,boxnx+1)
                         jxz=(jz-1)*(boxnx+1)+jx
                         jxzlocal=(jz-iz+nNeighbours/2)*nNeighbours+(jx-ix+nNeighbours/2+1)
+                        !print *, ix,iz,jx,jz,jxzlocal
                         
                         
                         do jTypeParam=1,2
@@ -188,14 +189,14 @@ subroutine frechet1point(iFreq,iTypeParam,indexx,indexz,tmpfrechet)
   if(iTypeParam.eq.1) then
 
      tmpfrechet= &
-          -2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vp(indexx+lmargin(1),indexz+lmargin(2))* &
+          2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vp(indexx+lmargin(1),indexz+lmargin(2))* &
           strainFieldD(iFreq,indexx,indexz)* &
           conjg(backStrainFieldD(iFreq,indexx,indexz))
      
   elseif(iTypeParam.eq.2) then
   
      tmpfrechet= &
-          -2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vs(indexx+lmargin(1),indexz+lmargin(2))* &
+          2.d0*rho(indexx+lmargin(1),indexz+lmargin(2))*vs(indexx+lmargin(1),indexz+lmargin(2))* &
           strainFieldS(iFreq,indexx,indexz)* &
           conjg(backStrainFieldS(iFreq,indexx,indexz))
   endif

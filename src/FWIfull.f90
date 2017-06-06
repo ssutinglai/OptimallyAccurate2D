@@ -94,7 +94,7 @@ program multipleSourcesFWI2D
   
      ! NF should comment out
 
-     call FourierAll
+     !call FourierAll
 
      ! kernelP/S are A^T \delta d
      
@@ -105,7 +105,7 @@ program multipleSourcesFWI2D
  
      
 
-     call approximatedHessian
+     !call approximatedHessian
      
      ! Here we have already ata and atd (i.e. we can do anything we want!)
      ! However, note that ata here is AtA conjugate transpose!!
@@ -181,7 +181,7 @@ program multipleSourcesFWI2D
 
 
      
-     vp(1:boxnx+1,1:boxnz+1) = vp(1:boxnx+1,1:nz+1) + kernelP(1:boxnx+1,1:boxnz+1)
+     vp(1:boxnx+1,1:boxnz+1) = vp(1:boxnx+1,1:boxnz+1) + kernelP(1:boxnx+1,1:boxnz+1)
      vs(1:boxnx+1,1:boxnz+1) = vs(1:boxnx+1,1:boxnz+1) + kernelS(1:boxnx+1,1:boxnz+1)
 
 
