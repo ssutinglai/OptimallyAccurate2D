@@ -79,11 +79,11 @@ vp(2)=340.d0;vs(2)=0.d0;
     tmp=1
     do j=1, NZ_TOTAL
        do i=1, NX_TOTAL
-          if((i-400)**2+(j-400)**2<=300**2) then
+          !if((i-400)**2+(j-400)**2<=300**2) then
              fullvp(i,j) = vp(1)
              fullvs(i,j) = vs(1)
              fullrho(i,j) = 2.d3
-          endif
+          !endif
        enddo
     enddo
  endif

@@ -7,7 +7,7 @@ T video or not
 T writingStrain
 10 IT_DISPLAY
 401 10 1  iSourceStart, iSourceInverval, nSource
-105 izSourceStart
+120 izSourceStart
 401 10 1 iReceiverStart, iReceiverInterval, nReceiver
 701 izReceiverStart
 3900 799 799 nt nx nz
