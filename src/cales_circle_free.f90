@@ -20,7 +20,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
   double precision f16(nx+1,nz+1),f17(nx+1,nz+1),f18(nx+1,nz+1)
   double precision f19(nx+1,nz+1),f20(nx+1,nz+1)
   integer ix,iz
-  integer centrenx,centrenz,nradius
+  integer centrenx,centrenz,nradius  !%! Added for the circle
 
   double precision dt2,dx2,dz2,dxdz
   ! for smoothed part of the model :
@@ -76,6 +76,8 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
         e15(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
            * ( +9.d0 ) / ( 1728.d0 * dxdz )
         !if ( ix+2.le.nx+1 ) then
+        !%! If it is out of the circle, the field has to be equal to zero.
+
         if(ix+2.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))) then
            e16(ix,iz) = dt2 / rho(ix,iz) * lam(ix+2,iz) &
                 * ( -1.d0 ) / ( 1728.d0 * dxdz )
@@ -162,7 +164,10 @@ subroutine calstep_circle_free( nx,nz, &
      ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
      work1,work2,work3,work4, &
      work5,work6,work7,work8, &
-     work9,work10,work11,work12,optimise, & ! Hereafter are new variables for cales_discon
+     work9,work10,work11,work12, &
+     wwork1,wwork2,wwork3,wwork4, &
+     wwork5,wwork6,wwork7,wwork8, &
+     wwork9,wwork10,wwork11,wwork12,optimise, & ! Hereafter are new variables for cales_discon
      ee12,ee34,ee56,ee65,ee78,ee87, &
      ff12,ff34,ff56,ff65,ff78,ff87)
 
@@ -188,7 +193,13 @@ subroutine calstep_circle_free( nx,nz, &
   double precision work7(nx+1),work8(nx+1,0:1)
   double precision work9(nx+1),work10(nx+1,-2:1)
   double precision work11(nx+1),work12(nx+1,-1:2)
-  integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
+  double precision wwork1(nz+1,-2:1),wwork2(nz+1,-1:2)
+  double precision wwork3(nz+1,-2:1),wwork4(nz+1,-1:2)
+  double precision wwork5(nz+1),wwork6(nz+1,0:1)
+  double precision wwork7(nz+1),wwork8(nz+1,0:1)
+  double precision wwork9(nz+1),wwork10(nz+1,-2:1)
+  double precision wwork11(nz+1),wwork12(nz+1,-1:2)
+  integer ix,iz,ix1,ix2,iz1,iz2,ix11,ix12,ix21,ix22,iz11,iz22,iz21,iz12
   logical optimise
   
   integer centrenx,centrenz,nradius
@@ -212,7 +223,7 @@ subroutine calstep_circle_free( nx,nz, &
              (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
              (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then       
            
-        ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &
+        ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &            !%! ux1=c^{N'}_{p'*r'*l}, ux2=c^{N'-1}_{p'*r'*l}
             + e1(ix,iz) * ( ux1(ix-1,iz) - ux1(ix,iz) ) &
             + e2(ix,iz) * ( ux1(ix+1,iz) - ux1(ix,iz) ) &
             + e3(ix,iz) * ( ux1(ix,iz-1) - ux1(ix,iz) ) &
@@ -250,7 +261,7 @@ subroutine calstep_circle_free( nx,nz, &
        endif
     enddo
  enddo
- ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+ ux(isx,isz) = ux(isx,isz) + fx(isx,isz)   !%! Give a wavelet
  uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
 
  
@@ -258,16 +269,18 @@ subroutine calstep_circle_free( nx,nz, &
     ! correcting the wavefield
     !
 
-    do iz=2,nz
-
-
-       do ix=2,nx
+    !do iz=2,nz
+    do ix=2,nx
+       do iz=2,nz
+       !do ix=2,nx
           
           
-          if((ix+1.eq.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).or. &
-               !(iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
-               (ix-1.eq.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2)))))) then !.and. &
-            !(iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then  
+          if((iz+1.eq.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).or. &
+             (iz-1.eq.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+               !((ix+1.eq.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).or. &
+
+               !(ix-1.eq.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))) )then
+
        !iz1 = 2
        !iz2 = 3
 
@@ -294,17 +307,57 @@ subroutine calstep_circle_free( nx,nz, &
           endif
        enddo
     enddo
-    
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%  The new added section for z components  (2018.01.31 Ssu-Ting LAI)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
+!    do ix=2,nx
+!
+!      do iz=2,nz
+!
+!         if ((iz+1.eq.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).or. &
+!              (iz-1.eq.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+!
+!              ! Write a proper boundary conditions for z components (work1-4)
+!
+!            ix1=ix
+!            ix2=ix+1
+!
+!            wwork1(iz,-2) = 0.d0
+!            wwork1(iz,-1) = 0.d0
+!            wwork1(iz,0) = 0.d0
+!            wwork1(iz,1) = uz(ix1,iz) - 2.d0 * uz1(ix1,iz) + uz2(ix1,iz)
+!            wwork2(iz,-1) = 0.d0
+!            wwork2(iz,0) = 0.d0
+!            wwork2(iz,1) = ux(ix1,iz) - 2.d0 * ux1(ix1,iz) + ux2(ix1,iz)
+!            wwork2(iz,2) = ux(ix2,iz) - 2.d0 * ux1(ix2,iz) + ux2(ix2,iz)
+!            wwork3(iz,-2) = 0.d0
+!            wwork3(iz,-1) = 0.d0
+!            wwork3(iz,0) = 0.d0
+!            wwork3(iz,1) = wwork1(iz,1) + 12.d0 * uz1(ix1,iz)
+!            wwork4(iz,-1) = 0.d0
+!            wwork4(iz,0) = 0.d0
+!            wwork4(iz,1) = wwork2(iz,1) + 12.d0 * ux1(ix1,iz)
+!            wwork4(iz,2) = wwork2(iz,2) + 12.d0 * ux1(ix2,iz)
+!
+!
+!         endif
+!     enddo
+!    enddo
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
     do ix=1,nx+1
 
-       ix11 = max0( ix-1,1 )
+       ix11 = max0( ix-1,1 )      !%! Prevent it being out of the boundary
        ix12 = min0( ix+1,nx+1 )
        ix21 = max0( ix-2,1 )
        ix22 = min0( ix+2,nx+1 )
        work6(ix,0) = 0.d0
        work6(ix,1) = &
             (           ( -work3(ix11,1) ) &
-            + 10.d0 * ( -work3(ix,  1) ) & 
+            + 10.d0 * ( -work3(ix,  1) ) &
             +         ( -work3(ix12,1) ) &
             )
        work8(ix,0) = 0.d0
@@ -326,12 +379,51 @@ subroutine calstep_circle_free( nx,nz, &
             + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
        
     enddo
-    
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%  The new added section !!!  (2018.01.31 Ssu-Ting LAI)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
+!    do iz=1,nz+1
+!
+!       iz11 = max0( iz-1,1 )      !%! Prevent it being out of the boundary
+!       iz12 = min0( iz+1,nz+1 )
+!       iz21 = max0( iz-2,1 )
+!       iz22 = min0( iz+2,nz+1 )
+!       wwork6(iz,0) = 0.d0
+!       wwork6(iz,1) = &
+!            (           ( -wwork3(iz11,1) ) &
+!            + 10.d0 * ( -wwork3(iz,1) ) &
+!            +         ( -wwork3(iz12,1) ) &
+!            )
+!       wwork8(iz,0) = 0.d0
+!       wwork8(iz,1) = &
+!            (           ( -wwork4(iz11,1) ) &
+!            + 10.d0 * ( -wwork4(iz,1) ) &
+!            +         ( -wwork4(iz12,1) ) &
+!            )
+!       wwork10(iz,-2) = 0.d0
+!       wwork10(iz,-1) = 0.d0
+!       wwork10(iz,0) = 0.d0
+!       wwork10(iz,1)   = (          wwork3(iz21,1) - 9.d0 * wwork3(iz11,1) &
+!            + 3.d0 * wwork3(  iz,1) + 5.d0 * wwork3(iz12,1) )
+!       wwork12(iz,-1) = 0.d0
+!       wwork12(iz,0) = 0.d0
+!       wwork12(iz,1) = ( - 5.d0 * wwork4(iz11,1) - 3.d0 * wwork4(  iz,1) &
+!            + 9.d0 * wwork4(iz12,1) -        wwork4(iz22,1) )
+!       wwork12(iz,2) = ( - 5.d0 * wwork4(iz11,2) - 3.d0 * wwork4(  iz,2) &
+!            + 9.d0 * wwork4(iz12,2) -        wwork4(iz22,2) )
+!
+!    enddo
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
     do iz=2,nz
        iz1 = iz + 1
        iz2 = min0( iz+2, nz+1 )
        do ix=2,nx
-          
+
 
           if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
                (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
@@ -404,7 +496,7 @@ subroutine calstep_circle_free( nx,nz, &
              work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
                   + 9.d0 * work4(ix12,2) -        work4(ix22,2))
           endif
-             
+
        enddo
           
        do ix=2,nx
@@ -416,57 +508,199 @@ subroutine calstep_circle_free( nx,nz, &
              
              ix21 = max0( ix-2,1 )
              ix22 = min0( ix+2,nx+1 )
-             ux(ix,iz) = ux(ix,iz) &
-                  + ( &
-                  - (           (   work1(ix-1,-1) + work1(ix-1,1) &
-                  + work1(ix+1,-1) + work1(ix+1,1) ) &
-                  + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
-                  + work1(  ix, 1) + work1(ix+1, 0) ) &
-                  + 100.d0 * work1(ix,0) ) &
-                  + e1(ix,iz) * work5(ix) &
-                  - e2(ix,iz) * work5(ix+1) &
-                  + e3(ix,iz) * work6(ix,0) &
-                  - e4(ix,iz) * work6(ix,1) &
-                  ) / 144.d0 &
-                  + e13(ix,iz) * work11(ix-1) &
-                  + e14(ix,iz) * work11(ix) &
-                  + e15(ix,iz) * work11(ix+1) &
-                  + e16(ix,iz) * work11(ix22) &
-                  + e17(ix,iz) * work12(ix,-1) &
-                  + e18(ix,iz) * work12(ix,0) &
-                  + e19(ix,iz) * work12(ix,1) &
-                  + e20(ix,iz) * work12(ix,2)
-             uz(ix,iz) = uz(ix,iz) &
-                  + ( &
-                  - (           (   work2(ix-1,-1) + work2(ix-1,1) &
-                  + work2(ix+1,-1) + work2(ix+1,1) ) &
-                  + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
-                  + work2(  ix, 1) + work2(ix+1, 0) ) &
-                  + 100.d0 * work2(ix,0) ) &
-                  + f1(ix,iz) * work7(ix) &
-                  - f2(ix,iz) * work7(ix+1) &
-                  + f3(ix,iz) * work8(ix,0) &
-                  - f4(ix,iz) * work8(ix,1) &
-                  ) / 144.d0 &
-                  + f13(ix,iz) * work9(ix21) &
-                  + f14(ix,iz) * work9(ix-1) &
-                  + f15(ix,iz) * work9(ix) &
-                  + f16(ix,iz) * work9(ix+1) &
-                  + f17(ix,iz) * work10(ix,-2) &
-                  + f18(ix,iz) * work10(ix,-1) &
-                  + f19(ix,iz) * work10(ix,0) &
-                  + f20(ix,iz) * work10(ix,1)
+!             ux(ix,iz) = ux(ix,iz) &
+!                  + ( &
+!                  - (           (   work1(ix-1,-1) + work1(ix-1,1) &
+!                  + work1(ix+1,-1) + work1(ix+1,1) ) &
+!                  + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
+!                  + work1(  ix, 1) + work1(ix+1, 0) ) &
+!                  + 100.d0 * work1(ix,0) ) &
+!                  + e1(ix,iz) * work5(ix) &
+!                  - e2(ix,iz) * work5(ix+1) &
+!                  + e3(ix,iz) * work6(ix,0) &
+!                  - e4(ix,iz) * work6(ix,1) &
+!                  ) / 144.d0 &
+!                  + e13(ix,iz) * work11(ix-1) &
+!                  + e14(ix,iz) * work11(ix) &
+!                  + e15(ix,iz) * work11(ix+1) &
+!                  + e16(ix,iz) * work11(ix22) &
+!                  + e17(ix,iz) * work12(ix,-1) &
+!                  + e18(ix,iz) * work12(ix,0) &
+!                  + e19(ix,iz) * work12(ix,1) &
+!                  + e20(ix,iz) * work12(ix,2)
+!             uz(ix,iz) = uz(ix,iz) &
+!                  + ( &
+!                  - (           (   work2(ix-1,-1) + work2(ix-1,1) &
+!                  + work2(ix+1,-1) + work2(ix+1,1) ) &
+!                  + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
+!                  + work2(  ix, 1) + work2(ix+1, 0) ) &
+!                  + 100.d0 * work2(ix,0) ) &
+!                  + f1(ix,iz) * work7(ix) &
+!                  - f2(ix,iz) * work7(ix+1) &
+!                  + f3(ix,iz) * work8(ix,0) &
+!                  - f4(ix,iz) * work8(ix,1) &
+!                  ) / 144.d0 &
+!                  + f13(ix,iz) * work9(ix21) &
+!                  + f14(ix,iz) * work9(ix-1) &
+!                  + f15(ix,iz) * work9(ix) &
+!                  + f16(ix,iz) * work9(ix+1) &
+!                  + f17(ix,iz) * work10(ix,-2) &
+!                  + f18(ix,iz) * work10(ix,-1) &
+!                  + f19(ix,iz) * work10(ix,0) &
+!                  + f20(ix,iz) * work10(ix,1)
           endif
        enddo
     enddo
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%  The new added section !!! (2018.01.31 Ssu-Ting LAI)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
+!    do ix=2,nx
+!       ix1 = ix + 1
+!       ix2 = min0( ix+2, nx+1 )
+!       do iz=2,nz
+!
+!
+!          if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!               (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+!               (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!               (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then!
+!
+!             wwork1(iz,-2) = wwork1(iz,-1)
+!             wwork1(iz,-1) = wwork1(iz,0)
+!             wwork1(iz,0) = wwork1(iz,1)
+!             wwork1(iz,1) = uz(ix1,iz) - 2.d0 * uz1(ix1,iz) + uz2(ix1,iz)
+!             wwork2(iz,-1) = wwork2(iz,0)
+!             wwork2(iz,0) = wwork2(iz,1)
+!             wwork2(iz,1) = wwork2(iz,2)
+!             wwork2(iz,2) = ux(ix2,iz) - 2.d0 * ux1(ix2,iz) + ux2(ix2,iz)
+!             wwork3(iz,-2) = wwork3(iz,-1)
+!             wwork3(iz,-1) = wwork3(iz,0)
+!             wwork3(iz,0) = wwork3(iz,1)
+!             wwork3(iz,1) = wwork1(iz,1) + 12.d0 * uz1(ix1,iz)
+!             wwork4(iz,-1) = wwork4(iz,0)
+!             wwork4(iz,0) = wwork4(iz,1)
+!             wwork4(iz,1) = wwork4(iz,2)
+!             wwork4(iz,2) = wwork2(iz,2) + 12.d0 * ux1(ix2,iz)
+!         endif
+!       enddo
+!       do iz=1,nz+1
+!
+!          if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!               (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+!               (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!               (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then!
+!
+!
+!
+!             iz11 = max0( 1,iz-1 )
+!             iz12 = min0( iz+1,nz+1 )
+!             iz21 = max0( iz-2,1 )
+!             iz22 = min0( iz+2,nz+1 )
+!             wwork5(iz) =   (           ( wwork3(iz11,-1)-wwork3(iz,-1) ) &
+!                           + 10.d0 * ( wwork3(iz11,0)-wwork3(iz,0) ) &
+!                           +         ( wwork3(iz11,1)-wwork3(iz,1) ) )
+!             wwork6(iz,0) = wwork6(iz,1)
+!             wwork6(iz,1) =  (  ( wwork3(iz11,0)-wwork3(iz11,1) ) &
+!                           + 10.d0 * ( wwork3(iz,0)-wwork3(iz,1) ) &
+!                           +         ( wwork3(iz12,0)-wwork3(iz12,1) ) )
+!
+!             wwork7(iz) =( ( wwork4(iz11,-1)-wwork4(iz,-1) ) &
+!                           + 10.d0 * ( wwork4(iz11,0)-wwork4(iz,0) ) &
+!                           +         ( wwork4(iz11,1)-wwork4(iz,1) ))
+!
+!             wwork8(iz,0) = wwork8(iz,1)
+!             wwork8(iz,1) =  (           ( wwork4(iz11,0)-wwork4(iz11,1) ) &
+!                           + 10.d0 * ( wwork4(  iz,0)-wwork4(  iz,1) ) &
+!                           +         ( wwork4(iz12,0)-wwork4(iz12,1) ))
+!
+!             wwork9(iz) = (          wwork3(iz,-2) - 9.d0 * wwork3(iz,-1) &
+!                           + 3.d0 * wwork3(iz,0)  + 5.d0 * wwork3(iz,1))
+!
+!             wwork10(iz,-2) = wwork10(iz,-1)
+!             wwork10(iz,-1) = wwork10(iz,0)
+!             wwork10(iz,0) = wwork10(iz,1)
+!             wwork10(iz,1) = ( wwork3(iz21,1) - 9.d0 * wwork3(iz11,1) &
+!                            + 3.d0 * wwork3(  iz,1) + 5.d0 * wwork3(iz12,1) )
+!
+!             wwork11(iz) = ( - 5.d0 * wwork4(iz,-1)  - 3.d0 * wwork4(iz,0) &
+!                          + 9.d0 * wwork4(iz,1)  -        wwork4(iz,2) )
+!
+!             wwork12(iz,-1) = wwork12(iz,0)
+!             wwork12(iz,0) = wwork12(iz,1)
+!             wwork12(iz,1) = wwork12(iz,2)
+!             wwork12(iz,2) = ( - 5.d0 * wwork4(iz11,2) - 3.d0 * wwork4(  iz,2) &
+!                            + 9.d0 * wwork4(iz12,2) -        wwork4(iz22,2))
+!          endif
+!
+!       enddo
+!
+!       do iz=2,nz
+!
+!          if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!             (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+!             (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!             (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+!
+!              iz21 = max0( iz-2,1 )
+!              iz22 = min0( iz+2,nz+1 )
+!
+!!              ux(ix,iz) = ux(ix,iz) &
+!!                            + ( &
+!!                            - (           (   work1(iz-1,-1) + work1(iz-1,1) &
+!!                            + work1(iz+1,-1) + work1(iz+1,1) ) &
+!!                            + 10.d0 * (   work1(iz-1, 0) + work1(  iz,-1) &
+!!                            + work1(  iz, 1) + work1(iz+1, 0) ) &
+!!                            + 100.d0 * work1(ix,0) ) &
+!!                            + e1(ix,iz) * work5(iz) &
+!!                            - e2(ix,iz) * work5(iz+1) &
+!!                            + e3(ix,iz) * work6(iz,0) &
+!!                            - e4(ix,iz) * work6(iz,1) &
+!!                            ) / 144.d0 &
+!!                            + e13(ix,iz) * work11(iz-1) &
+!!                            + e14(ix,iz) * work11(iz) &
+!!                            + e15(ix,iz) * work11(iz+1) &
+!!                            + e16(ix,iz) * work11(iz22) &
+!!                            + e17(ix,iz) * work12(iz,-1) &
+!!                            + e18(ix,iz) * work12(iz,0) &
+!!                            + e19(ix,iz) * work12(iz,1) &
+!!                            + e20(ix,iz) * work12(iz,2)
+!!
+!              uz(ix,iz) = uz(ix,iz) &
+!                            + ( &
+!                            - (           (   wwork2(iz-1,-1) + wwork2(iz-1,1) &
+!                            + wwork2(iz+1,-1) + wwork2(iz+1,1) ) &
+!                            + 10.d0 * (   wwork2(iz-1,0) + wwork2(  iz,-1) &
+!                            + wwork2(  iz,1) + wwork2(iz+1,0) ) &
+!                            + 100.d0 * wwork2(iz,0) ) &
+!                            + f1(ix,iz) * wwork7(iz) &
+!                            - f2(ix,iz) * wwork7(iz+1) &
+!                            + f3(ix,iz) * wwork8(iz,0) &
+!                            - f4(ix,iz) * wwork8(iz,1) &
+!                            ) / 144.d0 &
+!                            + f13(ix,iz) * wwork9(iz21) &
+!                            + f14(ix,iz) * wwork9(iz-1) &
+!                            + f15(ix,iz) * wwork9(iz) &
+!                            + f16(ix,iz) * wwork9(iz+1) &
+!                            + f17(ix,iz) * wwork10(iz,-2) &
+!                            + f18(ix,iz) * wwork10(iz,-1) &
+!                            + f19(ix,iz) * wwork10(iz,0) &
+!                            + f20(ix,iz) * wwork10(iz,1)
+!          endif
+!       enddo
+!    enddo
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
     ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
-    uz(isx,isz) = uz(isx,isz) + fz(isx,isz)     
+    uz(isx,isz) = uz(isx,isz) + fz(isx,isz)
  endif
 
 
 
 
- ! swapping u1 & u2 
+ ! swapping u1 & u2
  do iz=2,nz
     do ix=2,nx
        ux2(ix,iz) = ux1(ix,iz)
@@ -477,7 +711,7 @@ subroutine calstep_circle_free( nx,nz, &
  enddo
 
 
- 
+
  return
 end subroutine calstep_circle_free
 
