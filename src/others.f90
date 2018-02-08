@@ -362,6 +362,10 @@ subroutine calstructBC(maxnx,maxnz,nx,nz,rho,lam,mu,markers,liquidmarkers,zerodi
   zzerodisplacement(1+lmargin(1):nx+1+lmargin(1),1+lmargin(2):nz+1+lmargin(2))= &
        zerodisplacement(1:nx+1,1:nz+1)
 
+  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+  !%%%%%  Let the 4 corners be equal to the point of the corner at the inner rectangle,
+  !%%%%%  but let the 4 rectangles be equal to the edge line of the inner rectangle.
+  !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
   ! 4 corners
 

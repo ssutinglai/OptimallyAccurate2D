@@ -20,18 +20,18 @@ program multipleSourcesFWI2D
 
 
   ! Cerjan boundary
-  lmargin(1)=NPOINTS_PML
+  lmargin(1)=NPOINTS_PML                            !%! In Katayama's case, we can set the margin to zero.
   rmargin(1)=NPOINTS_PML
   lmargin(2)=NPOINTS_PML
   rmargin(2)=NPOINTS_PML
   
-  call paramFWIReader
+  call paramFWIReader !%! Reading parameters
 
   call vectorAllocate
   
   call vectorAllocateFWI
 
-  call disconConfig ! discontinuity configuration
+  call disconConfig ! discontinuity configuration   !%! We are not using this in Katayama case!
   
   call ReceiverSourcePositions 
 
@@ -43,9 +43,9 @@ program multipleSourcesFWI2D
   call calstruct( maxnx,maxnz,vpfile, nx,nz,vp )
   call calstruct( maxnx,maxnz,vsfile, nx,nz,vs )
     
-  call freeConfig
+  call freeConfig                                   !%! We are not using this in Katayama case!
 
-  ! calculate lamda and mu
+  ! calculate lambda and mu
   call calstruct2(maxnx,maxnz,nx,nz,rho,vp,vs,lam,mu,liquidmarkers)
 
   ! structuring absorbing boundary
