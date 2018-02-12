@@ -289,19 +289,6 @@ subroutine calstep_circle_free( nx,nz, &
              iz2=iz+1
 
 
-             if(iz+1 .ge. centrenz) then
-               TBz=iz+1
-             else
-               BBz=iz
-             end if
-             if(iz+1 .ge. centrenz) then
-               RBx = (centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))+1
-               LBx = (centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))-1
-              else
-               RBx = (centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
-               LBx = (centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
-              endif
-
 
              work1(ix,-2) = 0.d0
              work1(ix,-1) = 0.d0
@@ -336,9 +323,17 @@ subroutine calstep_circle_free( nx,nz, &
 !         BBz=iz
 !      end if
 
+    do iz = 2,nz
+     if(iz+1 .ge. centrenz) then
+        RBx = (centrenx+int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+        LBx = (centrenx-int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+        TBz=iz+1
 
-       do ix=LBx,RBx
-       write(*,*) "successfully updated"
+
+      do ix = LBx,RBx
+       write(*,*) LBx
+       if((ix+1.eq.(centrenx+int(sqrt(dble(nradius**2-((centrenz-iz)**2)))))).or. &
+          (ix-1.eq.(centrenx-int(sqrt(dble(nradius**2-((centrenz-iz)**2))))))) then
 
        ix11 = max0( ix-1,LBx )      !%! Prevent it being out of the boundary
        ix12 = min0( ix+1,RBx )
@@ -367,46 +362,54 @@ subroutine calstep_circle_free( nx,nz, &
             + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
        work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
             + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
-       
-     enddo
-!     enddo
-!      enddo
+       endif
+      enddo
 
 
-!    else
-!
-!
-!        ix11 = max0( ix-1,LBx )      !%! Prevent it being out of the boundary
-!        ix12 = min0( ix+1,RBx )
-!        ix21 = max0( ix-2,LBx )
-!        ix22 = min0( ix+2,RBx )
-!        work6(ix,0) = 0.d0
-!        work6(ix,1) = &
-!          (           ( -work3(ix11,1) ) &
-!          + 10.d0 * ( -work3(ix,  1) ) &
-!          +         ( -work3(ix12,1) ) &
-!          )
-!        work8(ix,0) = 0.d0
-!        work8(ix,1) = &
-!          (           ( -work4(ix11,1) ) &
-!          + 10.d0 * ( -work4(  ix,1) ) &
-!          +         ( -work4(ix12,1) ) &
-!          )
-!        work10(ix,-2) = 0.d0
-!        work10(ix,-1) = 0.d0
-!        work10(ix,0) = 0.d0
-!        work10(ix,1)   = (          work3(ix21,1) - 9.d0 * work3(ix11,1) &
-!                         + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
-!        work12(ix,-1) = 0.d0
-!        work12(ix,0) = 0.d0
-!        work12(ix,1) = ( - 5.d0 * work4(ix11,1) - 3.d0 * work4(  ix,1) &
-!                       + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
-!        work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
-!                       + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
+           else
+         RBx = (centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+         LBx = (centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+         BBz=iz
 
-!      endif
-!     enddo
-!    enddo
+           do ix = LBx,RBx
+            write(*,*) LBx
+            if((ix+1.eq.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).or. &
+               (ix-1.eq.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2)))))) then
+
+               ix11 = max0( ix-1,LBx )      !%! Prevent it being out of the boundary
+               ix12 = min0( ix+1,RBx )
+               ix21 = max0( ix-2,LBx )
+               ix22 = min0( ix+2,RBx )
+               work6(ix,0) = 0.d0
+               work6(ix,1) = &
+                    (           ( -work3(ix11,1) ) &
+                    + 10.d0 * ( -work3(ix,  1) ) &
+                    +         ( -work3(ix12,1) ) &
+                    )
+               work8(ix,0) = 0.d0
+               work8(ix,1) = &
+                    (           ( -work4(ix11,1) ) &
+                    + 10.d0 * ( -work4(  ix,1) ) &
+                    +         ( -work4(ix12,1) ) &
+                    )
+               work10(ix,-2) = 0.d0
+               work10(ix,-1) = 0.d0
+               work10(ix,0) = 0.d0
+               work10(ix,1)   = (          work3(ix21,1) - 9.d0 * work3(ix11,1) &
+                     + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
+               work12(ix,-1) = 0.d0
+               work12(ix,0) = 0.d0
+               work12(ix,1) = ( - 5.d0 * work4(ix11,1) - 3.d0 * work4(  ix,1) &
+                     + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
+               work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
+                     + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
+             endif
+            enddo
+          endif
+        enddo
+
+
+
 
 
     do iz=2,nz
@@ -414,7 +417,7 @@ subroutine calstep_circle_free( nx,nz, &
        iz2 = min0( iz+2, TBz )
        do ix=2,nx
 
-
+          WRITE(*,*) TBz+1
           if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
                (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
                (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
@@ -438,6 +441,17 @@ subroutine calstep_circle_free( nx,nz, &
              work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
           endif
        enddo
+
+
+
+
+
+
+      if(iz+1 .ge. centrenz) then
+                RBx = (centrenx+int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+                LBx = (centrenx-int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+                TBz=iz+1
+
        do ix=LBx,RBx
           
           if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
@@ -487,15 +501,86 @@ subroutine calstep_circle_free( nx,nz, &
                   + 9.d0 * work4(ix12,2) -        work4(ix22,2))
           endif
 
-       enddo
-          
+        enddo
+       else
+         RBx = (centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+         LBx = (centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+         BBz=iz
+
+
+          do ix=LBx,RBx
+
+            if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+              (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+              (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+              (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+
+
+
+              ix11 = max0( ix-1,LBx )
+              ix12 = min0( ix+1,RBx )
+              ix21 = max0( ix-2,LBx )
+              ix22 = min0( ix+2,RBx )
+              work5(ix) =   (           ( work3(ix11,-1)-work3(ix,-1) ) &
+                        + 10.d0 * ( work3(ix11, 0)-work3(ix, 0) ) &
+                        +         ( work3(ix11, 1)-work3(ix, 1) ) )
+              work6(ix,0) = work6(ix,1)
+              work6(ix,1) =  (  ( work3(ix11,0)-work3(ix11,1) ) &
+                             + 10.d0 * ( work3(  ix,0)-work3(ix,  1) ) &
+                             +         ( work3(ix12,0)-work3(ix12,1) ) )
+
+              work7(ix) =( ( work4(ix11,-1)-work4(ix,-1) ) &
+                         + 10.d0 * ( work4(ix11, 0)-work4(ix, 0) ) &
+                         +         ( work4(ix11, 1)-work4(ix, 1) ))
+
+              work8(ix,0) = work8(ix,1)
+              work8(ix,1) =  (           ( work4(ix11,0)-work4(ix11,1) ) &
+                         + 10.d0 * ( work4(  ix,0)-work4(  ix,1) ) &
+                         +         ( work4(ix12,0)-work4(ix12,1) ))
+
+              work9(ix) = (          work3(ix,-2) - 9.d0 * work3(ix,-1) &
+                         + 3.d0 * work3(ix,0)  + 5.d0 * work3(ix,1))
+
+              work10(ix,-2) = work10(ix,-1)
+              work10(ix,-1) = work10(ix,0)
+              work10(ix,0) = work10(ix,1)
+              work10(ix,1) = ( work3(ix21,1) - 9.d0 * work3(ix11,1) &
+                          + 3.d0 * work3(  ix,1) + 5.d0 * work3(ix12,1) )
+
+              work11(ix) = ( - 5.d0 * work4(ix,-1)  - 3.d0 * work4(ix,0) &
+                         + 9.d0 * work4(ix, 1)  -        work4(ix,2) )
+
+              work12(ix,-1) = work12(ix,0)
+              work12(ix,0) = work12(ix,1)
+              work12(ix,1) = work12(ix,2)
+              work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
+                           + 9.d0 * work4(ix12,2) -        work4(ix22,2))
+             endif
+
+           enddo
+
+
+
+
+      endif
+
+
+
+
+
+    if(iz+1 .ge. centrenz) then
+       RBx = (centrenx+int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+       LBx = (centrenx-int(sqrt(dble(nradius**2-((centrenz-(iz-1))**2)))))
+       TBz = iz+1
+
+
        do ix=2,nx
 
           if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
                (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
                (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
                (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
-             
+
              ix21 = max0( ix-2,LBx )
              ix22 = min0( ix+2,RBx )
              ux(ix,iz) = ux(ix,iz) &
@@ -538,8 +623,70 @@ subroutine calstep_circle_free( nx,nz, &
                   + f18(ix,iz) * work10(ix,-1) &
                   + f19(ix,iz) * work10(ix,0) &
                   + f20(ix,iz) * work10(ix,1)
+              endif
+             enddo
+
+
+          else
+           RBx = (centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+           LBx = (centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))
+           BBz=iz
+
+         do ix=2,nx
+
+            if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+               (iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+               (ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+               (iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+
+             ix21 = max0( ix-2,LBx )
+             ix22 = min0( ix+2,RBx )
+             ux(ix,iz) = ux(ix,iz) &
+                 + ( &
+                 - (           (   work1(ix-1,-1) + work1(ix-1,1) &
+                 + work1(ix+1,-1) + work1(ix+1,1) ) &
+                 + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
+                 + work1(  ix, 1) + work1(ix+1, 0) ) &
+                 + 100.d0 * work1(ix,0) ) &
+                 + e1(ix,iz) * work5(ix) &
+                 - e2(ix,iz) * work5(ix+1) &
+                 + e3(ix,iz) * work6(ix,0) &
+                 - e4(ix,iz) * work6(ix,1) &
+                 ) / 144.d0 &
+                 + e13(ix,iz) * work11(ix-1) &
+                 + e14(ix,iz) * work11(ix) &
+                 + e15(ix,iz) * work11(ix+1) &
+                 + e16(ix,iz) * work11(ix22) &
+                 + e17(ix,iz) * work12(ix,-1) &
+                 + e18(ix,iz) * work12(ix,0) &
+                 + e19(ix,iz) * work12(ix,1) &
+                 + e20(ix,iz) * work12(ix,2)
+            uz(ix,iz) = uz(ix,iz) &
+                + ( &
+                - (           (   work2(ix-1,-1) + work2(ix-1,1) &
+                + work2(ix+1,-1) + work2(ix+1,1) ) &
+                + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
+                + work2(  ix, 1) + work2(ix+1, 0) ) &
+                + 100.d0 * work2(ix,0) ) &
+                + f1(ix,iz) * work7(ix) &
+                - f2(ix,iz) * work7(ix+1) &
+                + f3(ix,iz) * work8(ix,0) &
+                - f4(ix,iz) * work8(ix,1) &
+                ) / 144.d0 &
+                + f13(ix,iz) * work9(ix21) &
+                + f14(ix,iz) * work9(ix-1) &
+                + f15(ix,iz) * work9(ix) &
+                + f16(ix,iz) * work9(ix+1) &
+                + f17(ix,iz) * work10(ix,-2) &
+                + f18(ix,iz) * work10(ix,-1) &
+                + f19(ix,iz) * work10(ix,0) &
+                + f20(ix,iz) * work10(ix,1)
+
+
+
           endif
-       enddo
+        enddo
+      endif
     enddo
 
 
