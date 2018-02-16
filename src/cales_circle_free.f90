@@ -45,6 +45,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
 
   do iz=2,nz
      do ix=LBx(iz)+1,RBx(iz)-1
+!write(*,*)"step1"
         e1(ix,iz) = dt2 / rho(ix,iz) &
              * ( ( lam(ix-1,iz) + lam(ix,iz) ) &
              + 2.d0 * ( mu(ix-1,iz) + mu(ix,iz) ) ) &
@@ -74,6 +75,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
         e15(ix,iz) = dt2 / rho(ix,iz) * lam(ix+1,iz) &
            * ( +9.d0 ) / ( 1728.d0 * dxdz )
         if ( ix+2.le.RBx(iz) ) then
+!write(*,*)"step2"
            e16(ix,iz) = dt2 / rho(ix,iz) * lam(ix+2,iz) &
                 * ( -1.d0 ) / ( 1728.d0 * dxdz )
         else
@@ -86,6 +88,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
         e19(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+1) &
              * ( +9.d0 ) / ( 1728.d0 * dxdz )
         if ( iz+2.le.TBz(ix)) then
+!write(*,*)"step3"
            e20(ix,iz) = dt2 / rho(ix,iz) * mu(ix,iz+2) &
                 * ( -1.d0 ) / ( 1728.d0 * dxdz )
         else
@@ -114,6 +117,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
         f8(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
              / ( 4.d0 * dxdz )
         if ( ix-2.ge.LBx(iz) ) then
+!write(*,*)"step4"
            f13(ix,iz) = dt2 / rho(ix,iz) * mu(ix-2,iz) &
                 * (  1.d0 ) / ( 1728.d0 * dxdz )
         else
@@ -126,6 +130,7 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
         f16(ix,iz) = dt2 / rho(ix,iz) * mu(ix+1,iz) &
              * (  5.d0 ) / ( 1728.d0 * dxdz )
         if ( iz-2.ge.BBz(ix) ) then
+!write(*,*)"step5"
            f17(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz-2) &
                 * (  1.d0 ) / ( 1728.d0 * dxdz )
         else
@@ -205,7 +210,7 @@ subroutine calstep_circle_free( nx,nz, &
   ! predicting the wavefield
  do iz=2,nz
     do ix=LBx(iz)+1,RBx(iz)-1
-
+!write(*,*)"step6"
        ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &
             + e1(ix,iz) * ( ux1(ix-1,iz) - ux1(ix,iz) ) &
             + e2(ix,iz) * ( ux1(ix+1,iz) - ux1(ix,iz) ) &
@@ -253,8 +258,9 @@ subroutine calstep_circle_free( nx,nz, &
 
    do iz=2,nz
     do ix=LBx(iz)+1,RBx(iz)-1
-       iz1 = iz
-       iz2 = iz+1      !%! Not sure for this part!
+!write(*,*)"step7"
+       iz1 = BBz(ix)+1
+       iz2 = BBz(ix)+2      !%! Not sure for this part!
        work1(ix,-2) = 0.d0
        work1(ix,-1) = 0.d0
        work1(ix,0) = 0.d0
@@ -271,12 +277,12 @@ subroutine calstep_circle_free( nx,nz, &
        work4(ix,0) = 0.d0
        work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
        work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
-       write(*,*)work1(ix,1)
     enddo
    enddo
 
    do iz=2,nz
     do ix=LBx(iz),RBx(iz)
+!write(*,*)"step8"
        ix11 = max0( ix-1,LBx(iz) )
        ix12 = min0( ix+1,RBx(iz) )
        ix21 = max0( ix-2,LBx(iz) )
@@ -309,6 +315,7 @@ subroutine calstep_circle_free( nx,nz, &
     
    do iz=2,nz
     do ix=LBx(iz)+1,RBx(iz)-1
+!write(*,*)"step9"
        iz1 = iz + 1
        iz2 = min0( iz+2, TBz(ix))
 
@@ -331,6 +338,7 @@ subroutine calstep_circle_free( nx,nz, &
        enddo
 
        do ix=LBx(iz),RBx(iz)
+!write(*,*)"step10"
           ix11 = max0( ix-1,LBx(iz) )
           ix12 = min0( ix+1,RBx(iz) )
           ix21 = max0( ix-2,LBx(iz) )
@@ -373,6 +381,7 @@ subroutine calstep_circle_free( nx,nz, &
        enddo
        
        do ix=LBx(iz)+1,RBx(iz)-1
+!write(*,*)"step11"
           ix21 = max0( ix-2,LBx(iz) )
           ix22 = min0( ix+2,RBx(iz) )
           ux(ix,iz) = ux(ix,iz) &
@@ -427,6 +436,7 @@ subroutine calstep_circle_free( nx,nz, &
  ! swapping u1 & u2 
  do iz=2,nz
     do ix=2,nx
+!write(*,*)"step12"
        ux2(ix,iz) = ux1(ix,iz)
        ux1(ix,iz) =  ux(ix,iz)
        uz2(ix,iz) = uz1(ix,iz)
