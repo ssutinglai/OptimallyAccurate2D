@@ -198,9 +198,7 @@ subroutine forwardmodelling
                 work(1,1), work(1,5), work(1,9),work(1,13), &
                 work(1,17),work(1,18),work(1,20),work(1,21), &
                 work(1,23),work(1,24),work(1,28),work(1,29), &
-                wwork(1,1), wwork(1,5), wwork(1,9),wwork(1,13), &
-                wwork(1,17),wwork(1,18),wwork(1,20),wwork(1,21), &
-                wwork(1,23),wwork(1,24),wwork(1,28),wwork(1,29),optimise, &
+                optimise, &
                 ! Hereafter are new variables for cales_discon
                 ee12,ee34,ee56,ee65,ee78,ee87, &
                 ff12,ff34,ff56,ff65,ff78,ff87)

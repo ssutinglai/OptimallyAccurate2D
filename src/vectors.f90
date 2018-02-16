@@ -29,7 +29,7 @@ subroutine vectorAllocate
   allocate(f17(maxnx+1,maxnz+1),f18(maxnx+1,maxnz+1))
   allocate(f19(maxnx+1,maxnz+1),f20(maxnx+1,maxnz+1))
   allocate(work(maxnx+1,32))
-  allocate(wwork(maxnz+1,32)) ! NF, is it nz or nx ??
+  !allocate(wwork(maxnz+1,32)) ! NF, is it nz or nx ??
 
 
   
