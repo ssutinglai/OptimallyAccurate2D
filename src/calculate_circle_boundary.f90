@@ -10,12 +10,12 @@ subroutine calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz
 
    do iz=1,nz+1
       LBx(iz)=1
-      RBx(iz)=-1
+      RBx(iz)=1
    enddo
 
    do ix=1,nx+1
       BBz(ix)=1
-      TBz(ix)=-2
+      TBz(ix)=1
    enddo
 
    do ix=1,nx+1
