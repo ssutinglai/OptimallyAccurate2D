@@ -43,10 +43,10 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
 
   do iz=2,nz
      do ix=LBx(iz)+1,RBx(iz)-1
-if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
-(iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
-(ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
-(iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
+!if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!(iz+1.le.(centrenz+int(sqrt(dble(nradius**2-(centrenx-ix)**2))))).and. &
+!(ix-1.ge.(centrenx-int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
+!(iz-1.ge.(centrenz-int(sqrt(dble(nradius**2-(centrenx-ix)**2)))))) then
 
         e1(ix,iz) = dt2 / rho(ix,iz) &
              * ( ( lam(ix-1,iz) + lam(ix,iz) ) &
@@ -145,8 +145,8 @@ if((ix+1.le.(centrenx+int(sqrt(dble(nradius**2-(centrenz-iz)**2))))).and. &
              * (  3.d0 ) / ( 1728.d0 * dxdz )
         f20(ix,iz) = dt2 / rho(ix,iz) * lam(ix,iz+1) &
              * (  5.d0 ) / ( 1728.d0 * dxdz )
-
-         endif
+!
+!         endif
      enddo
   enddo
 
@@ -267,8 +267,9 @@ subroutine calstep_circle_free( nx,nz, &
 !     do iz=BBz(ix)+1,TBz(ix)-1
      do  ix=LBx(iz)+1,RBx(iz)-1
 !    do ix=LBx(iz),RBx(iz)
-        iz1 = iz
-        iz2 = iz+1
+       
+        iz1 = BBz(ix)+1
+        iz2 = BBz(ix)+2
 
        !iz1 = iz
        !iz2 = iz+1      !%! Not sure for this part!
