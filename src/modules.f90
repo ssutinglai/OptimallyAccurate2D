@@ -49,7 +49,7 @@ module parameters
   double precision, allocatable, dimension(:,:) :: work
   double precision, allocatable, dimension(:,:) :: wwork
 
-  integer LBx,RBx,BBz,TBz
+  integer LBx,RBx,BBz,TBz,minIX,maxIx
 
 
   ! for discontinuities

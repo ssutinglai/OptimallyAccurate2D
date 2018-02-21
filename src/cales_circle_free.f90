@@ -23,14 +23,12 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
   double precision f19(nx+1,nz+1),f20(nx+1,nz+1)
   integer ix,iz
   integer centrenx,centrenz,nradius  !%! Added for the circle
-  integer TBz(nx+1),BBz(nx+1),LBx(nz+1),RBx(nz+1) !%! Added for boundary of circle
+  integer TBz(nx+1),BBz(nx+1),LBx(nz+1),RBx(nz+1),minIX,maxIX !%! Added for boundary of circle
 
   double precision dt2,dx2,dz2,dxdz
   ! for smoothed part of the model :
   !  we use Zahradnik operators and optimally accurate operators
 
-  print *,nx,nz 
-  
   dt2 = dt * dt
   dx2 = dx * dx
   dz2 = dz * dz
@@ -39,8 +37,8 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
   centrenx=(nx+1)/2+1
   centrenz=(nz+1)/2+1
   nradius= 300
-
-  call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz)
+ print *,nx,nz,centrenx,centrenz
+  call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz,minIX,maxIX)
 
 
   do iz=2,nz
@@ -194,7 +192,7 @@ subroutine calstep_circle_free( nx,nz, &
   integer ix,iz,iz1,iz2,ix11,ix12,ix21,ix22
   logical optimise
   integer BBz(nx+1), TBz(nx+1), LBx(nz+1), RBx(nz+1)
-  integer centrenx,centrenz,nradius
+  integer centrenx,centrenz,nradius,maxIX,minIX
 
   
   double precision, dimension(nx+1,nz+1) :: ee12,ee34,ee56,ee65,ee78,ee87
@@ -204,8 +202,18 @@ subroutine calstep_circle_free( nx,nz, &
   centrenz=(nz+1)/2+1
   nradius= 300
 
- call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz)
-
+ call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz,minIX,maxIX)
+! open(unit=1, file = "LBx.dat")
+! write(1,*) LBx
+!
+!open(unit=2, file = "RBx.dat")
+!write(2,*) RBx
+!
+!open(unit=3, file = "TBz.dat")
+!write(3,*) TBz
+!
+!open(unit=4, file = "BBz.dat")
+!write(4,*) BBz
 
   ! predicting the wavefield
  do iz=2,nz
@@ -256,9 +264,14 @@ subroutine calstep_circle_free( nx,nz, &
  if(optimise) then
     ! correcting the wavefield
 
-   do iz=2,nz
-    do ix=LBx(iz)+1,RBx(iz)-1
-!write(*,*)"step7"
+
+  !do iz=2,nz
+    do ix=1,nx+1
+!    if(((ABS((centrenx-ix)).le. nradius).or.(ABS(centrenx-ix).eq. nradius)))then
+!    if((BBz(ix).ne.1)) then
+!    minIX=ix
+!    maxIX=centrenx+(centrenx-minIX)
+       !write(*,*)minIX
        iz1 = BBz(ix)+1
        iz2 = BBz(ix)+2      !%! Not sure for this part!
        work1(ix,-2) = 0.d0
@@ -277,16 +290,22 @@ subroutine calstep_circle_free( nx,nz, &
        work4(ix,0) = 0.d0
        work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
        work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
-    enddo
-   enddo
+!    endif
+!    endif
+!    enddo
+!   !enddo
+!
+!   !do iz=2,nz
+!    do ix=1,nx+1
+!    if(((ABS((centrenx-ix)).le. nradius).or.(ABS(centrenx-ix).eq. nradius)))then
+!    if((BBz(ix).ne.1)) then
+!    minIX=ix
+!    maxIX=centrenx+(centrenx-minIX)
 
-   do iz=2,nz
-    do ix=LBx(iz),RBx(iz)
-!write(*,*)"step8"
-       ix11 = max0( ix-1,LBx(iz) )
-       ix12 = min0( ix+1,RBx(iz) )
-       ix21 = max0( ix-2,LBx(iz) )
-       ix22 = min0( ix+2,RBx(iz) )
+       ix11 = max0( ix-1,minIX)
+       ix12 = min0( ix+1,maxIX)
+       ix21 = max0( ix-2,minIX)
+       ix22 = min0( ix+2,maxIX)
        work6(ix,0) = 0.d0
        work6(ix,1) = &
             (           ( -work3(ix11,1) ) &
@@ -310,14 +329,17 @@ subroutine calstep_circle_free( nx,nz, &
             + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
        work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
             + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
+    endif
+    endif
     enddo
-   enddo
-    
+   !enddo
+
    do iz=2,nz
     do ix=LBx(iz)+1,RBx(iz)-1
-!write(*,*)"step9"
+
        iz1 = iz + 1
        iz2 = min0( iz+2, TBz(ix))
+
 
           work1(ix,-2) = work1(ix,-1)
           work1(ix,-1) = work1(ix,0)
@@ -338,7 +360,7 @@ subroutine calstep_circle_free( nx,nz, &
        enddo
 
        do ix=LBx(iz),RBx(iz)
-!write(*,*)"step10"
+
           ix11 = max0( ix-1,LBx(iz) )
           ix12 = min0( ix+1,RBx(iz) )
           ix21 = max0( ix-2,LBx(iz) )
@@ -379,9 +401,9 @@ subroutine calstep_circle_free( nx,nz, &
                + 9.d0 * work4(ix12,2) -        work4(ix22,2))
           
        enddo
-       
+
        do ix=LBx(iz)+1,RBx(iz)-1
-!write(*,*)"step11"
+
           ix21 = max0( ix-2,LBx(iz) )
           ix22 = min0( ix+2,RBx(iz) )
           ux(ix,iz) = ux(ix,iz) &
