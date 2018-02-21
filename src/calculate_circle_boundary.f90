@@ -48,18 +48,17 @@ subroutine calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz
 
 
     do ix=1,nx+1
-     
-      if(((ABS((centrenx-ix)).le. nradius).or.(ABS(centrenx-ix).eq. nradius)))then
-       if((identifier4minIX*BBz(ix).ne.1).and.(ix.ne.centrenx)) then
-            minIX=ix
-            maxIX=centrenx+(centrenx-minIX)
-!            write(*,*)minIX,maxIX
+       if((identifier4minIX*BBz(ix).ne.1).and.(identifier4minIX.eq.1)) then
+          minIX=ix
+          identifier4minIX=0
        endif
-      endif
-     endif
-   enddo
+       if((BBz(ix).ne.1).and.(identifier4minIX.eq.0)) then
+          maxIX=ix
+          identifier4minIX=1
+       endif
+    enddo
 
-
+    write(*,*)minIX,maxIX
     !stop
 
 

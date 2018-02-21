@@ -218,7 +218,7 @@ subroutine calstep_circle_free( nx,nz, &
   ! predicting the wavefield
  do iz=2,nz
     do ix=LBx(iz)+1,RBx(iz)-1
-!write(*,*)"step6"
+
        ux(ix,iz) = 2.d0 * ux1(ix,iz) - ux2(ix,iz) &
             + e1(ix,iz) * ( ux1(ix-1,iz) - ux1(ix,iz) ) &
             + e2(ix,iz) * ( ux1(ix+1,iz) - ux1(ix,iz) ) &
@@ -266,12 +266,8 @@ subroutine calstep_circle_free( nx,nz, &
 
 
   !do iz=2,nz
-    do ix=1,nx+1
-!    if(((ABS((centrenx-ix)).le. nradius).or.(ABS(centrenx-ix).eq. nradius)))then
-!    if((BBz(ix).ne.1)) then
-!    minIX=ix
-!    maxIX=centrenx+(centrenx-minIX)
-       !write(*,*)minIX
+    do ix=minIX,maxIX
+
        iz1 = BBz(ix)+1
        iz2 = BBz(ix)+2      !%! Not sure for this part!
        work1(ix,-2) = 0.d0
@@ -290,17 +286,11 @@ subroutine calstep_circle_free( nx,nz, &
        work4(ix,0) = 0.d0
        work4(ix,1) = work2(ix,1) + 12.d0 * uz1(ix,iz1)
        work4(ix,2) = work2(ix,2) + 12.d0 * uz1(ix,iz2)
-!    endif
-!    endif
-!    enddo
-!   !enddo
-!
+
+   enddo
+!  enddo
 !   !do iz=2,nz
-!    do ix=1,nx+1
-!    if(((ABS((centrenx-ix)).le. nradius).or.(ABS(centrenx-ix).eq. nradius)))then
-!    if((BBz(ix).ne.1)) then
-!    minIX=ix
-!    maxIX=centrenx+(centrenx-minIX)
+    do ix=minIX,maxIX
 
        ix11 = max0( ix-1,minIX)
        ix12 = min0( ix+1,maxIX)
@@ -329,8 +319,7 @@ subroutine calstep_circle_free( nx,nz, &
             + 9.d0 * work4(ix12,1) -        work4(ix22,1) )
        work12(ix,2) = ( - 5.d0 * work4(ix11,2) - 3.d0 * work4(  ix,2) &
             + 9.d0 * work4(ix12,2) -        work4(ix22,2) )
-    endif
-    endif
+
     enddo
    !enddo
 
