@@ -222,8 +222,9 @@ subroutine ReceiverSourcePositions
 
   
   do iReceiver = 1, nReceiver
-     nrx(iReceiver)=(iReceiverStart-1)*times+1+iReceiverInterval*times*(iReceiver-1)
-     nrz(iReceiver)=(izReceiverStart-1)*times+1
+     !!%!! Change for Receivers in the vertical middle line
+     nrz(iReceiver)=(iReceiverStart-1)*times+1+iReceiverInterval*times*(iReceiver-1)
+     nrx(iReceiver)=(izReceiverStart-1)*times+1
   enddo
   
   do iSource = 1, nSource

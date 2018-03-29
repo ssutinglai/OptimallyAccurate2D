@@ -27,10 +27,11 @@ program generator
 
 !************************************************************************
 ! Model initialization	
- NX_TOTAL = (800-1)*times+1
- NZ_TOTAL = (800-1)*times+1
+ NX_TOTAL = (1000-1)*times+1
+ NZ_TOTAL = (1000-1)*times+1
 
-!*** Thikness, Vp, Vs *******************************************		
+
+!*** Thikness, Vp, Vs *******************************************
 
 vp(1)=1500.d0;vs(1)=1000.d0;
 vp(2)=340.d0;vs(2)=0.d0;
@@ -83,6 +84,7 @@ vp(2)=340.d0;vs(2)=0.d0;
              fullvp(i,j) = vp(1)
              fullvs(i,j) = vs(1)
              fullrho(i,j) = 2.d3
+!             fullrho(i,j) = 1.2041
           !endif
        enddo
     enddo

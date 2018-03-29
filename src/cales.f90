@@ -232,8 +232,8 @@ subroutine calstep( nx,nz, &
     ! correcting the wavefield
     !
     do ix=2,nx
-       iz1 = 2
-       iz2 = 3
+       iz1 = 10.d-8  !%! change by Ssu-Ting
+       iz2 = 15.d-8
        work1(ix,-2) = 0.d0
        work1(ix,-1) = 0.d0
        work1(ix,0) = 0.d0

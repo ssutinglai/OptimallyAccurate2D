@@ -25,7 +25,7 @@ subroutine forwardmodelling
 
   ! NF uses free surface circle
 
-  
+
   call cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz, &
        e1, e2, e3, e4, e5, e6, e7, e8, &
        e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -110,10 +110,10 @@ subroutine forwardmodelling
 
 
   do iSource = 1, nSource
-    
+
      isx=iisx(iSource)+lmargin(1)
      isz=iisz(iSource)+lmargin(2)
-     
+
      ist=nt/4
     
 
@@ -161,7 +161,7 @@ subroutine forwardmodelling
 
      
      t = 0.d0
-     !write(14,*) real(t),real(ux(nrx,nrz)),real(uz(nrx,nrz))
+
      do ir = 1,nReceiver
         synx(0,ir)=ux(nrx(ir),nrz(ir))
         synz(0,ir)=uz(nrx(ir),nrz(ir))
@@ -175,20 +175,20 @@ subroutine forwardmodelling
         ! evaluating the next step
         
         !if(nDiscon.eq.0) then
-        !   call calstep( maxnz,nx,nz, &
-        !        e1, e2, e3, e4, e5, e6, e7, e8, &
-        !        e13,e14,e15,e16,e17,e18,e19,e20, &
-        !        f1, f2, f3, f4, f5, f6, f7, f8, &
-        !        f13,f14,f15,f16,f17,f18,f19,f20, &
-        !        ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
-        !        work(1,1), work(1,5), work(1,9),work(1,13), &
-        !        work(1,17),work(1,18),work(1,20),work(1,21), &
-        !        work(1,23),work(1,24),work(1,28),work(1,29), optimise)
-           
+!           call calstep( maxnz,nx,nz, &
+!                e1, e2, e3, e4, e5, e6, e7, e8, &
+!                e13,e14,e15,e16,e17,e18,e19,e20, &
+!                f1, f2, f3, f4, f5, f6, f7, f8, &
+!                f13,f14,f15,f16,f17,f18,f19,f20, &
+!                ux,uz,ux1,ux2,uz1,uz2,isx,isz,fx,fz, &
+!                work(1,1), work(1,5), work(1,9),work(1,13), &
+!                work(1,17),work(1,18),work(1,20),work(1,21), &
+!                work(1,23),work(1,24),work(1,28),work(1,29), optimise)
+       ! endif
         !else
 
         ! NF uses cales_circle_free but normally you should use calstep_discon or calstep
- 
+! !%! Ssu-Ting close it for test
            call calstep_circle_free( nx,nz, &
                 e1, e2, e3, e4, e5, e6, e7, e8, &
                 e13,e14,e15,e16,e17,e18,e19,e20, &
@@ -201,7 +201,7 @@ subroutine forwardmodelling
                 ! Hereafter are new variables for cales_discon
                 ee12,ee34,ee56,ee65,ee78,ee87, &
                 ff12,ff34,ff56,ff65,ff78,ff87)
-           
+
 
         !endif
 
@@ -327,7 +327,7 @@ subroutine forwardmodelling
            !call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz,ix_rec,iz_rec,1,&
            !    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,1)
            if(videoornot) then
-              call create_color_image(uz(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &
+              call create_color_image(ux(1:nx+1,1:nz+1),nx+1,nz+1,it,isx,isz, &   !%! Change for x-component plot
                    nrx(1:nReceiver),nrz(1:nReceiver),nReceiver, &
                    NPOINTS_PML,USE_PML_XMIN,USE_PML_XMAX,USE_PML_YMIN,USE_PML_YMAX,2)
               
@@ -452,6 +452,7 @@ subroutine forwardmodelling
         if(optimise) then
            write(outfile,'(I5,".",I5,".OPT_UZ") ') &
                 isx-lmargin(1),isz-lmargin(2)
+
         else
            write(outfile,'(I5,".",I5,".CON_UZ") ') &
                 isx-lmargin(1),isz-lmargin(2)
@@ -496,8 +497,96 @@ subroutine forwardmodelling
         !close(1,status='keep')
 
 
-        
-     
-     
+    !%! For records in different receivers in the vertical line in the middle of the circle (01/03/2018 Ssu-Ting)
+
+    if(iterationIndex.eq.0) then
+      do ir=1,nReceiver
+       if(optimise)then
+          write(outfile,'(I5,".",I5,".OPT_UX") ') &
+                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2)
+        else
+          write(outfile,'(I5,".",I5,".CON_UX") ') &
+                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2)
+       endif
+
+       do j=1,12
+          if(outfile(j:j).eq.' ') outfile(j:j)='0'
+       enddo
+
+       outfile = './synthetics/'//trim(modelname)//'/'//outfile
+
+       open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+       write(1,rec=1) synx(0:maxnt,ir)
+       close(1)
+
+!      else
+!
+!       if(optimise) then
+!         write(outfile,'(I5,".",I5,".OPT_UX.it",I3.3) ') &
+!              nrx(ir)-lmargin(1),nrz(ir)-lmargin(2),iterationIndex
+!       else
+!         write(outfile,'(I5,".",I5,".CON_UX.it",I3.3) ') &
+!              nrx(ir)-lmargin(1),nrz(ir)-lmargin(2),iterationIndex
+!       endif
+!
+!       do j=1,12
+!          if(outfile(j:j).eq.' ') outfile(j:j)='0'
+!       enddo
+!
+!       outfile = './synthetics/'//trim(modelname)//'/'//outfile
+!       open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+!       write(1,rec=1) synx(0:maxnt,ir)
+!       close(1)
+
+      enddo
+     endif
+
+
+    if(iterationIndex.eq.0) then
+      do ir=1,nReceiver
+        if(optimise)then
+          write(outfile,'(I5,".",I5,".OPT_UZ") ') &
+                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2)
+          else
+          write(outfile,'(I5,".",I5,".CON_UZ") ') &
+                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2)
+        endif
+
+        do j=1,12
+           if(outfile(j:j).eq.' ') outfile(j:j)='0'
+        enddo
+
+        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+
+        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+        write(1,rec=1) synz(0:maxnt,ir)
+        close(1)
+
+!     else
+!
+!        if(optimise) then
+!          write(outfile,'(I5,".",I5,".OPT_UZ.it",I3.3) ') &
+!                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2),iterationIndex
+!          else
+!          write(outfile,'(I5,".",I5,".CON_UZ.it",I3.3) ') &
+!                nrx(ir)-lmargin(1),nrz(ir)-lmargin(2),iterationIndex
+!          endif
+!
+!        do j=1,12
+!        if(outfile(j:j).eq.' ') outfile(j:j)='0'
+!        enddo
+!
+!        outfile = './synthetics/'//trim(modelname)//'/'//outfile
+!        open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+!        write(1,rec=1) synz(0:maxnt,ir)
+!        close(1)
+
+      enddo
+    endif
+
+
+
+
+
   enddo
 end subroutine forwardmodelling
