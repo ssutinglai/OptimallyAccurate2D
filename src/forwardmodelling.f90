@@ -165,9 +165,11 @@ subroutine forwardmodelling
      do ir = 1,nReceiver
         synx(0,ir)=ux(nrx(ir),nrz(ir))
         synz(0,ir)=uz(nrx(ir),nrz(ir))
+        synp(0,ir)=ux(nrx(ir),nrz(ir))
+        syns(0,ir)=uz(nrx(ir),nrz(ir))
      enddo
 
-     
+
 
      do it=0,nt
       
@@ -226,7 +228,7 @@ subroutine forwardmodelling
            synx(it,ir)=ux(nrx(ir),nrz(ir))
            synz(it,ir)=uz(nrx(ir),nrz(ir))
         enddo
-        
+
      
         
         ! applying Cerjan boundary
@@ -246,54 +248,59 @@ subroutine forwardmodelling
         ! calculating strains
         
         
-        if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
+        !if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
            singleStrainDiagonal=0.e0
            tmpsingleStrain=0.e0
            call calStrainDiagonal(nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
            call calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrainShear)
 
-
-           if(optimise) then
-              write(outfile,'("strainD",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
-           else
-              write(outfile,'("strainD",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
-           endif
-           do j=1,24
-              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+           do ir=1,nReceiver
+              synp(it,ir)=singleStrainDiagonal(nrx(ir),nrz(ir))
+              syns(it,ir)=singleStrainShear(nrx(ir),nrz(ir))
            enddo
+
+!%! Close for nor print out strain (04.04.2018)
+!           if(optimise) then
+!              write(outfile,'("strainD",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+!           else
+!              write(outfile,'("strainD",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+!           endif
+!           do j=1,24
+!              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+!           enddo
+!           
+!           outfile = './strains/'//trim(modelname)//'/'//outfile
+!           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+!
+!           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
+!                singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+!           write(1,rec=1)  tmpsingleStrain
+!           close(1,status='keep')
+
+
+!%! Close for nor print out strain (04.04.2018)        
+!           if(optimise) then
+!              write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+!           else
+!              write(outfile,'("strainS",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
+!           endif
+!           do j=1,24
+!              if(outfile(j:j).eq.' ') outfile(j:j)='0'
+!           enddo
+!           
+!           outfile = './strains/'//trim(modelname)//'/'//outfile
+!           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
+!
+!           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
+!                singleStrainShear(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
+!           write(1,rec=1)  tmpsingleStrain
+!           close(1,status='keep')
+
+
+
+
            
-           outfile = './strains/'//trim(modelname)//'/'//outfile
-           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-
-           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
-                singleStrainDiagonal(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-           write(1,rec=1)  tmpsingleStrain
-           close(1,status='keep')
-
-
-           
-           if(optimise) then
-              write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
-           else
-              write(outfile,'("strainS",I5,".",I5,".",I5,".CON_dat") ') it,isx-lmargin(1),isz-lmargin(2)
-           endif
-           do j=1,24
-              if(outfile(j:j).eq.' ') outfile(j:j)='0'
-           enddo
-           
-           outfile = './strains/'//trim(modelname)//'/'//outfile
-           open(1,file=outfile,form='unformatted',access='direct',recl=recl_size)
-
-           tmpsingleStrain(1:nx+1-lmargin(1)-rmargin(1),1:nz+1-lmargin(2)-rmargin(2)) = &
-                singleStrainShear(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
-           write(1,rec=1)  tmpsingleStrain
-           close(1,status='keep')
-
-
-
-
-           
-        endif
+        !endif
 
 
         
@@ -584,6 +591,87 @@ subroutine forwardmodelling
       enddo
     endif
 
+!!%!! For Plotting Strain for UP & US
+
+    !%! For UP
+
+    if(iterationIndex.eq.0) then
+    if(optimise) then
+    write(outfile,'(I5,".",I5,".OPT_UP") ')  &
+    isx-lmargin(1),isz-lmargin(2)
+    else
+    write(outfile,'(I5,".",I5,".CON_UP") ') &
+    isx-lmargin(1),isz-lmargin(2)
+    endif
+
+    do j=1,12
+    if(outfile(j:j).eq.' ') outfile(j:j)='0'
+    enddo
+
+    outfile = './synthetics/'//trim(modelname)//'/'//outfile
+    else
+    if(optimise) then
+    write(outfile,'(I5,".",I5,".OPT_UP.it",I3.3) ')  &
+    isx-lmargin(1),isz-lmargin(2),iterationIndex
+    else
+    write(outfile,'(I5,".",I5,".CON_UP,it",I3.3) ') &
+    isx-lmargin(1),isz-lmargin(2),iterationIndex
+    endif
+
+    do j=1,12
+    if(outfile(j:j).eq.' ') outfile(j:j)='0'
+    enddo
+
+    outfile = './synthetics/'//trim(modelname)//'/'//outfile
+
+    endif
+
+
+
+
+    open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+    write(1,rec=1) synp(0:maxnt,1:nReceiver)
+    close(1)
+
+    !%! For US
+
+    if(iterationIndex.eq.0) then
+    if(optimise) then
+    write(outfile,'(I5,".",I5,".OPT_US") ')  &
+    isx-lmargin(1),isz-lmargin(2)
+    else
+    write(outfile,'(I5,".",I5,".CON_US") ') &
+    isx-lmargin(1),isz-lmargin(2)
+    endif
+
+    do j=1,12
+    if(outfile(j:j).eq.' ') outfile(j:j)='0'
+    enddo
+
+    outfile = './synthetics/'//trim(modelname)//'/'//outfile
+    else
+    if(optimise) then
+    write(outfile,'(I5,".",I5,".OPT_US.it",I3.3) ')  &
+    isx-lmargin(1),isz-lmargin(2),iterationIndex
+    else
+    write(outfile,'(I5,".",I5,".CON_US,it",I3.3) ') &
+    isx-lmargin(1),isz-lmargin(2),iterationIndex
+    endif
+
+    do j=1,12
+    if(outfile(j:j).eq.' ') outfile(j:j)='0'
+    enddo
+
+    outfile = './synthetics/'//trim(modelname)//'/'//outfile
+
+    endif
+
+
+
+
+open(1,file=outfile,form='unformatted',access='direct',recl=recl_size_syn)
+write(1,rec=1) syns(0:maxnt,1:nReceiver)
+close(1)
 
 
 

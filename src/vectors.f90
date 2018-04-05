@@ -45,6 +45,7 @@ subroutine vectorAllocate
   
   
   allocate(synx(0:maxnt,1:nReceiver),synz(0:maxnt,1:nReceiver),time(0:maxnt)) ! synthetics
+  allocate(synp(0:maxnt,1:nReceiver),syns(0:maxnt,1:nReceiver)) ! synthetics
 
   allocate(video(maxnx+1,maxnz+1))
 

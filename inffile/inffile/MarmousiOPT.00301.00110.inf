@@ -1,5 +1,5 @@
 c grids
-        2000         999         999
+       30000         599         599
    4.0000000000000001E-010   4.9999999999999998E-008   4.9999999999999998E-008
 c modelname
 MarmousiOPT
@@ -7,10 +7,10 @@ MarmousiOPT
 ../models/2d_circle.vs
 ../models/2d_circle.rho
 c source position (in grids) 
-         501         120
+         301         110
 c source time function (Ricker wavelet)
    2000000.0000000000       -1.5999999999999999E-006
 c receivers information
            1
-         501         900
+         301         500
 end

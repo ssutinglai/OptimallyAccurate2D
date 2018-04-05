@@ -151,6 +151,9 @@ program multipleSourcesFWI2D
         synx=0.e0
         synz=0.e0
 
+        synp=0.e0
+        syns=0.e0
+
         call forwardmodelling
         
         numeratorG = 0.d0

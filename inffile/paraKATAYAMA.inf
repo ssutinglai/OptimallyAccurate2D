@@ -6,13 +6,13 @@ T optimise or conventional
 T video or not
 T writingStrain
 10 IT_DISPLAY
-501 10 1  iSourceStart, iSourceInverval, nSource
-120 izSourceStart
-120 20 39 iReceiverStart, iReceiverInterval, nReceiver
-501 izReceiverStart
-5000 999 999 nt nx nz
-1.d-8 5.d-8 5.d-8 dt,dx,dz
-2.d6 6.d-7 f0, t0
+301 10 1  iSourceStart, iSourceInverval, nSource
+110 izSourceStart
+500 10 1 iReceiverStart, iReceiverInterval, nReceiver
+301 izReceiverStart
+30000 599 599 nt nx nz
+4.d-10 5.d-8 5.d-8 dt,dx,dz
+2.d6 -1.6d-6 f0, t0
 1  1 i1Source, i2Source ! not necessary for FWI
 ~/OptimallyAccurate2D/Marmousi/synthetics/MarmousiOPT/tmp/
 OPT_UX

@@ -36,8 +36,8 @@ subroutine cales_circle_free( nx,nz,rho,lam,mu,dt,dx,dz,e1, e2, e3, e4, e5, e6, 
 
   centrenx=(nx+1)/2+1
   centrenz=(nz+1)/2+1
-  nradius= 400
- print *,nx,nz,centrenx,centrenz
+  nradius= 200
+ !print *,nx,nz,centrenx,centrenz
   call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz,minIX,maxIX)
 
 
@@ -200,7 +200,7 @@ subroutine calstep_circle_free( nx,nz, &
 
   centrenx=(nx+1)/2+1
   centrenz=(nz+1)/2+1
-  nradius= 400
+  nradius= 200
 
  call calculate_circle_boundary(nx,nz,centrenx,centrenz,nradius,LBx,RBx,TBz,BBz,minIX,maxIX)
 ! open(unit=1, file = "LBx.dat")

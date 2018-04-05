@@ -70,7 +70,7 @@ module parameters
   
   ! parameter for the receiver
   integer :: ir,j
-  real(kind(0e0)), allocatable, dimension(:,:) :: synx,synz
+  real(kind(0e0)), allocatable, dimension(:,:) :: synx,synz,synp,syns
   real, allocatable, dimension(:) :: time
   character(200) :: outfile
  
