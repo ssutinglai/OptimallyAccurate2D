@@ -1,10 +1,11 @@
 clear all
-nt=30000;
+nt=5000;
 Size=nt*40; % due to the bug in OPT-FD
 time=zeros(nt);
-dt=4*10^(-10);
+dt=4*10^(-9);
+t0=-1.6*(10^(-6));
+time=t0+(1:nt)*4*10^(-9);
 
-time=(1:nt)*4*10^(-10);
 
 
 for iReceiver=1;

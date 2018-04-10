@@ -165,8 +165,8 @@ subroutine forwardmodelling
      do ir = 1,nReceiver
         synx(0,ir)=ux(nrx(ir),nrz(ir))
         synz(0,ir)=uz(nrx(ir),nrz(ir))
-        synp(0,ir)=ux(nrx(ir),nrz(ir))
-        syns(0,ir)=uz(nrx(ir),nrz(ir))
+!        synp(0,ir)=ux(nrx(ir),nrz(ir))
+!        syns(0,ir)=uz(nrx(ir),nrz(ir))             !%!05/04/2018 Commented
      enddo
 
 
@@ -250,6 +250,7 @@ subroutine forwardmodelling
         
         !if(writingStrain.and.(mod(it,IT_DISPLAY).eq.0)) then
            singleStrainDiagonal=0.e0
+           singleStrainShear=0.e0
            tmpsingleStrain=0.e0
            call calStrainDiagonal(nx,nz,ux,uz,lmargin,rmargin,singleStrainDiagonal)
            call calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrainShear)
@@ -295,7 +296,7 @@ subroutine forwardmodelling
 !                singleStrainShear(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
 !           write(1,rec=1)  tmpsingleStrain
 !           close(1,status='keep')
-
+!
 
 
 

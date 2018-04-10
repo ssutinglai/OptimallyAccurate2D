@@ -391,7 +391,7 @@ subroutine calstep_circle_free( nx,nz, &
           
        enddo
 
-       do ix=LBx(iz)+1,RBx(iz)-1
+       do ix=LBx(iz)+1,RBx(iz)-1            !%! Comment for testing conventional
 
           ix21 = max0( ix-2,LBx(iz) )
           ix22 = min0( ix+2,RBx(iz) )
