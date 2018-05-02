@@ -166,12 +166,12 @@ end subroutine calStrainDiagonal
 
 
 
-subroutine calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrain)
+subroutine calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrainShear)
   implicit none
   integer :: maxnz,nx,nz,ix,iz
   double precision :: ux(1:nx+1,1:nz+1),uz(1:nx+1,1:nz+1)
   integer :: lmargin(1:2), rmargin(1:2)
-  real(kind(0e0)) :: singleStrain(1:nx+1,1:nz+1)
+  real(kind(0e0)) :: singleStrainShear(1:nx+1,1:nz+1)
   double precision :: straintmp
   double precision, parameter :: onetwelfth = 0.0833333333333333d0
   
@@ -187,12 +187,12 @@ subroutine calStrainShear(nx,nz,ux,uz,lmargin,rmargin,singleStrain)
   nzend=nz+1-rmargin(2)
 
   
-  do ix=nxstart,nxend
-     do iz=nzstart,nzend
+  do iz=nzstart,nzend
+     do ix=nxstart,nxend
         straintmp=0.d0
         straintmp=(5.d0*uz(ix+1,iz)+3.d0*uz(ix,iz)-9.d0*uz(ix-1,iz)+uz(ix-2,iz))*onetwelfth
         straintmp=straintmp+(5.d0*ux(ix,iz+1)+3.d0*ux(ix,iz)-9.d0*ux(ix,iz-1)+ux(ix,iz-2))*onetwelfth
-        singleStrain(ix,iz)=straintmp
+        singleStrainShear(ix,iz)=straintmp
      enddo
   enddo
  

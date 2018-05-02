@@ -1,10 +1,11 @@
 clear all
-nt=5000;
+nt=7000;
 Size=nt*40; % due to the bug in OPT-FD
 time=zeros(nt);
-dt=4*10^(-9);
+dt=2*10^(-9);
 t0=-1.6*(10^(-6));
-time=t0+(1:nt)*4*10^(-9);
+%t0=0;
+time=t0+(1:nt)*2*10^(-9)-2*10^(-9);
 
 
 

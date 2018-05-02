@@ -10,9 +10,9 @@ T writingStrain
 110 izSourceStart
 500 10 1 iReceiverStart, iReceiverInterval, nReceiver
 301 izReceiverStart
-5000 599 599 nt nx nz
-2.d-9 5.d-8 5.d-8 dt,dx,dz
-2.d6 -1.6d-6 f0, t0
+7000 599 599 nt nx nz
+2d-9 5.d-8 5.d-8 dt,dx,dz
+2.d6 0 f0, t0
 1  1 i1Source, i2Source ! not necessary for FWI
 ~/OptimallyAccurate2D/Marmousi/synthetics/MarmousiOPT/tmp/
 OPT_UX

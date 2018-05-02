@@ -1,0 +1,9 @@
+%% This is the note for the results made by SSU-TING 10.04.2018 %%
+nt=7000
+dt=2*10^(-9)
+vp=5330 m/s
+vs=3310 m/s
+inv=5
+Courant number= 0.30151033149794393
+stable till: conv is okay
+

@@ -391,54 +391,54 @@ subroutine calstep_circle_free( nx,nz, &
           
        enddo
 
-       do ix=LBx(iz)+1,RBx(iz)-1            !%! Comment for testing conventional
-
-          ix21 = max0( ix-2,LBx(iz) )
-          ix22 = min0( ix+2,RBx(iz) )
-          ux(ix,iz) = ux(ix,iz) &
-               + ( &
-               - (           (   work1(ix-1,-1) + work1(ix-1,1) &
-               + work1(ix+1,-1) + work1(ix+1,1) ) &
-               + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
-               + work1(  ix, 1) + work1(ix+1, 0) ) &
-               + 100.d0 * work1(ix,0) ) &
-               + e1(ix,iz) * work5(ix) &
-               - e2(ix,iz) * work5(ix+1) &
-               + e3(ix,iz) * work6(ix,0) &
-               - e4(ix,iz) * work6(ix,1) &
-               ) / 144.d0 &
-               + e13(ix,iz) * work11(ix-1) &
-               + e14(ix,iz) * work11(ix) &
-               + e15(ix,iz) * work11(ix+1) &
-               + e16(ix,iz) * work11(ix22) &
-               + e17(ix,iz) * work12(ix,-1) &
-               + e18(ix,iz) * work12(ix,0) &
-               + e19(ix,iz) * work12(ix,1) &
-               + e20(ix,iz) * work12(ix,2)
-          uz(ix,iz) = uz(ix,iz) &
-               + ( &
-               - (           (   work2(ix-1,-1) + work2(ix-1,1) &
-               + work2(ix+1,-1) + work2(ix+1,1) ) &
-               + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
-               + work2(  ix, 1) + work2(ix+1, 0) ) &
-               + 100.d0 * work2(ix,0) ) &
-               + f1(ix,iz) * work7(ix) &
-               - f2(ix,iz) * work7(ix+1) &
-               + f3(ix,iz) * work8(ix,0) &
-               - f4(ix,iz) * work8(ix,1) &
-               ) / 144.d0 &
-               + f13(ix,iz) * work9(ix21) &
-               + f14(ix,iz) * work9(ix-1) &
-               + f15(ix,iz) * work9(ix) &
-               + f16(ix,iz) * work9(ix+1) &
-               + f17(ix,iz) * work10(ix,-2) &
-               + f18(ix,iz) * work10(ix,-1) &
-               + f19(ix,iz) * work10(ix,0) &
-               + f20(ix,iz) * work10(ix,1)
-       enddo
+!       do ix=LBx(iz)+1,RBx(iz)-1            !%! Comment for testing conventional
+!
+!          ix21 = max0( ix-2,LBx(iz) )
+!          ix22 = min0( ix+2,RBx(iz) )
+!          ux(ix,iz) = ux(ix,iz) &
+!               + ( &
+!               - (           (   work1(ix-1,-1) + work1(ix-1,1) &
+!               + work1(ix+1,-1) + work1(ix+1,1) ) &
+!               + 10.d0 * (   work1(ix-1, 0) + work1(  ix,-1) &
+!               + work1(  ix, 1) + work1(ix+1, 0) ) &
+!               + 100.d0 * work1(ix,0) ) &
+!               + e1(ix,iz) * work5(ix) &
+!               - e2(ix,iz) * work5(ix+1) &
+!               + e3(ix,iz) * work6(ix,0) &
+!               - e4(ix,iz) * work6(ix,1) &
+!               ) / 144.d0 &
+!               + e13(ix,iz) * work11(ix-1) &
+!               + e14(ix,iz) * work11(ix) &
+!               + e15(ix,iz) * work11(ix+1) &
+!               + e16(ix,iz) * work11(ix22) &
+!               + e17(ix,iz) * work12(ix,-1) &
+!               + e18(ix,iz) * work12(ix,0) &
+!               + e19(ix,iz) * work12(ix,1) &
+!               + e20(ix,iz) * work12(ix,2)
+!          uz(ix,iz) = uz(ix,iz) &
+!               + ( &
+!               - (           (   work2(ix-1,-1) + work2(ix-1,1) &
+!               + work2(ix+1,-1) + work2(ix+1,1) ) &
+!               + 10.d0 * (   work2(ix-1, 0) + work2(  ix,-1) &
+!               + work2(  ix, 1) + work2(ix+1, 0) ) &
+!               + 100.d0 * work2(ix,0) ) &
+!               + f1(ix,iz) * work7(ix) &
+!               - f2(ix,iz) * work7(ix+1) &
+!               + f3(ix,iz) * work8(ix,0) &
+!               - f4(ix,iz) * work8(ix,1) &
+!               ) / 144.d0 &
+!               + f13(ix,iz) * work9(ix21) &
+!               + f14(ix,iz) * work9(ix-1) &
+!               + f15(ix,iz) * work9(ix) &
+!               + f16(ix,iz) * work9(ix+1) &
+!               + f17(ix,iz) * work10(ix,-2) &
+!               + f18(ix,iz) * work10(ix,-1) &
+!               + f19(ix,iz) * work10(ix,0) &
+!               + f20(ix,iz) * work10(ix,1)
+!       enddo
     enddo
-     ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
-     uz(isx,isz) = uz(isx,isz) + fz(isx,isz)     
+!     ux(isx,isz) = ux(isx,isz) + fx(isx,isz)
+!     uz(isx,isz) = uz(isx,isz) + fz(isx,isz)     
  endif
 
 

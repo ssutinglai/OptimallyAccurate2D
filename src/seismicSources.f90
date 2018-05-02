@@ -10,15 +10,14 @@ subroutine calf2(nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
   real*8 wt(100000),wx(100000)
 
   !%! Read wavelet file from Katayama
-
-
+  
   open(1,file='Wavelet.txt')
   do i=1,100000
      read (1,*) wt(i), wx(i)
   enddo
   close(1)
-  inv=(dt/(wt(2)-wt(1)))
-
+   inv=5
+!  inv=(dt/(wt(2)-wt(1)))
    factor=1.d3
   !factor=5.d17
   !factor=1.d3
@@ -45,9 +44,6 @@ subroutine calf2(nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
        fz(isx,isz) = fx(isx,isz)
 
 
-open(13,file='waveletOpt',position='append',form='formatted',status='old')
-write(13,*) it, fz(isx,isz)
-close(13)
      !fx(isx,isz) = fx(isx,isz) * dt * dt / rho !%! Closed for matching with Specfem2D (08.03.2018)
 
      !%! Commented for matching for Specfem2D (08.03.2018)
@@ -59,26 +55,14 @@ close(13)
   else
      fx(isx,isz) = 0.d0
      fz(isx,isz) = 0.d0
-open(13,file='waveletOpt',position='append',form='formatted',status='old')
-write(13,*) it, fz(isx,isz)
-close(13)
+!open(13,file='waveletOpt',position='append',form='formatted',status='old')
+!write(13,*) it, fz(isx,isz)
+!close(13)
   endif
 
-    ! Output Wavelet
-
-
-
-    !open(13,file='waveletOpt',form='formatted',status='old')
-    !write(13,*) it, fz(isx,isz)
-    !!write(*,*) it,ist
-    !close(13)
 
   !NF for point source
   fx(isx,isz)=0.d0
-
-
-
-
 
 
 
@@ -115,6 +99,7 @@ subroutine calf( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho,tp,ts,fx,fz )
   !! NOT change fz and fx into different direction 28/02/2018
   fx(isx,isz)=0.d0
   fz(isx,isz)=fz(isx,isz)*1.d4   !Change for matching with specfem2d
+  !fz(isx,isz)=fz(isx,isz)
 
 !%! Plot source wavelet!
 

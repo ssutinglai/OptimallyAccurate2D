@@ -278,7 +278,7 @@ subroutine forwardmodelling
 !           write(1,rec=1)  tmpsingleStrain
 !           close(1,status='keep')
 
-
+           tmpsingleStrain=0.e0
 !%! Close for nor print out strain (04.04.2018)        
 !           if(optimise) then
 !              write(outfile,'("strainS",I5,".",I5,".",I5,".OPT_dat") ') it,isx-lmargin(1),isz-lmargin(2)
@@ -296,7 +296,7 @@ subroutine forwardmodelling
 !                singleStrainShear(lmargin(1)+1:nx+1-rmargin(1),lmargin(2)+1:nz+1-rmargin(2))
 !           write(1,rec=1)  tmpsingleStrain
 !           close(1,status='keep')
-!
+!!
 
 
 
