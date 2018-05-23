@@ -7,15 +7,12 @@ subroutine calf2(nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho,f0,t0,fx,fz )
   integer nx,nz,it,ist,isx,isz,i,inv
   real*8 t,dt,dx,dz,rho,f0,t0,fx(nx+1,nz+1),fz(nx+1,nz+1)
   real*8 b,a,factor
-  real*8 wt(100000),wx(100000)
+  real*8 wx(100000)
 
   !%! Read wavelet file from Katayama
   
-  open(1,file='Wavelet.txt')
-  do i=1,100000
-     read (1,*) wt(i), wx(i)
-  enddo
-  close(1)
+
+
    inv=5
 !  inv=(dt/(wt(2)-wt(1)))
    factor=1.d3

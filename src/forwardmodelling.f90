@@ -149,14 +149,29 @@ subroutine forwardmodelling
      
      t=0.d0
      time(0)=t
-     do it=0,nt
-       
-        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
-        t=t+dt
-        !write(13,*) t, fx(isx,isz),fz(isx,isz)
-        
-     enddo
-     !print *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0
+!     do it=0,nt
+!       
+!        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
+!        t=t+dt
+!        !write(13,*) t, fx(isx,isz),fz(isx,isz)
+!        
+!     enddo
+
+
+     !! read source
+
+     open(1,file='./wavelet.bin',status='old', ACCESS = 'direct', form = 'UNFORMATTED',recl=nt*8)
+
+     read(1,rec=1) (wx(it), it=1,nt)
+     close(1)
+
+!     do t=1,100,1
+!         write(*,*) nt, wx(t)
+!     enddo
+
+
+
+     !p!rint *, maxnz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0
      !stop
 
      
@@ -173,7 +188,10 @@ subroutine forwardmodelling
 
      do it=0,nt
       
-        call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
+        !call calf2( nx,nz,it,t,ist,isx,isz,dt,dx,dz,rho(isx,isz),f0,t0,fx,fz )
+        fz(isx,isz) = wx(it+1)
+        fx(isx,isz) = 0.0
+
         ! evaluating the next step
         
         !if(nDiscon.eq.0) then
@@ -384,6 +402,7 @@ subroutine forwardmodelling
         !     uz(1:nx+1,1:nz+1),uz1(1:nx+1,1:nz+1),uz2(1:nx+1,1:nz+1), CerjanRate, lmargin, rmargin,nx+1,nz+1)
         
      enddo
+     deallocate(wx)
 
      !write(18,*) singleStrainDiagonal(:,:)
 

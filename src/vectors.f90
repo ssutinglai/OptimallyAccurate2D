@@ -9,6 +9,9 @@ subroutine vectorAllocate
   allocate(iisx(1:nSource)) ! Sources
   allocate(iisz(1:nSource))
 
+  !! 
+  allocate(wx(1:nt+1))
+
   allocate(ux(maxnx+1,maxnz+1),uz(maxnx+1,maxnz+1))
   allocate(ux1(maxnx+1,maxnz+1),ux2(maxnx+1,maxnz+1))
   allocate(uz1(maxnx+1,maxnz+1),uz2(maxnx+1,maxnz+1))

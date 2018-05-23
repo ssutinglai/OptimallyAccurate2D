@@ -33,7 +33,7 @@ program generator
 
 !*** Thikness, Vp, Vs *******************************************
 
-vp(1)=5430.d0;vs(1)=3394.d0;
+vp(1)=5700.d0;vs(1)=3562.d0;
 vp(2)=340.d0;vs(2)=0.d0;
  !layer_thikness(2)=91;vp(2)=3000;vs(2)=1700;
 ! layer_thikness(3)=162;vp(3)=2000;vs(3)=1170;

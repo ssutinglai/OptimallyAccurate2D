@@ -6,7 +6,11 @@ module parameters
   character(120) :: filename
   integer :: tmpint
   character(80) :: modelname
-  
+
+  double precision, allocatable :: wx(:) ! add in 14/05/2018
+
+
+
   integer, parameter :: times = 1 ! this can make the dx,dz,dt finer  
 
   ! switch OPT / CONV
@@ -39,7 +43,8 @@ module parameters
   integer nt,nx,nz,it,ist,isx,isz,ix,iz,recl_size,recl_size_syn
   ! paramters for the physical domain
   integer boxnx,boxnz
-  
+
+
   ! Attention ! nx and nz are modified with absorbing boundaries
   double precision, allocatable, dimension(:,:) :: ux,uz,ux1,ux2,uz1,uz2
   double precision, allocatable, dimension(:,:) :: e1,e2,e3,e4,e5,e6,e7,e8
